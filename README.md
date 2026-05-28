@@ -124,25 +124,22 @@ gym-management/
 
 ## 🚀 Development Roadmap
 
-Complete development organized into **10 phases**:
+Toàn bộ quá trình phát triển được tổ chức tinh gọn thành **7 Milestones (Phases) với 30 Issues cụ thể**:
 
-| Phase | Title | Duration | Status |
-|-------|-------|----------|--------|
-| 1 | Project Initialization | 2-3 days | 🔴 Planned |
-| 2 | Database & Authentication | 4-5 days | 🔴 Planned |
-| 3 | Membership System | 3-4 days | 🔴 Planned |
-| 4 | AI Chatbot | 5-7 days | 🔴 Planned |
-| 5 | Admin Dashboard | 5-6 days | 🔴 Planned |
-| 6 | Mobile Application | 7-10 days | 🔴 Planned |
-| 7 | Payment System | 3-4 days | 🔴 Planned |
-| 8 | Notification System | 2-3 days | 🔴 Planned |
-| 9 | Testing & Optimization | 4-5 days | 🔴 Planned |
-| 10 | Deployment | 2-3 days | 🔴 Planned |
+| Phase | Milestone Title | Linked Issues | Duration | Status |
+|-------|-----------------|---------------|----------|--------|
+| 1 | Project Initialization | #1 - #3 | 2-3 days | 🔴 Planned |
+| 2 | Authentication & Database | #4 - #8 | 4-5 days | 🔴 Planned |
+| 3 | Membership & AI Core | #9 - #13 | 3-4 days | 🔴 Planned |
+| 4 | Frontend Admin Dashboard | #14 - #17 | 5-6 days | 🔴 Planned |
+| 5 | Mobile Application | #18 - #21 | 7-10 days| 🔴 Planned |
+| 6 | Payment & Notification System | #22 - #24 | 4-5 days | 🔴 Planned |
+| 7 | Testing & Deployment | #25 - #30 | 4-5 days | 🔴 Planned |
 
-**Total Timeline:** 8-9 weeks | **With 2-person team:** 5-6 weeks  
-**Details:** See [ROADMAP.md](./ROADMAP.md)
+**Chi tiết kỹ thuật từng task:** Xem tại [ROADMAP.md](./ROADMAP.md) hoặc mục **Milestones** trên GitHub.
 
 ---
+
 
 ## 👥 Team Roles
 
