@@ -215,11 +215,68 @@ Auth APIs (#5-#7) → Member 2 → #17 (Frontend Setup) → #18 → #19 → #20,
 
 ## ⚠️ CRITICAL DEVELOPMENT RULES
 
-1. **Không code chồng chéo phase:** Giải quyết dứt điểm các issues thuộc Milestone hiện tại trước khi chuyển sang Milestone tiếp theo.
-2. **Không hardcode cấu hình:** Đưa toàn bộ chuỗi kết nối DB, API Keys, JWT Secret vào file `.env`. Phân biệt rõ `.env.development` và `.env.production`.
-3. **TypeScript Strictly:** Không sử dụng kiểu dữ liệu `any`.
-4. **Pre-Code Review:** Tất cả các trợ lý AI/Agents trước khi bắt tay viết code phải đọc kỹ cấu trúc thư mục hiện tại để tránh xung đột cấu trúc.
-5. **Swagger First:** Mọi API backend mới phải được document trên Swagger trước khi Member 2 tích hợp.
-6. **Seed Data Required:** Trước khi Member 2 bắt đầu bất kỳ UI nào, seed data cho module đó phải có sẵn trong DB.
-7. **Payment Safety:** Mọi luồng thanh toán phải xử lý đủ 3 trạng thái: `SUCCESS`, `FAILED`, `PENDING`. Không được tự động kích hoạt gói khi chưa nhận webhook xác nhận.
-8. **QR Security:** Mỗi QR check-in phải có timestamp và expire sau 5 phút để tránh replay attack.
+### 1️⃣ Architecture Rules
+- ❌ Không code chồng chéo phase
+- ❌ Không sửa database tùy tiện sau khi migrate
+- ❌ Không hardcode API URLs
+- ❌ Không duplicate component
+- ❌ Không tạo business logic ở frontend
+
+### 2️⃣ Code Quality Rules
+- ✅ Tất cả API phải có validation
+- ✅ Tất cả feature phải có error handling
+- ✅ Sử dụng TypeScript strictly (no `any`)
+- ✅ Follow ESLint + Prettier rules
+- ✅ Reusable components
+
+### 3️⃣ Security Rules
+- ✅ Hash password bằng bcrypt
+- ✅ JWT tokens không hardcode
+- ✅ Validate tất cả input
+- ✅ Prevent SQL injection
+- ✅ HTTPS only (production)
+
+### 4️⃣ Testing Rules
+- ✅ Unit test critical functions
+- ✅ Integration test APIs
+- ✅ Test error scenarios
+- ✅ Test edge cases
+- ✅ Manual testing checklist
+
+### 5️⃣ Pre-Code Review
+🔴 **CRITICAL**: Tất cả agent/code assistant phải đọc thật kỹ:
+1. Toàn bộ project structure
+2. Database schema & relations
+3. Existing API endpoints
+4. Authentication flow
+5. Middleware stack
+6. Business logic rules
+7. Error handling patterns
+8. Coding style & conventions
+
+**Mục tiêu:** Tránh code bị loạn, conflict logic, hoặc phá vỡ kiến trúc hệ thống.
+
+---
+
+## 📞 Communication & Updates
+
+- **Daily standup:** 10 AM (sync progress)
+- **Weekly review:** Friday (demo & planning)
+- **Issue tracking:** GitHub Issues
+- **Code review:** Pull Request process
+- **Documentation:** Keep README updated
+
+---
+
+## 📚 Related Documents
+
+- [ARCHITECTURE.md](./ARCHITECTURE.md) - System architecture details
+- [CONTRIBUTING.md](./CONTRIBUTING.md) - Contribution guidelines
+- [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) - API specs
+- [SECURITY.md](./SECURITY.md) - Security guidelines
+
+---
+
+**Last Updated:** May 27, 2026  
+**Status:** 🟡 In Planning  
+**Next Step:** Phase 1 - Project Initialization
