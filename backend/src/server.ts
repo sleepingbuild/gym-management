@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import helmet from "helmet";
 import { errorMiddleware } from "./middlewares/error.middleware";
 import { logger } from "./config/logger";
+import { prisma } from "./config/prisma";
 
 dotenv.config();
 
@@ -14,14 +15,22 @@ app.use(cors());
 app.use(express.json());
 app.use(helmet());
 
-app.get("/api/health", (_req, res) => {
-  res.status(200).json({
-    success: true,
-    message: "Backend is running",
-    timestamp: new Date().toISOString(),
-  });
-});
+app.get("/api/health", async (req, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
 
+    res.json({
+      success: true,
+      message: "Backend is running",
+      database: "connected",
+    });
+  } catch {
+    res.status(500).json({
+      success: false,
+      database: "disconnected",
+    });
+  }
+});
 const PORT = process.env.PORT || 5000;
 
 app.use(errorMiddleware);
