@@ -1,6 +1,8 @@
+
 {
   "project": "Gym Management System",
   "repository": "https://github.com/sleepingbuild/gym-management",
+  "roles": ["ADMIN", "PT", "MEMBER"],
   "phases": [
     {
       "phase": "PHASE 1 - PROJECT INITIALIZATION",
@@ -101,7 +103,7 @@
             "tables": {
               "Users": ["id", "fullName", "email", "password", "avatar", "phone", "role"]
             },
-            "roles": ["ADMIN", "STAFF", "MEMBER", "PT"]
+            "roles": ["ADMIN", "PT", "MEMBER"]
           }
         },
         {
@@ -151,7 +153,7 @@
           "description": {
             "tasks": [
               "JWT middleware (authenticate)",
-              "Role authorization (authorize)",
+              "Role authorization (authorize) for ADMIN, PT, MEMBER",
               "Error handling middleware (Zod + AppError)"
             ]
           }
@@ -164,11 +166,11 @@
           "status": "pending",
           "description": {
             "packages": {
-              "Basic": "10 AI messages/day",
-              "Premium": "100 AI messages/day",
+              "Basic": "10 AI messages/month (1/day)",
+              "Premium": "100 AI messages/month (10/day)",
               "Elite": "Unlimited AI usage"
             },
-            "tables": ["MembershipPackages", "UserMemberships"]
+            "tables": ["MembershipPlan", "UserMembership"]
           }
         }
       ]
@@ -199,7 +201,7 @@
         },
         {
           "issue_number": 12,
-          "title": "[AI] Tich hop OpenAI/Gemini API",
+          "title": "[AI] Tich hop Gemini/Claude API",
           "labels": ["ai", "backend"],
           "priority": "Critical",
           "status": "pending",
@@ -207,7 +209,8 @@
             "features": [
               "Workout recommendation",
               "Nutrition recommendation",
-              "Gym assistant chatbot"
+              "Gym assistant chatbot",
+              "Calorie calculation"
             ]
           }
         },
@@ -225,7 +228,7 @@
       "issues": [
         {
           "issue_number": 14,
-          "title": "[Frontend] Setup ReactJS/NextJS Frontend",
+          "title": "[Frontend] Setup NextJS Frontend",
           "labels": ["frontend", "high priority"],
           "status": "pending"
         },
@@ -237,13 +240,13 @@
         },
         {
           "issue_number": 16,
-          "title": "[Frontend] Dashboard Overview UI",
+          "title": "[Frontend] Dashboard Overview UI (Admin, PT, Member)",
           "labels": ["frontend", "ui/ux"],
           "status": "pending"
         },
         {
           "issue_number": 17,
-          "title": "[Frontend] User Management Table",
+          "title": "[Frontend] User Management Table (Admin)",
           "labels": ["frontend"],
           "status": "pending"
         }
@@ -320,6 +323,7 @@
     "Khong duplicate components",
     "Tat ca APIs phai co validation",
     "Tat ca features phai co error handling",
+    "Roles: ADMIN, PT, MEMBER (khong co STAFF)",
     "Tat ca AI agents va code assistants phai doc ky project structure, schema, services, middleware, routing va coding conventions truoc khi code de tranh code bi loan hoac conflict logic"
   ]
 }
