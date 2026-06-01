@@ -32,6 +32,8 @@ npm run dev
 cd frontend && cp .env.example .env
 npm install
 npm run dev
+
+```
 ✨ Features
 For Members
 ✅ User authentication (JWT)
