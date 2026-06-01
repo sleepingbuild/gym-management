@@ -1031,20 +1031,19 @@ Security
 🎯 FINAL CHECKLIST
 Before committing code:
 
-Read ROADMAP.md & ARCHITECTURE.md
+- [ ] Read ROADMAP.md & ARCHITECTURE.md
+- [ ] Follow folder structure exactly
+- [ ] No `any` types in TypeScript
+- [ ] All secrets in .env
+- [ ] Service → Controller flow
+- [ ] Standardized API response
+- [ ] Error handling with proper codes
+- [ ] Swagger/API docs updated
+- [ ] Unit tests written (if critical path)
+- [ ] No duplicate code
+- [ ] Run linter & formatter
 
-Follow folder structure exactly
+---
 
-No any types in TypeScript
-
-All secrets in .env
-
-Service → Controller flow
-
-Standardized API response
-
-Error handling with proper codes
-
-No duplicate code
-
-Run linter & formatter
+**Last Updated:** May 28, 2026  
+**Version:** 1.0

@@ -31,55 +31,40 @@ npm run dev
 # Frontend setup (new terminal)
 cd frontend && cp .env.example .env
 npm install
-npm run dev
-✨ Features
-For Members
-✅ User authentication (JWT)
+npm start
 
-✅ Membership packages (Basic, Premium, Elite)
+# Mobile setup (new terminal)
+cd mobile && cp .env.example .env
+npm install
+npx expo start
+```
 
-✅ AI fitness coach with personalized recommendations
+---
 
-✅ Book PT sessions online
+## ✨ Features
 
-✅ Workout planning and progress tracking (BMI, weight, body fat)
+### User Features
+- ✅ User authentication (JWT)
+- ✅ Membership packages (Basic, Premium, Elite)
+- ✅ AI fitness coach with personalized recommendations
+- ✅ Workout planning and progress tracking
+- ✅ Secure online payments (VNPay, MoMo, Stripe)
+- ✅ Push notifications
+- ✅ Mobile app (React Native)
 
-✅ Secure online payments (VNPay, MoMo)
+### Admin Features
+- ✅ User management dashboard
+- ✅ Revenue analytics
+- ✅ Membership control
+- ✅ AI usage analytics
+- ✅ System monitoring
 
-✅ QR Code check-in
-
-✅ Real-time notifications
-
-For PT (Personal Trainers)
-✅ Manage assigned students
-
-✅ Create workout schedules for students
-
-✅ Track student progress
-
-✅ Update nutrition plans
-
-For Admin
-✅ User management (Members & PTs)
-
-✅ Revenue analytics
-
-✅ Membership control
-
-✅ AI usage analytics
-
-✅ System monitoring
-
-AI Capabilities
-🎯 Workout recommendations
-
-💪 Muscle gain guidance
-
-🔥 Weight loss plans
-
-🥗 Nutrition advice
-
-📚 Exercise form explanation
+### AI Capabilities
+- 🎯 Workout recommendations
+- 💪 Muscle gain guidance
+- 🔥 Weight loss plans
+- 🥗 Nutrition advice
+- 📚 Exercise form explanation
 
 📊 Calorie calculation
 
@@ -298,13 +283,21 @@ Avoid
 
 ❌ Committing .env files
 
-📄 License
-MIT License
+---
 
-- [ARCHITECTURE.md](./ARCHITECTURE.md) - System architecture details
-- [README.md](./README.md) - Project overview
-- [PROJECT_STATUS.md](./PROJECT_STATUS.md) - Current progress tracking
+## 📞 Support
+
+- 📖 [Documentation](./docs)
+- 🔍 [Issues](https://github.com/sleepingbuild/gym-management/issues)
+- 💬 [Discussions](https://github.com/sleepingbuild/gym-management/discussions)
+- 📋 [Project Board](https://github.com/sleepingbuild/gym-management/projects)
 
 ---
 
-**Last Updated:** 01/06/2026  
+## 📄 License
+
+MIT License - see [LICENSE](./LICENSE) file
+
+---
+
+
