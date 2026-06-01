@@ -1,4 +1,6 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response, NextFunction } from 'express';
+import { ZodError } from 'zod';
+import { AppError } from '../utils/errors';
 
 export const errorMiddleware = (
   err: Error,
@@ -6,10 +8,30 @@ export const errorMiddleware = (
   res: Response,
   next: NextFunction,
 ) => {
-  void next;
+  if (err instanceof ZodError) {
+    return res.status(400).json({
+      success: false,
+      statusCode: 400,
+      message: 'Validation error',
+      errors: err.issues.map((e) => ({
+        field: e.path.join('.'),
+        message: e.message,
+      })),
+    });
+  }
 
-  res.status(500).json({
+  if (err instanceof AppError) {
+    return res.status(err.statusCode).json({
+      success: false,
+      statusCode: err.statusCode,
+      message: err.message,
+    });
+  }
+
+  console.error('[ERROR]', err);
+  return res.status(500).json({
     success: false,
-    message: err.message || "Internal Server Error",
+    statusCode: 500,
+    message: 'Internal server error',
   });
 };

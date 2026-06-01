@@ -31,318 +31,280 @@ npm run dev
 # Frontend setup (new terminal)
 cd frontend && cp .env.example .env
 npm install
-npm start
+npm run dev
+✨ Features
+For Members
+✅ User authentication (JWT)
 
-# Mobile setup (new terminal)
-cd mobile && cp .env.example .env
-npm install
-npx expo start
-```
+✅ Membership packages (Basic, Premium, Elite)
 
----
+✅ AI fitness coach with personalized recommendations
 
-## ✨ Features
+✅ Book PT sessions online
 
-### User Features
-- ✅ User authentication (JWT)
-- ✅ Membership packages (Basic, Premium, Elite)
-- ✅ AI fitness coach with personalized recommendations
-- ✅ Workout planning and progress tracking
-- ✅ Secure online payments (VNPay, MoMo, Stripe)
-- ✅ Push notifications
-- ✅ Mobile app (React Native)
+✅ Workout planning and progress tracking (BMI, weight, body fat)
 
-### Admin Features
-- ✅ User management dashboard
-- ✅ Revenue analytics
-- ✅ Membership control
-- ✅ AI usage analytics
-- ✅ System monitoring
+✅ Secure online payments (VNPay, MoMo)
 
-### AI Capabilities
-- 🎯 Workout recommendations
-- 💪 Muscle gain guidance
-- 🔥 Weight loss plans
-- 🥗 Nutrition advice
-- 📚 Exercise form explanation
+✅ QR Code check-in
 
----
+✅ Real-time notifications
 
-## 🛠️ Tech Stack
+For PT (Personal Trainers)
+✅ Manage assigned students
 
-| Component | Technology | Version |
-|-----------|-----------|---------|
-| Backend | Node.js + Express/NestJS | 18+ / Latest |
-| Frontend | React / Next.js | 18+ |
-| Mobile | React Native + Expo | 0.73+ |
-| Database | PostgreSQL | 14+ |
-| ORM | Prisma | 5+ |
-| Auth | JWT | Standard |
-| AI | OpenAI / Gemini | Latest API |
-| Styling | TailwindCSS | 3+ |
-| Language | TypeScript | 5+ |
+✅ Create workout schedules for students
 
----
+✅ Track student progress
 
-## 📁 Project Structure
+✅ Update nutrition plans
 
-```
+For Admin
+✅ User management (Members & PTs)
+
+✅ Revenue analytics
+
+✅ Membership control
+
+✅ AI usage analytics
+
+✅ System monitoring
+
+AI Capabilities
+🎯 Workout recommendations
+
+💪 Muscle gain guidance
+
+🔥 Weight loss plans
+
+🥗 Nutrition advice
+
+📚 Exercise form explanation
+
+📊 Calorie calculation
+
+🛠️ Tech Stack
+Component	Technology	Version
+Backend	Node.js + Express	18+
+Frontend	Next.js + TailwindCSS	14+
+Database	PostgreSQL	14+
+ORM	Prisma	6+
+Auth	JWT	Standard
+AI	Gemini / Claude API	Latest
+Payment	VNPay, MoMo	-
+Styling	TailwindCSS + shadcn/ui	3+
+Language	TypeScript	5+
+📁 Project Structure
+text
 gym-management/
-├── backend/                 # Node.js + Express/NestJS API
+├── backend/                 # Node.js + Express API
 │   ├── src/
+│   │   ├── config/          # JWT, logger, prisma config
 │   │   ├── controllers/     # API endpoints
 │   │   ├── services/        # Business logic
 │   │   ├── routes/          # Route definitions
 │   │   ├── middlewares/     # Auth, validation, error handling
-│   │   └── prisma/          # Database schema & migrations
+│   │   ├── types/           # TypeScript interfaces
+│   │   ├── utils/           # Helpers, token utils
+│   │   └── validators/      # Zod schemas
+│   ├── prisma/              # Database schema & migrations
 │   └── README.md
-├── frontend/                # React/Next.js admin dashboard
+├── frontend/                # Next.js admin dashboard
 │   ├── src/
+│   │   ├── app/             # Next.js App Router
 │   │   ├── components/      # Reusable components
-│   │   ├── pages/           # Page components
 │   │   ├── services/        # API services
 │   │   └── hooks/           # Custom hooks
 │   └── README.md
-├── mobile/                  # React Native mobile app
-│   ├── src/
-│   │   ├── screens/         # Screen components
-│   │   ├── components/      # Shared components
-│   │   ├── navigation/      # Navigation setup
-│   │   └── services/        # API services
-│   └── README.md
-├── docs/                    # Documentation
-│   ├── API.md               # API endpoints
-│   ├── ARCHITECTURE.md      # Architecture design
-│   ├── DATABASE.md          # Database schema
-│   └── SECURITY.md          # Security guidelines
-├── ROADMAP.md               # 10-phase development roadmap
-├── CONTRIBUTING.md          # Contributing guidelines
+├── ROADMAP.md               # Development roadmap
+├── ARCHITECTURE.md          # Architecture design
+├── PROJECT_STATUS.md        # Current progress
 └── README.md                # This file
-```
+👥 User Roles
+Role	Permissions
+Admin	Full system access: manage users, PTs, memberships, payments, settings
+PT	View assigned students, manage schedules, track progress
+Member	Register memberships, book PT sessions, AI chat, track progress, QR check-in
+🚀 Development Roadmap
+Phase	Milestone	Status
+1	Project Initialization	✅ Completed
+2	Authentication & Database	🔄 In Progress
+3	Membership & AI Core	⏳ Pending
+4	Frontend Admin Dashboard	⏳ Pending
+5	Payment & Notification	⏳ Pending
+6	Testing & Deployment	⏳ Pending
+Chi tiết: Xem ROADMAP.md
 
----
+📚 API Overview
+Authentication
+text
+POST   /api/auth/register       - Register user
+POST   /api/auth/login          - Login user
+POST   /api/auth/refresh        - Refresh token
+POST   /api/auth/logout         - Logout
+Membership
+text
+GET    /api/memberships/plans   - Get all packages
+POST   /api/memberships/buy     - Purchase/Upgrade package
+GET    /api/memberships/current - Get current membership
+PT Management
+text
+GET    /api/pts                 - Get all PTs
+GET    /api/pts/:id             - Get PT details
+POST   /api/pts/assign          - Assign PT to member (Admin)
+GET    /api/pts/my-students     - Get PT's students
+Schedule
+text
+GET    /api/schedules           - Get schedules
+POST   /api/schedules           - Create schedule
+DELETE /api/schedules/:id       - Cancel schedule
+AI Chat
+text
+POST   /api/ai/chat             - Send message to AI
+GET    /api/ai/history          - Get chat history
+GET    /api/ai/usage            - Get AI usage count
+Payment
+text
+POST   /api/payments/create     - Create payment
+GET    /api/payments/history    - Payment history
+POST   /api/payments/webhook    - Payment callback
+Attendance (QR Check-in)
+text
+GET    /api/attendance/qr       - Generate QR code
+POST   /api/attendance/checkin  - Check-in
+GET    /api/attendance/history  - Check-in history
+Progress Tracking
+text
+GET    /api/progress            - Get progress data
+POST   /api/progress            - Update progress
+GET    /api/progress/chart      - Get progress chart
+Admin
+text
+GET    /api/admin/stats         - System statistics
+GET    /api/admin/revenue       - Revenue analytics
+GET    /api/admin/ai-usage      - AI usage analytics
+🔧 Environment Variables
+Backend (.env)
 
-## 🚀 Development Roadmap
-
-Toàn bộ quá trình phát triển được tổ chức tinh gọn thành **7 Milestones (Phases) với 30 Issues cụ thể**:
-
-| Phase | Milestone Title | Linked Issues | Duration | Status |
-|-------|-----------------|---------------|----------|--------|
-| 1 | Project Initialization | #1 - #3 | 2-3 days | 🔴 Planned |
-| 2 | Authentication & Database | #4 - #8 | 4-5 days | 🔴 Planned |
-| 3 | Membership & AI Core | #9 - #13 | 3-4 days | 🔴 Planned |
-| 4 | Frontend Admin Dashboard | #14 - #17 | 5-6 days | 🔴 Planned |
-| 5 | Mobile Application | #18 - #21 | 7-10 days| 🔴 Planned |
-| 6 | Payment & Notification System | #22 - #24 | 4-5 days | 🔴 Planned |
-| 7 | Testing & Deployment | #25 - #30 | 4-5 days | 🔴 Planned |
-
-**Chi tiết kỹ thuật từng task:** Xem tại [ROADMAP.md](./ROADMAP.md) hoặc mục **Milestones** trên GitHub.
-
----
-
-
-## 👥 Team Roles
-
-### Backend Developer (Member 1)
-- Database design & migrations
-- API development & optimization
-- Authentication system
-- AI integration
-- Payment processing
-- Backend testing
-
-### Frontend/Mobile Developer (Member 2)
-- Admin dashboard
-- Mobile app (React Native)
-- UI/UX implementation
-- Component development
-- Frontend testing
-
-### Shared Tasks
-- Code reviews
-- Testing & QA
-- Deployment
-- Documentation
-
----
-
-## 📚 API Overview
-
-### Authentication
-```
-POST   /api/auth/register              - Register user
-POST   /api/auth/login                 - Login user
-POST   /api/auth/refresh               - Refresh token
-POST   /api/auth/forgot-password       - Request password reset
-POST   /api/auth/reset-password        - Reset password
-```
-
-### Membership
-```
-GET    /api/packages                   - Get all packages
-POST   /api/packages/buy               - Purchase package
-POST   /api/packages/upgrade           - Upgrade package
-GET    /api/packages/current           - Get current membership
-```
-
-### AI Chat
-```
-POST   /api/ai/chat                    - Send message to AI
-GET    /api/ai/history                 - Get chat history
-```
-
-### Payment
-```
-POST   /api/payments/create            - Create payment
-POST   /api/payments/callback          - Payment callback
-GET    /api/payments/history           - Payment history
-```
-
-### Admin
-```
-GET    /api/admin/users                - List users
-GET    /api/admin/stats                - System statistics
-GET    /api/admin/analytics            - Analytics data
-```
-
-**Full API docs:** [docs/API.md](./docs/API.md)
-
----
-
-## 🔧 Environment Variables
-
-**Backend (.env)**
-```env
+env
 NODE_ENV=development
-PORT=3000
+PORT=5000
 DATABASE_URL=postgresql://user:password@localhost:5432/gym_management
 JWT_SECRET=your_secret_key
-OPENAI_API_KEY=sk-...
+JWT_ACCESS_EXPIRY=15m
+JWT_REFRESH_EXPIRY=7d
+GEMINI_API_KEY=your_gemini_key
 VNPAY_CODE=your_code
-SENTRY_DSN=your_dsn
-```
+Frontend (.env.local)
 
-**Frontend (.env)**
-```env
-REACT_APP_API_URL=http://localhost:3000/api
-```
+env
+NEXT_PUBLIC_API_URL=http://localhost:5000
+💳 Membership Plans
+Plan	Price	Duration	AI Messages	Daily Limit
+Basic	Free	30 days	10/month	1/day
+Premium	$9.99/mo	30 days	100/month	10/day
+Elite	$29.99/mo	30 days	Unlimited	Unlimited
+🔒 Security
+✅ JWT token authentication
 
-**Mobile (.env)**
-```env
-API_BASE_URL=http://localhost:3000/api
-```
+✅ Password hashing with bcrypt
 
----
+✅ Input validation & sanitization (Zod)
 
-## 💳 Membership Plans
+✅ CORS configuration
 
-| Plan | Price | Duration | AI Messages | Features |
-|------|-------|----------|------------|----------|
-| **Basic** | Free | 30 days | 10/day | Core features |
-| **Premium** | $9.99/mo | 30 days | 100/day | Advanced features |
-| **Elite** | $29.99/mo | 30 days | Unlimited | All features |
+✅ Rate limiting
 
----
+✅ HTTPS in production
 
-## 🔒 Security
+✅ Environment variables for secrets
 
-- ✅ JWT token authentication
-- ✅ Password hashing with bcrypt
-- ✅ Input validation & sanitization
-- ✅ CORS configuration
-- ✅ Rate limiting
-- ✅ HTTPS in production
-- ✅ Environment variables for secrets
+✅ Role-based access control (Admin, PT, Member)
 
-**Security guide:** [docs/SECURITY.md](./docs/SECURITY.md)
+🤖 AI Features
+Supported Provider
+Gemini API (Google) - Recommended (free tier available)
 
----
+Alternative: Claude API (Anthropic)
 
-## 🤖 AI Features
+Capabilities
+Personalized workout recommendations
 
-### Supported Providers
-- OpenAI GPT-4 (Recommended)
-- Google Gemini (Alternative)
+Muscle gain (bulking) guidance
 
-### Capabilities
-- Personalized workout recommendations
-- Muscle gain (bulking) guidance
-- Weight loss (cutting) programs
-- Nutrition and diet planning
-- Exercise form explanation
-- Fitness Q&A support
+Weight loss (cutting) programs
 
----
+Nutrition and diet planning
 
-## 📦 Deployment
+Exercise form explanation
 
-### Hosting Platforms
-- **Backend:** Railway / Render / VPS
-- **Frontend:** Vercel
-- **Database:** PostgreSQL Cloud
-- **Mobile:** App Store / Google Play
+Calorie calculation
 
-**Deployment guide:** [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md)
+Fitness Q&A support
 
----
+📦 Deployment
+Hosting Platforms
+Backend: Railway / Render / VPS
 
-## 🤝 Contributing
+Frontend: Vercel
 
-1. Create feature branch: `git checkout -b feature/your-feature`
-2. Commit changes: `git commit -m '[type] description'`
-3. Push branch: `git push origin feature/your-feature`
-4. Create Pull Request
+Database: PostgreSQL Cloud (Supabase/Railway)
 
-**Guidelines:** [CONTRIBUTING.md](./CONTRIBUTING.md)
+🤝 Contributing
+Create feature branch: git checkout -b feature/your-feature
 
-### Commit Format
-```
+Commit changes: git commit -m '[type] description'
+
+Push branch: git push origin feature/your-feature
+
+Create Pull Request
+
+Commit Format
+text
 [feat] Add new feature
 [fix] Fix bug
 [docs] Update documentation
 [test] Add tests
 [style] Format code
-```
+🚨 Important Rules
+Before Coding
+✅ Read project structure & architecture
+
+✅ Review database schema
+
+✅ Check existing implementations
+
+✅ Follow established patterns
+
+Code Standards
+✅ Use TypeScript (no any types)
+
+✅ Follow ESLint + Prettier
+
+✅ Write meaningful comments
+
+✅ Handle all error cases
+
+✅ Validate all inputs
+
+Avoid
+❌ Hardcoding URLs/credentials
+
+❌ Duplicate code/components
+
+❌ Business logic in frontend
+
+❌ Unvalidated user input
+
+❌ Committing .env files
+
+📄 License
+MIT License
+
+- [ARCHITECTURE.md](./ARCHITECTURE.md) - System architecture details
+- [README.md](./README.md) - Project overview
+- [PROJECT_STATUS.md](./PROJECT_STATUS.md) - Current progress tracking
 
 ---
 
-## 🚨 Important Rules
-
-### Before Coding
-- ✅ Read project structure & architecture
-- ✅ Review database schema
-- ✅ Check existing implementations
-- ✅ Follow established patterns
-
-### Code Standards
-- ✅ Use TypeScript (no `any` types)
-- ✅ Follow ESLint + Prettier
-- ✅ Write meaningful comments
-- ✅ Handle all error cases
-- ✅ Validate all inputs
-
-### Avoid
-- ❌ Hardcoding URLs/credentials
-- ❌ Duplicate code/components
-- ❌ Business logic in frontend
-- ❌ Unvalidated user input
-- ❌ Committing .env files
-
----
-
-## 📞 Support
-
-- 📖 [Documentation](./docs)
-- 🔍 [Issues](https://github.com/sleepingbuild/gym-management/issues)
-- 💬 [Discussions](https://github.com/sleepingbuild/gym-management/discussions)
-- 📋 [Project Board](https://github.com/sleepingbuild/gym-management/projects)
-
----
-
-## 📄 License
-
-MIT License - see [LICENSE](./LICENSE) file
-
----
-
-
+**Last Updated:** 01/06/2026  

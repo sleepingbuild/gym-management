@@ -5,6 +5,7 @@ import helmet from "helmet";
 import { errorMiddleware } from "./middlewares/error.middleware";
 import { logger } from "./config/logger";
 import { prisma } from "./config/prisma";
+import routes from './routes';
 
 dotenv.config();
 
@@ -14,6 +15,7 @@ app.use(logger);
 app.use(cors());
 app.use(express.json());
 app.use(helmet());
+app.use(express.json());
 
 app.get("/api/health", async (req, res) => {
   try {
@@ -38,3 +40,6 @@ app.use(errorMiddleware);
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+app.use('/api', routes);
+app.use(errorMiddleware); 
