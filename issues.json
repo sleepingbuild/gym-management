@@ -1,344 +1,325 @@
 {
-"project": "Gym Management System",
-"repository": "https://github.com/sleepingbuild/gym-management",
-"phases": [
-{
-"phase": "PHASE 1 - PROJECT INITIALIZATION",
-"issues": [
-{
-"issue_number": 1,
-"title": "[Setup] Khoi tao repository structure va workflow",
-"labels": ["high priority"],
-"priority": "Critical",
-"description": {
-"objective": "Khoi tao repository structure chuyen nghiep cho du an Gym Management System.",
-"tasks": [
-"Setup branch strategy",
-"Setup README.md",
-"Setup issue templates",
-"Setup pull request templates",
-"Setup coding conventions",
-"Setup folder architecture"
-],
-"checklist": [
-"Tao branch develop",
-"Tao README",
-"Setup .gitignore",
-"Setup PR template"
-],
-"important_rules": [
-"Khong push truc tiep vao main",
-"Tat ca feature phai thong qua pull request",
-"Tat ca AI agents phai doc ky repository structure truoc khi code"
-]
-}
-},
-{
-"issue_number": 2,
-"title": "[Backend] Setup NodeJS + TypeScript Backend",
-"labels": ["backend", "high priority"],
-"priority": "Critical",
-"description": {
-"objective": "Khoi tao backend cho he thong.",
-"tech_stack": [
-"NodeJS",
-"ExpressJS",
-"TypeScript"
-],
-"tasks": [
-"Setup TypeScript",
-"Setup dotenv",
-"Setup eslint",
-"Setup prettier",
-"Setup nodemon",
-"Setup logger",
-"Setup global error handling"
-],
-"folder_structure": [
-"controllers",
-"routes",
-"services",
-"middlewares",
-"validators",
-"utils",
-"config"
-],
-"important_rules": [
-"Tat ca AI agents phai doc ky architecture backend truoc khi tao service moi"
-]
-}
-},
-{
-"issue_number": 3,
-"title": "[Database] Setup PostgreSQL va Prisma ORM",
-"labels": ["database", "backend"],
-"priority": "Critical",
-"description": {
-"objective": "Setup database system.",
-"tasks": [
-"Setup PostgreSQL",
-"Setup Prisma ORM",
-"Setup migration",
-"Setup seed system"
-],
-"important_rules": [
-"Khong duoc sua database truc tiep",
-"Tat ca thay doi schema phai thong qua migration"
-]
-}
-}
-]
-},
-{
-"phase": "PHASE 2 - AUTHENTICATION & DATABASE",
-"issues": [
-{
-"issue_number": 4,
-"title": "[Database] Thiet ke Users schema va Roles",
-"labels": ["database", "backend"],
-"priority": "High",
-"description": {
-"tables": {
-"Users": [
-"id",
-"fullName",
-"email",
-"password",
-"avatar",
-"phone",
-"role"
-]
-},
-"roles": [
-"ADMIN",
-"STAFF",
-"MEMBER",
-"PT"
-]
-}
-},
-{
-"issue_number": 5,
-"title": "[Auth] Xay dung Register API",
-"labels": ["backend", "auth", "security"],
-"priority": "Critical",
-"description": {
-"api": "POST /api/auth/register",
-"validation": [
-"Email hop le",
-"Password >= 8 ky tu",
-"Khong duplicate email"
-],
-"tasks": [
-"Hash password",
-"Generate JWT",
-"Save user vao database"
-],
-"important_rules": [
-"Khong luu password dang plain text"
-]
-}
-},
-{
-"issue_number": 6,
-"title": "[Auth] Xay dung Login API",
-"labels": ["backend", "auth"],
-"priority": "Critical",
-"description": {
-"api": "POST /api/auth/login",
-"tasks": [
-"Verify password",
-"Generate access token",
-"Generate refresh token"
-]
-}
-},
-{
-"issue_number": 7,
-"title": "[Auth] Middleware Authentication va Authorization",
-"labels": ["backend", "auth", "security"],
-"priority": "High",
-"description": {
-"tasks": [
-"JWT middleware",
-"Role authorization",
-"Error handling middleware"
-]
-}
-},
-{
-"issue_number": 8,
-"title": "[Database] Thiet ke Membership System",
-"labels": ["database", "backend"],
-"priority": "Critical",
-"description": {
-"packages": {
-"Basic": "10 AI messages/day",
-"Premium": "100 AI messages/day",
-"Elite": "Unlimited AI usage"
-},
-"tables": [
-"MembershipPackages",
-"UserMemberships"
-]
-}
-}
-]
-},
-{
-"phase": "PHASE 3 - MEMBERSHIP & AI",
-"issues": [
-{
-"issue_number": 9,
-"title": "[Membership] API lay danh sach packages",
-"labels": ["backend"],
-"priority": "Medium"
-},
-{
-"issue_number": 10,
-"title": "[Membership] API mua goi thanh vien",
-"labels": ["backend", "enhancement"],
-"priority": "High"
-},
-{
-"issue_number": 11,
-"title": "[AI] Thiet ke bang AI Chat History",
-"labels": ["database", "ai"],
-"priority": "High"
-},
-{
-"issue_number": 12,
-"title": "[AI] Tich hop OpenAI/Gemini API",
-"labels": ["ai", "backend"],
-"priority": "Critical",
-"description": {
-"features": [
-"Workout recommendation",
-"Nutrition recommendation",
-"Gym assistant chatbot"
-]
-}
-},
-{
-"issue_number": 13,
-"title": "[AI] Gioi han AI usage theo membership",
-"labels": ["ai", "backend"],
-"priority": "Critical"
-}
-]
-},
-{
-"phase": "PHASE 4 - FRONTEND DASHBOARD",
-"issues": [
-{
-"issue_number": 14,
-"title": "[Frontend] Setup ReactJS/NextJS Frontend",
-"labels": ["frontend", "high priority"]
-},
-{
-"issue_number": 15,
-"title": "[Frontend] Thiet ke Login Page",
-"labels": ["frontend", "ui/ux"]
-},
-{
-"issue_number": 16,
-"title": "[Frontend] Dashboard Overview UI",
-"labels": ["frontend", "ui/ux"]
-},
-{
-"issue_number": 17,
-"title": "[Frontend] User Management Table",
-"labels": ["frontend"]
-}
-]
-},
-{
-"phase": "PHASE 5 - MOBILE APPLICATION",
-"issues": [
-{
-"issue_number": 18,
-"title": "[Mobile] Setup React Native Project",
-"labels": ["mobile", "high priority"]
-},
-{
-"issue_number": 19,
-"title": "[Mobile] Login/Register Screens",
-"labels": ["mobile", "auth"]
-},
-{
-"issue_number": 20,
-"title": "[Mobile] Home va Workout Screens",
-"labels": ["mobile"]
-},
-{
-"issue_number": 21,
-"title": "[Mobile] AI Chat Screen",
-"labels": ["mobile", "ai", "ui/ux"]
-}
-]
-},
-{
-"phase": "PHASE 6 - PAYMENT & NOTIFICATION",
-"issues": [
-{
-"issue_number": 22,
-"title": "[Payment] Thiet ke bang Payments",
-"labels": ["database", "backend"]
-},
-{
-"issue_number": 23,
-"title": "[Payment] Tich hop VNPay/MoMo",
-"labels": ["backend", "enhancement"]
-},
-{
-"issue_number": 24,
-"title": "[Notification] Xay dung Notification System",
-"labels": ["backend", "mobile"]
-}
-]
-},
-{
-"phase": "PHASE 7 - TESTING & DEPLOYMENT",
-"issues": [
-{
-"issue_number": 25,
-"title": "[Feature] Theo doi tien trinh co the",
-"labels": ["frontend", "mobile"]
-},
-{
-"issue_number": 26,
-"title": "[Testing] API va Security Testing",
-"labels": ["testing", "backend"]
-},
-{
-"issue_number": 27,
-"title": "[Optimization] Optimize Database va API",
-"labels": ["backend"]
-},
-{
-"issue_number": 28,
-"title": "[Deployment] Deploy Backend va Database",
-"labels": ["deployment", "backend"]
-},
-{
-"issue_number": 29,
-"title": "[Deployment] Deploy Frontend Web",
-"labels": ["deployment", "frontend"]
-},
-{
-"issue_number": 30,
-"title": "[Deployment] Build Production Mobile App",
-"labels": ["deployment", "mobile"]
-}
-]
-}
-],
-"global_rules": [
-"Khong hardcode API URLs",
-"Khong duplicate business logic",
-"Khong duplicate components",
-"Tat ca APIs phai co validation",
-"Tat ca features phai co error handling",
-"Tat ca AI agents va code assistants phai doc ky project structure, schema, services, middleware, routing va coding conventions truoc khi code de tranh code bi loan hoac conflict logic"
-]
+  "project": "Gym Management System",
+  "repository": "https://github.com/sleepingbuild/gym-management",
+  "phases": [
+    {
+      "phase": "PHASE 1 - PROJECT INITIALIZATION",
+      "issues": [
+        {
+          "issue_number": 1,
+          "title": "[Setup] Khoi tao repository structure va workflow",
+          "labels": ["high priority"],
+          "priority": "Critical",
+          "status": "completed",
+          "description": {
+            "objective": "Khoi tao repository structure chuyen nghiep cho du an Gym Management System.",
+            "tasks": [
+              "Setup branch strategy",
+              "Setup README.md",
+              "Setup issue templates",
+              "Setup pull request templates",
+              "Setup coding conventions",
+              "Setup folder architecture"
+            ],
+            "checklist": [
+              "Tao branch develop",
+              "Tao README",
+              "Setup .gitignore",
+              "Setup PR template"
+            ],
+            "important_rules": [
+              "Khong push truc tiep vao main",
+              "Tat ca feature phai thong qua pull request",
+              "Tat ca AI agents phai doc ky repository structure truoc khi code"
+            ]
+          }
+        },
+        {
+          "issue_number": 2,
+          "title": "[Backend] Setup NodeJS + TypeScript Backend",
+          "labels": ["backend", "high priority"],
+          "priority": "Critical",
+          "status": "completed",
+          "description": {
+            "objective": "Khoi tao backend cho he thong.",
+            "tech_stack": ["NodeJS", "ExpressJS", "TypeScript"],
+            "tasks": [
+              "Setup TypeScript",
+              "Setup dotenv",
+              "Setup eslint",
+              "Setup prettier",
+              "Setup nodemon",
+              "Setup logger",
+              "Setup global error handling"
+            ],
+            "folder_structure": [
+              "controllers",
+              "routes",
+              "services",
+              "middlewares",
+              "validators",
+              "utils",
+              "config"
+            ],
+            "important_rules": [
+              "Tat ca AI agents phai doc ky architecture backend truoc khi tao service moi"
+            ]
+          }
+        },
+        {
+          "issue_number": 3,
+          "title": "[Database] Setup PostgreSQL va Prisma ORM",
+          "labels": ["database", "backend"],
+          "priority": "Critical",
+          "status": "completed",
+          "description": {
+            "objective": "Setup database system.",
+            "tasks": [
+              "Setup PostgreSQL",
+              "Setup Prisma ORM",
+              "Setup migration",
+              "Setup seed system"
+            ],
+            "important_rules": [
+              "Khong duoc sua database truc tiep",
+              "Tat ca thay doi schema phai thong qua migration"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "phase": "PHASE 2 - AUTHENTICATION & DATABASE",
+      "issues": [
+        {
+          "issue_number": 4,
+          "title": "[Database] Thiet ke Users schema va Roles",
+          "labels": ["database", "backend"],
+          "priority": "High",
+          "status": "completed",
+          "description": {
+            "tables": {
+              "Users": ["id", "fullName", "email", "password", "avatar", "phone", "role"]
+            },
+            "roles": ["ADMIN", "STAFF", "MEMBER", "PT"]
+          }
+        },
+        {
+          "issue_number": 5,
+          "title": "[Auth] Xay dung Register API",
+          "labels": ["backend", "auth", "security"],
+          "priority": "Critical",
+          "status": "completed",
+          "description": {
+            "api": "POST /api/auth/register",
+            "validation": [
+              "Email hop le",
+              "Password >= 8 ky tu",
+              "Khong duplicate email"
+            ],
+            "tasks": [
+              "Hash password",
+              "Generate JWT",
+              "Save user vao database"
+            ],
+            "important_rules": [
+              "Khong luu password dang plain text"
+            ]
+          }
+        },
+        {
+          "issue_number": 6,
+          "title": "[Auth] Xay dung Login API",
+          "labels": ["backend", "auth"],
+          "priority": "Critical",
+          "status": "completed",
+          "description": {
+            "api": "POST /api/auth/login",
+            "tasks": [
+              "Verify password",
+              "Generate access token (15m)",
+              "Generate refresh token (7d)"
+            ]
+          }
+        },
+        {
+          "issue_number": 7,
+          "title": "[Auth] Middleware Authentication va Authorization",
+          "labels": ["backend", "auth", "security"],
+          "priority": "High",
+          "status": "completed",
+          "description": {
+            "tasks": [
+              "JWT middleware (authenticate)",
+              "Role authorization (authorize)",
+              "Error handling middleware (Zod + AppError)"
+            ]
+          }
+        },
+        {
+          "issue_number": 8,
+          "title": "[Database] Thiet ke Membership System",
+          "labels": ["database", "backend"],
+          "priority": "Critical",
+          "status": "pending",
+          "description": {
+            "packages": {
+              "Basic": "10 AI messages/day",
+              "Premium": "100 AI messages/day",
+              "Elite": "Unlimited AI usage"
+            },
+            "tables": ["MembershipPackages", "UserMemberships"]
+          }
+        }
+      ]
+    },
+    {
+      "phase": "PHASE 3 - MEMBERSHIP & AI",
+      "issues": [
+        {
+          "issue_number": 9,
+          "title": "[Membership] API lay danh sach packages",
+          "labels": ["backend"],
+          "priority": "Medium",
+          "status": "pending"
+        },
+        {
+          "issue_number": 10,
+          "title": "[Membership] API mua goi thanh vien",
+          "labels": ["backend", "enhancement"],
+          "priority": "High",
+          "status": "pending"
+        },
+        {
+          "issue_number": 11,
+          "title": "[AI] Thiet ke bang AI Chat History",
+          "labels": ["database", "ai"],
+          "priority": "High",
+          "status": "pending"
+        },
+        {
+          "issue_number": 12,
+          "title": "[AI] Tich hop OpenAI/Gemini API",
+          "labels": ["ai", "backend"],
+          "priority": "Critical",
+          "status": "pending",
+          "description": {
+            "features": [
+              "Workout recommendation",
+              "Nutrition recommendation",
+              "Gym assistant chatbot"
+            ]
+          }
+        },
+        {
+          "issue_number": 13,
+          "title": "[AI] Gioi han AI usage theo membership",
+          "labels": ["ai", "backend"],
+          "priority": "Critical",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "phase": "PHASE 4 - FRONTEND DASHBOARD",
+      "issues": [
+        {
+          "issue_number": 14,
+          "title": "[Frontend] Setup ReactJS/NextJS Frontend",
+          "labels": ["frontend", "high priority"],
+          "status": "pending"
+        },
+        {
+          "issue_number": 15,
+          "title": "[Frontend] Thiet ke Login Page",
+          "labels": ["frontend", "ui/ux"],
+          "status": "pending"
+        },
+        {
+          "issue_number": 16,
+          "title": "[Frontend] Dashboard Overview UI",
+          "labels": ["frontend", "ui/ux"],
+          "status": "pending"
+        },
+        {
+          "issue_number": 17,
+          "title": "[Frontend] User Management Table",
+          "labels": ["frontend"],
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "phase": "PHASE 5 - PAYMENT & NOTIFICATION",
+      "issues": [
+        {
+          "issue_number": 18,
+          "title": "[Payment] Thiet ke bang Payments",
+          "labels": ["database", "backend"],
+          "status": "pending"
+        },
+        {
+          "issue_number": 19,
+          "title": "[Payment] Tich hop VNPay/MoMo",
+          "labels": ["backend", "enhancement"],
+          "status": "pending"
+        },
+        {
+          "issue_number": 20,
+          "title": "[Notification] Xay dung Notification System",
+          "labels": ["backend"],
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "phase": "PHASE 6 - TESTING & DEPLOYMENT",
+      "issues": [
+        {
+          "issue_number": 21,
+          "title": "[Feature] Theo doi tien trinh co the",
+          "labels": ["frontend"],
+          "status": "pending"
+        },
+        {
+          "issue_number": 22,
+          "title": "[Testing] API va Security Testing",
+          "labels": ["testing", "backend"],
+          "status": "pending"
+        },
+        {
+          "issue_number": 23,
+          "title": "[Optimization] Optimize Database va API",
+          "labels": ["backend"],
+          "status": "pending"
+        },
+        {
+          "issue_number": 24,
+          "title": "[Deployment] Deploy Backend va Database",
+          "labels": ["deployment", "backend"],
+          "status": "pending"
+        },
+        {
+          "issue_number": 25,
+          "title": "[Deployment] Deploy Frontend Web",
+          "labels": ["deployment", "frontend"],
+          "status": "pending"
+        },
+        {
+          "issue_number": 26,
+          "title": "[Deployment] Final Production Release",
+          "labels": ["deployment"],
+          "status": "pending"
+        }
+      ]
+    }
+  ],
+  "global_rules": [
+    "Khong hardcode API URLs",
+    "Khong duplicate business logic",
+    "Khong duplicate components",
+    "Tat ca APIs phai co validation",
+    "Tat ca features phai co error handling",
+    "Tat ca AI agents va code assistants phai doc ky project structure, schema, services, middleware, routing va coding conventions truoc khi code de tranh code bi loan hoac conflict logic"
+  ]
 }
