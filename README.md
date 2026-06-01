@@ -32,11 +32,6 @@ npm run dev
 cd frontend && cp .env.example .env
 npm install
 npm start
-
-# Mobile setup (new terminal)
-cd mobile && cp .env.example .env
-npm install
-npx expo start
 ```
 
 ---
@@ -48,9 +43,7 @@ npx expo start
 - ✅ Membership packages (Basic, Premium, Elite)
 - ✅ AI fitness coach with personalized recommendations
 - ✅ Workout planning and progress tracking
-- ✅ Secure online payments (VNPay, MoMo, Stripe)
-- ✅ Push notifications
-- ✅ Mobile app (React Native)
+- ✅ Secure online payments (VNPay, MoMo)
 
 ### Admin Features
 - ✅ User management dashboard
@@ -72,11 +65,10 @@ npx expo start
 
 | Component | Technology | Version |
 |-----------|-----------|---------|
-| Backend | Node.js + Express/NestJS | 18+ / Latest |
+| Backend | Node.js + Express | 18+ |
 | Frontend | React / Next.js | 18+ |
-| Mobile | React Native + Expo | 0.73+ |
 | Database | PostgreSQL | 14+ |
-| ORM | Prisma | 5+ |
+| ORM | Prisma | 6+ |
 | Auth | JWT | Standard |
 | AI | OpenAI / Gemini | Latest API |
 | Styling | TailwindCSS | 3+ |
@@ -88,13 +80,17 @@ npx expo start
 
 ```
 gym-management/
-├── backend/                 # Node.js + Express/NestJS API
+├── backend/                 # Node.js + Express API
 │   ├── src/
+│   │   ├── config/          # JWT, logger, prisma config
 │   │   ├── controllers/     # API endpoints
 │   │   ├── services/        # Business logic
 │   │   ├── routes/          # Route definitions
 │   │   ├── middlewares/     # Auth, validation, error handling
-│   │   └── prisma/          # Database schema & migrations
+│   │   ├── types/           # TypeScript interfaces
+│   │   ├── utils/           # Helpers, token utils
+│   │   └── validators/      # Zod schemas
+│   ├── prisma/              # Database schema & migrations
 │   └── README.md
 ├── frontend/                # React/Next.js admin dashboard
 │   ├── src/
@@ -103,19 +99,12 @@ gym-management/
 │   │   ├── services/        # API services
 │   │   └── hooks/           # Custom hooks
 │   └── README.md
-├── mobile/                  # React Native mobile app
-│   ├── src/
-│   │   ├── screens/         # Screen components
-│   │   ├── components/      # Shared components
-│   │   ├── navigation/      # Navigation setup
-│   │   └── services/        # API services
-│   └── README.md
 ├── docs/                    # Documentation
 │   ├── API.md               # API endpoints
 │   ├── ARCHITECTURE.md      # Architecture design
 │   ├── DATABASE.md          # Database schema
 │   └── SECURITY.md          # Security guidelines
-├── ROADMAP.md               # 10-phase development roadmap
+├── ROADMAP.md               # Development roadmap
 ├── CONTRIBUTING.md          # Contributing guidelines
 └── README.md                # This file
 ```
@@ -124,22 +113,20 @@ gym-management/
 
 ## 🚀 Development Roadmap
 
-Toàn bộ quá trình phát triển được tổ chức tinh gọn thành **7 Milestones (Phases) với 30 Issues cụ thể**:
+Toàn bộ quá trình phát triển được tổ chức thành **6 Phases với 26 Issues**:
 
 | Phase | Milestone Title | Linked Issues | Duration | Status |
 |-------|-----------------|---------------|----------|--------|
-| 1 | Project Initialization | #1 - #3 | 2-3 days | 🔴 Planned |
-| 2 | Authentication & Database | #4 - #8 | 4-5 days | 🔴 Planned |
-| 3 | Membership & AI Core | #9 - #13 | 3-4 days | 🔴 Planned |
-| 4 | Frontend Admin Dashboard | #14 - #17 | 5-6 days | 🔴 Planned |
-| 5 | Mobile Application | #18 - #21 | 7-10 days| 🔴 Planned |
-| 6 | Payment & Notification System | #22 - #24 | 4-5 days | 🔴 Planned |
-| 7 | Testing & Deployment | #25 - #30 | 4-5 days | 🔴 Planned |
+| 1 | Project Initialization | #1 - #3 | 2-3 days | ✅ Completed |
+| 2 | Authentication & Database | #4 - #8 | 4-5 days | 🔄 In Progress |
+| 3 | Membership & AI Core | #9 - #13 | 3-4 days | ⏳ Pending |
+| 4 | Frontend Admin Dashboard | #14 - #17 | 5-6 days | ⏳ Pending |
+| 5 | Payment & Notification System | #18 - #20 | 4-5 days | ⏳ Pending |
+| 6 | Testing & Deployment | #21 - #26 | 4-5 days | ⏳ Pending |
 
-**Chi tiết kỹ thuật từng task:** Xem tại [ROADMAP.md](./ROADMAP.md) hoặc mục **Milestones** trên GitHub.
+**Chi tiết kỹ thuật từng task:** Xem tại [ROADMAP.md](./ROADMAP.md)
 
 ---
-
 
 ## 👥 Team Roles
 
@@ -151,9 +138,8 @@ Toàn bộ quá trình phát triển được tổ chức tinh gọn thành **7 
 - Payment processing
 - Backend testing
 
-### Frontend/Mobile Developer (Member 2)
-- Admin dashboard
-- Mobile app (React Native)
+### Frontend Developer (Member 2)
+- Admin dashboard (React/Next.js)
 - UI/UX implementation
 - Component development
 - Frontend testing
@@ -214,22 +200,18 @@ GET    /api/admin/analytics            - Analytics data
 **Backend (.env)**
 ```env
 NODE_ENV=development
-PORT=3000
+PORT=5000
 DATABASE_URL=postgresql://user:password@localhost:5432/gym_management
 JWT_SECRET=your_secret_key
+JWT_ACCESS_EXPIRY=15m
+JWT_REFRESH_EXPIRY=7d
 OPENAI_API_KEY=sk-...
 VNPAY_CODE=your_code
-SENTRY_DSN=your_dsn
 ```
 
 **Frontend (.env)**
 ```env
-REACT_APP_API_URL=http://localhost:3000/api
-```
-
-**Mobile (.env)**
-```env
-API_BASE_URL=http://localhost:3000/api
+REACT_APP_API_URL=http://localhost:5000/api
 ```
 
 ---
@@ -248,7 +230,7 @@ API_BASE_URL=http://localhost:3000/api
 
 - ✅ JWT token authentication
 - ✅ Password hashing with bcrypt
-- ✅ Input validation & sanitization
+- ✅ Input validation & sanitization (Zod)
 - ✅ CORS configuration
 - ✅ Rate limiting
 - ✅ HTTPS in production
@@ -280,7 +262,6 @@ API_BASE_URL=http://localhost:3000/api
 - **Backend:** Railway / Render / VPS
 - **Frontend:** Vercel
 - **Database:** PostgreSQL Cloud
-- **Mobile:** App Store / Google Play
 
 **Deployment guide:** [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md)
 
@@ -342,7 +323,3 @@ API_BASE_URL=http://localhost:3000/api
 ## 📄 License
 
 MIT License - see [LICENSE](./LICENSE) file
-
----
-
-
