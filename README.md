@@ -9,7 +9,6 @@ A comprehensive fitness gym management platform with AI coaching, membership man
 ---
 
 ## 📋 Quick Start
-
 ### Prerequisites
 - Node.js >= 18.0.0
 - PostgreSQL >= 14.0
