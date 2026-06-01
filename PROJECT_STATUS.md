@@ -3,7 +3,7 @@
 **Project:** Gym Management System
 **Team Size:** 2 Developers
 **Current Phase:** Phase 2 - Authentication & Authorization
-**Last Updated:** 30/05/2026
+**Last Updated:** 31/05/2026
 
 ---
 
@@ -13,11 +13,10 @@
 | ---------------------------------------- | -------------- |
 | Phase 1 - Foundation & Database          | ✅ Completed    |
 | Phase 2 - Authentication & Authorization | 🔄 In Progress |
-| Phase 3 - Membership Management          | ⏳ Pending      |
-| Phase 4 - Member Management              | ⏳ Pending      |
-| Phase 5 - Trainer Management             | ⏳ Pending      |
-| Phase 6 - Dashboard & Reporting          | ⏳ Pending      |
-| Phase 7 - Testing & Deployment           | ⏳ Pending      |
+| Phase 3 - Membership & AI Core           | ⏳ Pending      |
+| Phase 4 - Frontend Admin Dashboard       | ⏳ Pending      |
+| Phase 5 - Payment & Notification         | ⏳ Pending      |
+| Phase 6 - Testing & Deployment           | ⏳ Pending      |
 
 ---
 
@@ -25,241 +24,114 @@
 
 Status: ✅ COMPLETED
 
----
-
 ## Issue #1 - Project Initialization
-
 Status: ✅ Completed
-
-### Completed Tasks
-
-* Created GitHub Repository
-* Created project roadmap
-* Created project architecture document
-* Setup project structure
-* Initialized backend project
-* Created development workflow
-
-### Deliverables
-
-* ROADMAP.md
-* ARCHITECTURE.md
-* GitHub Repository
-
----
+* Created GitHub Repository, roadmap, architecture document
+* Setup project structure, initialized backend, created development workflow
 
 ## Issue #2 - Backend Foundation
-
 Status: ✅ Completed
-
-### Completed Tasks
-
-* Express.js setup
-* TypeScript configuration
-* dotenv integration
-* ESLint configuration
-* Prettier configuration
-* Nodemon / ts-node-dev setup
-* Logger implementation
-* Global Error Middleware
-* Base folder structure
-
-### Folder Structure
-
-src/
-├── config/
-├── controllers/
-├── middlewares/
-├── routes/
-├── services/
-├── utils/
-└── validators/
-
-### Deliverables
-
-* Express Server
-* TypeScript Environment
-* Logger
-* Error Handler
-
----
+* Express.js + TypeScript + dotenv + ESLint + Prettier + Nodemon
+* Logger + Global Error Middleware + Base folder structure
 
 ## Issue #3 - Database & Prisma Setup
-
 Status: ✅ Completed
-
-### Completed Tasks
-
-* PostgreSQL installation
-* Database creation (gym_management)
-* Prisma installation
-* Prisma configuration
-* Prisma Client generation
-* Initial migration
-* Database connection testing
-* Seed script implementation
-
-### Database Models
-
-#### User
-
-Fields:
-
-* id
-* fullName
-* email
-* password
-* role
-* createdAt
-* updatedAt
-
-#### MembershipPackage
-
-Fields:
-
-* id
-* name
-* description
-* price
-* duration
-* createdAt
-
-#### Subscription
-
-Fields:
-
-* id
-* userId
-* packageId
-* startDate
-* endDate
-* createdAt
-
-### Seed Data
-
-Membership Packages:
-
-* Basic
-* Premium
-* VIP
-
-### Deliverables
-
-* PostgreSQL Database
-* Prisma ORM
-* Prisma Client
-* Initial Migration
-* Seed Script
+* PostgreSQL + Prisma ORM + migrations + seed script
+* Models: User, MembershipPackage, Subscription
 
 ---
 
-# Current Database Status
+# Phase 2 - Authentication & Authorization
 
-Database Name:
+Status: 🔄 IN PROGRESS (Issues #4–#7 Completed)
 
-gym_management
+## Issue #4 - Users & Roles Schema
+Status: ✅ Completed — 31/05/2026
+* Added Role enum (ADMIN, STAFF, MEMBER, PT)
+* Migration: add_role_enum applied
 
-Current Tables:
+## Issue #5 - User Registration API
+Status: ✅ Completed — 31/05/2026
 
-* User
-* MembershipPackage
-* Subscription
-* _prisma_migrations
+Endpoint: POST /api/auth/register
 
-Database Status:
+Test Result ✅:
+{
+  "success": true, "statusCode": 201, "message": "Registration successful",
+  "data": { "user": { "role": "MEMBER" }, "tokens": { "accessToken": "...", "refreshToken": "..." } }
+}
 
-✅ Connected
+Files added: auth.types.ts, auth.validator.ts, errors.ts, auth.service.ts,
+             auth.controller.ts, auth.routes.ts, routes/index.ts
 
-Prisma Status:
+## Issue #6 - Login API
+Status: ✅ Completed — 31/05/2026
 
-✅ Working
+Endpoint: POST /api/auth/login
 
-Migration Status:
+Test Result ✅:
+{ "success": true, "statusCode": 200, "message": "Login successful", "data": { ... } }
 
-✅ Working
+Files added: config/jwt.ts, utils/generateToken.ts
+Token expiry: Access 15m / Refresh 7d
 
-Seed Status:
+## Issue #7 - Auth & Role Middleware
+Status: ✅ Completed — 31/05/2026
+* auth.middleware.ts — JWT verification, attaches req.user
+* role.middleware.ts — authorize(...roles) factory function
+* error.middleware.ts — Zod + AppError + Unknown error handling
 
-✅ Completed
+## Issue #8 - Membership System Schema
+Status: ⏳ Pending
+* Tables: MembershipPackages + UserMemberships
+* Tiers: BASIC (10/day), PREMIUM (100/day), ELITE (Unlimited)
+
+---
+
+# Current File Structure
+
+backend/src/
+├── config/       jwt.ts ✅  logger.ts  prisma.ts
+├── controllers/  auth.controller.ts ✅
+├── middlewares/  auth.middleware.ts ✅  role.middleware.ts ✅  error.middleware.ts ✅
+├── routes/       auth.routes.ts ✅  index.ts ✅
+├── services/     auth.service.ts ✅
+├── types/        auth.types.ts ✅
+├── utils/        generateToken.ts ✅  errors.ts ✅
+├── validators/   auth.validator.ts ✅
+└── server.ts ✅
 
 ---
 
 # Current Backend Status
 
-Express Server:
-
-✅ Running
-
-Logger:
-
-✅ Implemented
-
-Global Error Handler:
-
-✅ Implemented
-
-Prisma:
-
-✅ Connected
-
-Database:
-
-✅ Connected
+Express Server:    ✅ Running on port 5000
+Logger:            ✅ Implemented
+Global Error:      ✅ Zod + AppError + Unknown
+Prisma:            ✅ Connected (v6.19.3)
+Database:          ✅ gym_management
+Auth:              ✅ Register + Login working
+JWT:               ✅ Access (15m) + Refresh (7d)
+Roles:             ✅ ADMIN / STAFF / MEMBER / PT
 
 ---
 
-# Next Phase
+# Auth Error Codes
 
-## Phase 2 - Authentication & Authorization
-
-Current Status: Ready To Start
-
-### Next Issue
-
-Issue #4 - User Registration API
-
-### Planned Tasks
-
-* Install bcryptjs
-* Install jsonwebtoken
-* Create auth module
-* Register API
-* Login API
-* JWT Authentication
-* Role Authorization
-* Password Hashing
-* Auth Middleware
-
-### First Endpoint
-
-POST /api/auth/register
+AUTH_001: Invalid email format
+AUTH_002: Password too short (< 8 chars)
+AUTH_003: User not found
+AUTH_004: Invalid password
+AUTH_005: Email already exists
+AUTH_006: Invalid or expired token
 
 ---
 
 # Notes For Future Agents
 
-Project uses:
+Stack: Node.js + Express + TypeScript (no any) + PostgreSQL + Prisma 6.19.3
+Validation: Zod | Hashing: bcrypt cost 12 | Auth: JWT
+Server port: 5000
 
-* Node.js
-* Express.js
-* TypeScript
-* PostgreSQL
-* Prisma ORM
-
-Current Prisma Version:
-
-6.19.3
-
-Current Database:
-
-gym_management
-
-Current Branch:
-
-main
-
-Phase 1 is fully completed.
-
-Development should continue from:
-
-Phase 2 → Issue #4 → Authentication & Authorization
+Phase 2 Issues #4-#7 fully completed and tested.
+Next: Phase 2 → Issue #8 → Membership System Schema
