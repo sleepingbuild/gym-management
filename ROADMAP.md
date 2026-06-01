@@ -241,7 +241,6 @@ All Features → #21 → #22 (Testing) → #23 (Optimize) → #24, #25, #26 (Dep
 ---
 
 ## 📚 Related Documents
-
 - [ARCHITECTURE.md](./ARCHITECTURE.md) - System architecture details
 - [README.md](./README.md) - Project overview
 - [PROJECT_STATUS.md](./PROJECT_STATUS.md) - Current progress tracking
