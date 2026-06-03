@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+
+>>>>>>> 10d2140 ([feat] #8 Add membership system schema and seed data)
 
 import { Request, Response, NextFunction } from 'express';
 import { Role } from '@prisma/client';

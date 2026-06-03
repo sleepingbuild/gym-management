@@ -1,10 +1,11 @@
 import "dotenv/config";
 import { defineConfig } from "prisma/config";
 
+console.log("DATABASE_URL =", process.env.DATABASE_URL);
+
 export default defineConfig({
   schema: "prisma/schema.prisma",
-<<<<<<< HEAD
+  datasource: {
+    url: process.env.DATABASE_URL!,
+  },
 });
-=======
-});
->>>>>>> e648d866263ae086c8775cb81557b7e891200d7b

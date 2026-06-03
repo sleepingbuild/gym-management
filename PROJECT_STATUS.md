@@ -48,14 +48,13 @@ Status: 🔄 IN PROGRESS (Issues #4–#7 Completed)
 
 ## Issue #4 - Users & Roles Schema
 Status: ✅ Completed — 31/05/2026
-* Added Role enum (ADMIN, STAFF, MEMBER, PT)
+* Added Role enum (ADMIN, MEMBER, PT)
 * Migration: add_role_enum applied
 
 ## Issue #5 - User Registration API
 Status: ✅ Completed — 31/05/2026
 
-Endpoint: POST /api/auth/register
-
+Endpoint: POST /api/auth/registers
 Test Result ✅:
 {
   "success": true, "statusCode": 201, "message": "Registration successful",

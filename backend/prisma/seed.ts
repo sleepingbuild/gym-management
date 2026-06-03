@@ -1,94 +1,64 @@
-<<<<<<< HEAD
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log("1. Bắt đầu seed");
+  console.log('🌱 Seeding membership plans...');
 
-  console.log("2. Kết nối DB");
-  await prisma.$connect();
-
-  console.log("3. Chuẩn bị insert");
-
-  await prisma.membershipPackage.createMany({
-    data: [
-      {
-        name: "Basic",
-        description: "Gói cơ bản",
-        price: 300000,
-        duration: 30,
-      },
-      {
-        name: "Premium",
-        description: "Gói nâng cao",
-        price: 600000,
-        duration: 30,
-      },
-      {
-        name: "VIP",
-        description: "Gói VIP",
-        price: 1000000,
-        duration: 30,
-      },
-    ],
+  // Upsert để tránh duplicate khi chạy seed nhiều lần
+  const basic = await prisma.membershipPlan.upsert({
+    where: { id: 'plan_basic' },
+    update: {},
+    create: {
+      id: 'plan_basic',
+      name: 'Basic',
+      price: 0,
+      duration: 30,
+      aiLimit: 10,
+      aiDailyLimit: 1,
+      description: 'Gói miễn phí — 10 tin nhắn AI/tháng, tối đa 1 tin/ngày',
+      isActive: true,
+    },
   });
 
-  console.log("4. Seed thành công");
+  const premium = await prisma.membershipPlan.upsert({
+    where: { id: 'plan_premium' },
+    update: {},
+    create: {
+      id: 'plan_premium',
+      name: 'Premium',
+      price: 9.99,
+      duration: 30,
+      aiLimit: 100,
+      aiDailyLimit: 10,
+      description: 'Gói tiêu chuẩn — 100 tin nhắn AI/tháng, tối đa 10 tin/ngày',
+      isActive: true,
+    },
+  });
+
+  const elite = await prisma.membershipPlan.upsert({
+    where: { id: 'plan_elite' },
+    update: {},
+    create: {
+      id: 'plan_elite',
+      name: 'Elite',
+      price: 29.99,
+      duration: 30,
+      aiLimit: -1,      // -1 = Unlimited
+      aiDailyLimit: -1,
+      description: 'Gói cao cấp — Không giới hạn AI, đầy đủ tính năng',
+      isActive: true,
+    },
+  });
+
+  console.log('✅ Seeded plans:', { basic, premium, elite });
 }
 
 main()
-  .catch((error) => {
-    console.error("Lỗi:", error);
+  .catch((e) => {
+    console.error('❌ Seed error:', e);
+    process.exit(1);
   })
   .finally(async () => {
     await prisma.$disconnect();
-    console.log("5. Đã ngắt kết nối");
-=======
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
-
-async function main() {
-  console.log("1. Bắt đầu seed");
-
-  console.log("2. Kết nối DB");
-  await prisma.$connect();
-
-  console.log("3. Chuẩn bị insert");
-
-  await prisma.membershipPackage.createMany({
-    data: [
-      {
-        name: "Basic",
-        description: "Gói cơ bản",
-        price: 300000,
-        duration: 30,
-      },
-      {
-        name: "Premium",
-        description: "Gói nâng cao",
-        price: 600000,
-        duration: 30,
-      },
-      {
-        name: "VIP",
-        description: "Gói VIP",
-        price: 1000000,
-        duration: 30,
-      },
-    ],
-  });
-
-  console.log("4. Seed thành công");
-}
-
-main()
-  .catch((error) => {
-    console.error("Lỗi:", error);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-    console.log("5. Đã ngắt kết nối");
->>>>>>> e648d866263ae086c8775cb81557b7e891200d7b
   });
