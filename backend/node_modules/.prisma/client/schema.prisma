@@ -7,8 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ─── Enums ───────────────────────────────────────────
-
 enum Role {
   ADMIN
   MEMBER
@@ -21,7 +19,10 @@ enum MembershipStatus {
   SUSPENDED
 }
 
-// ─── Models ──────────────────────────────────────────
+enum ChatRole {
+  user
+  assistant
+}
 
 model User {
   id       String  @id @default(cuid())
@@ -33,6 +34,7 @@ model User {
   role     Role    @default(MEMBER)
 
   userMembership UserMembership?
+  chatHistory    ChatHistory[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -72,4 +74,20 @@ model UserMembership {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model ChatHistory {
+  id        String   @id @default(cuid())
+  userId    String
+  sessionId String
+  role      ChatRole
+  content   String   @db.Text
+  tokens    Int?
+
+  user User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, sessionId])
+  @@index([userId, createdAt])
 }
