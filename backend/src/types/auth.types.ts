@@ -33,3 +33,12 @@ export interface AuthResponse {
   };
   tokens: AuthTokens;
 }
+
+
+declare global {
+  namespace Express {
+    interface Request {
+      user?: TokenPayload;
+    }
+  }
+}

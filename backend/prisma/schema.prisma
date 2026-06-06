@@ -91,3 +91,15 @@ model ChatHistory {
   @@index([userId, sessionId])
   @@index([userId, createdAt])
 }
+
+model KnowledgeBase {
+  id        String   @id @default(cuid())
+  category  String   // "workout", "nutrition", "general"
+  title     String
+  content   String   @db.Text
+  embedding Unsupported("vector(768)")?
+
+  createdAt DateTime @default(now())
+
+  @@index([category])
+}
