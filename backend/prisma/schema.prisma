@@ -97,7 +97,7 @@ model KnowledgeBase {
   category  String   // "workout", "nutrition", "general"
   title     String
   content   String   @db.Text
-  embedding Unsupported("vector(768)")?
+  embedding Unsupported("vector(3072)")?
 
   createdAt DateTime @default(now())
 
