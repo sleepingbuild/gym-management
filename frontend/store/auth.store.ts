@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { User } from '@/types';
 
 interface AuthState {
@@ -18,17 +18,23 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
 
       setAuth: (user, accessToken, refreshToken) => {
-        localStorage.setItem('refreshToken', refreshToken);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('refreshToken', refreshToken);
+        }
         set({ user, accessToken, isAuthenticated: true });
       },
 
       logout: () => {
-        localStorage.removeItem('refreshToken');
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('refreshToken');
+        }
         set({ user: null, accessToken: null, isAuthenticated: false });
       },
     }),
     {
       name: 'ironfit-auth',
+      storage: createJSONStorage(() => localStorage),
+      skipHydration: false,
     }
   )
 );

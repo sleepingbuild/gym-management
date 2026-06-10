@@ -1,4 +1,4 @@
-﻿import axios from 'axios';
+import axios from 'axios';
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api',
@@ -15,7 +15,7 @@ api.interceptors.request.use((config) => {
         const parsed = JSON.parse(stored);
         const token = parsed?.state?.accessToken;
         if (token) {
-          config.headers.Authorization = `Bearer ` + token;
+          config.headers.Authorization = `Bearer ${token}`;
         }
       } catch {
         // ignore
@@ -28,16 +28,13 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Chi redirect ve login khi goi auth endpoint bi 401
-    // Khong redirect khi cac API khac bi 401/403
-    const url = error.config?.url || '';
-    const is401 = error.response?.status === 401;
-    const isAuthError = is401 && url.includes('/auth/');
-
-    if (isAuthError) {
+    if (error.response?.status === 401) {
       if (typeof window !== 'undefined') {
-        localStorage.removeItem('ironfit-auth');
-        window.location.href = '/login';
+        const currentPath = window.location.pathname;
+        if (currentPath !== '/login') {
+          localStorage.removeItem('ironfit-auth');
+          window.location.href = '/login';
+        }
       }
     }
     return Promise.reject(error);
