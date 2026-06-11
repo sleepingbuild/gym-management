@@ -36,6 +36,7 @@ model User {
 
   userMembership UserMembership?
   chatHistory    ChatHistory[]
+  paymentHistory Payment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -103,4 +104,35 @@ model KnowledgeBase {
   createdAt DateTime @default(now())
 
   @@index([category])
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  VNPAY
+  MOMO
+  CASH
+}
+
+model Payment {
+  id               String        @id @default(cuid())
+  userId           String
+  membershipPlanId String
+  amount           Float
+  currency         String        @default("VND")
+  status           PaymentStatus @default(PENDING)
+  paymentMethod    PaymentMethod
+  transactionId    String?       @unique
+  description      String?
+  metadata         Json?
+
+  user User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
