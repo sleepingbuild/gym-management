@@ -7,5 +7,7 @@ const router = Router();
 
 router.get('/stats', authenticate, authorize('ADMIN'), adminController.getStats);
 router.get('/users', authenticate, authorize('ADMIN'), adminController.getUsers);
+router.patch('/users/:id/toggle-active', authenticate, authorize('ADMIN'), adminController.toggleUserActive);
+router.patch('/users/:id/role', authenticate, authorize('ADMIN'), adminController.updateUserRole);
 
 export default router;
