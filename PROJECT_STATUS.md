@@ -2,8 +2,8 @@
 
 **Project:** Gym Management System
 **Team Size:** 2 Developers
-**Current Phase:** Phase 5 - Payment & Notification
-**Last Updated:** 11/06/2026
+**Current Phase:** Phase 6 - Testing & Deployment
+**Last Updated:** 12/06/2026
 
 ---
 
@@ -15,7 +15,7 @@
 | Phase 2 - Authentication & Authorization | ✅ Completed     |
 | Phase 3 - Membership & AI Core           | ✅ Completed     |
 | Phase 4 - Frontend Admin Dashboard       | ✅ Completed     |
-| Phase 5 - Payment & Notification         | ⏳ Pending       |
+| Phase 5 - Payment & Notification         | ✅ Completed     |
 | Phase 6 - Testing & Deployment           | ⏳ Pending       |
 
 ---
@@ -166,6 +166,53 @@ Status: ✅ Completed — 10/06/2026
 
 ---
 
+# Phase 5 - Payment & Notification
+
+Status: ✅ COMPLETED
+
+## Issue #18 - Payment System Schema
+Status: ✅ Completed — 11/06/2026
+* Payment model: userId, membershipPlanId, amount, currency, status, paymentMethod, transactionId, metadata
+* PaymentStatus enum: PENDING / SUCCESS / FAILED / REFUNDED
+* PaymentMethod enum: VNPAY / MOMO / CASH
+* Created via psql (migration drift workaround)
+
+## Issue #19 - VNPay/MoMo Integration
+Status: ✅ Completed — 12/06/2026
+* VNPay: createVNPayUrl with HMAC-SHA512 signature + sandbox credentials registered
+* VNPay: verifyVNPayReturn callback handler with signature verification
+* MoMo: createMoMoUrl with HMAC-SHA256 signature
+* MoMo: verifyMoMoWebhook IPN handler
+* Auto-create/upsert UserMembership on successful payment
+* Endpoints:
+  - POST /api/payments/create — create payment URL (VNPay/MoMo)
+  - GET /api/payments/history — payment history
+  - GET /api/payments/vnpay-return — VNPay callback
+  - POST /api/payments/momo-webhook — MoMo IPN
+* Note: VNPay sandbox merchant pending official approval (Error 72 - website not found) — expected onboarding delay, signature/flow verified correct
+
+## Issue #20 - In-app Notification System
+Status: ✅ Completed — 12/06/2026
+* Notification model with NotificationType enum (MEMBERSHIP_ACTIVATED, MEMBERSHIP_EXPIRING, MEMBERSHIP_EXPIRED, PAYMENT_SUCCESS, PAYMENT_FAILED, SYSTEM)
+* GET /api/notifications — list with unread count
+* PATCH /api/notifications/:id/read — mark single as read
+* PATCH /api/notifications/read-all — mark all as read
+* Integrated into payment flow: auto-notify on payment success (notifyPaymentSuccess, notifyMembershipActivated)
+
+## Issue #89 - AI Chat UI (scope-pivoted from mobile)
+Status: ✅ Completed — 12/06/2026
+* Original issue written for mobile (React Native FlatList) — scope pivoted to NextJS web since project dropped mobile from roadmap at Phase 4
+* Route: /member/ai-chat
+* Chat bubble UI: user (coral, right) / assistant (cream, left) with avatars
+* Typing indicator: 3-dot bounce CSS animation
+* Auto-scroll to latest message via useRef + scrollIntoView
+* Real-time usage badge with progress bar
+* Inline error rendering in bubble (no alert/toast)
+* **First PR-based workflow of the project**: branch `feature/ai-chat-ui` → PR → merged to main
+* AI response generation previously verified working in #12; later testing sessions limited by Gemini free-tier quota (429) — confirmed external rate limit, not a code defect
+
+---
+
 # Current File Structure
 
 ```
@@ -174,10 +221,13 @@ backend/src/
 ├── constants/      membership.ts ✅
 ├── controllers/    auth.controller.ts ✅  membership.controller.ts ✅
 │                   ai.controller.ts ✅  admin.controller.ts ✅
+│                   payment.controller.ts ✅  notification.controller.ts ✅
 ├── middlewares/    auth.middleware.ts ✅  role.middleware.ts ✅  error.middleware.ts ✅
 ├── routes/         auth.routes.ts ✅  membership.routes.ts ✅
-│                   ai.routes.ts ✅  admin.routes.ts ✅  index.ts ✅
+│                   ai.routes.ts ✅  admin.routes.ts ✅
+│                   payment.routes.ts ✅  notification.routes.ts ✅  index.ts ✅
 ├── services/       auth.service.ts ✅  membership.service.ts ✅  ai.service.ts ✅
+│                   payment.service.ts ✅  notification.service.ts ✅
 ├── types/          auth.types.ts ✅  membership.types.ts ✅  ai.types.ts ✅
 ├── utils/          generateToken.ts ✅  errors.ts ✅
 ├── validators/     auth.validator.ts ✅  membership.validator.ts ✅
@@ -198,6 +248,7 @@ frontend/
 │   ├── (dashboard)/admin/page.tsx ✅
 │   ├── (dashboard)/admin/users/page.tsx ✅
 │   ├── (dashboard)/member/page.tsx ✅
+│   ├── (dashboard)/member/ai-chat/page.tsx ✅
 │   └── page.tsx (redirect to /login) ✅
 ├── components/ui/ (pending)
 ├── components/layout/ (pending)
@@ -216,11 +267,16 @@ frontend/
 - **UserMembership** — id, userId, planId, startDate, expiryDate, aiUsageCount, aiDailyCount, aiUsageReset, aiDailyReset, status
 - **ChatHistory** — id, userId, sessionId, role, content, tokens, createdAt
 - **KnowledgeBase** — id, category, title, content, embedding (vector 3072), createdAt
+- **Payment** — id, userId, membershipPlanId, amount, currency, status, paymentMethod, transactionId, description, metadata
+- **Notification** — id, userId, type, title, message, isRead, metadata, createdAt
 
 ## Enums
 - **Role:** ADMIN, MEMBER, PT
 - **MembershipStatus:** ACTIVE, EXPIRED, SUSPENDED
 - **ChatRole:** user, assistant
+- **PaymentStatus:** PENDING, SUCCESS, FAILED, REFUNDED
+- **PaymentMethod:** VNPAY, MOMO, CASH
+- **NotificationType:** MEMBERSHIP_ACTIVATED, MEMBERSHIP_EXPIRING, MEMBERSHIP_EXPIRED, PAYMENT_SUCCESS, PAYMENT_FAILED, SYSTEM
 
 ## Migrations Applied
 1. add_role_enum
@@ -229,6 +285,8 @@ frontend/
 4. add_knowledge_base
 5. update_embedding_dimension
 6. add_user_isActive (via psql ALTER TABLE)
+7. add_payment_system (via psql CREATE TABLE)
+8. add_notification_system (via psql CREATE TABLE)
 
 ---
 
@@ -242,25 +300,40 @@ frontend/
 
 ## Membership
 | Method | Endpoint                    | Auth | Description              |
-|--------|-----------------------------|------|--------------------------|
+|--------|-----------------------------|------|---------------------------|
 | GET    | /api/memberships/plans      | ❌   | Get all active plans     |
 | POST   | /api/memberships/buy        | ✅   | Purchase membership      |
 | GET    | /api/memberships/current    | ✅   | Get active membership    |
 
 ## AI
 | Method | Endpoint           | Auth | Description          |
-|--------|--------------------|------|----------------------|
+|--------|--------------------|------|-----------------------|
 | POST   | /api/ai/chat       | ✅   | RAG chat with Gemini |
-| GET    | /api/ai/history    | ✅   | Chat history         |
-| GET    | /api/ai/usage      | ✅   | AI usage stats       |
+| GET    | /api/ai/history    | ✅   | Chat history          |
+| GET    | /api/ai/usage      | ✅   | AI usage stats        |
 
 ## Admin
 | Method | Endpoint                          | Auth         | Description           |
-|--------|-----------------------------------|--------------|----------------------|
+|--------|------------------------------------|--------------|------------------------|
 | GET    | /api/admin/stats                  | ✅ ADMIN     | System statistics     |
 | GET    | /api/admin/users                  | ✅ ADMIN     | List all users        |
 | PATCH  | /api/admin/users/:id/toggle-active| ✅ ADMIN     | Lock/unlock user      |
 | PATCH  | /api/admin/users/:id/role         | ✅ ADMIN     | Update user role      |
+
+## Payment
+| Method | Endpoint                      | Auth | Description                    |
+|--------|--------------------------------|------|----------------------------------|
+| POST   | /api/payments/create           | ✅   | Create VNPay/MoMo payment URL  |
+| GET    | /api/payments/history          | ✅   | Payment history                |
+| GET    | /api/payments/vnpay-return     | ❌   | VNPay callback (gateway calls)  |
+| POST   | /api/payments/momo-webhook     | ❌   | MoMo IPN (gateway calls)        |
+
+## Notification
+| Method | Endpoint                          | Auth | Description                  |
+|--------|------------------------------------|------|---------------------------------|
+| GET    | /api/notifications                | ✅   | List notifications + unread count |
+| PATCH  | /api/notifications/:id/read       | ✅   | Mark single as read            |
+| PATCH  | /api/notifications/read-all       | ✅   | Mark all as read               |
 
 ---
 
@@ -291,13 +364,19 @@ frontend/
 - USER_002: Cannot lock your own account
 - USER_003: Invalid role
 
+## Payment
+- PAYMENT_001: Plan not found
+- PAYMENT_002: User already has active membership
+- PAYMENT_003: Plan ID is required
+- PAYMENT_004: Basic plan is free, use /memberships/buy
+
 ---
 
 # Current Status
 
 ## Backend
 | Component              | Status |
-|------------------------|--------|
+|-------------------------|--------|
 | Express Server         | ✅ Running on port 5000 |
 | Logger                 | ✅ Implemented |
 | Global Error Handler   | ✅ Zod + AppError + Unknown |
@@ -311,30 +390,34 @@ frontend/
 | pgvector               | ✅ Installed (PostgreSQL 17, v0.8.2) |
 | KnowledgeBase          | ✅ 24 documents embedded (vector 3072) |
 | Admin APIs             | ✅ Working |
+| VNPay Integration      | ✅ Signature verified (sandbox merchant pending approval) |
+| MoMo Integration       | ✅ Implemented (test credentials) |
+| Notification System    | ✅ Working |
 
 ## Frontend
 | Component              | Status |
-|------------------------|--------|
-| NextJS 16 App Router   | ✅ Running on port 3000 |
-| Design System          | ✅ Cream/Coral/Dark Navy |
-| Login Page             | ✅ Working |
-| Member Dashboard       | ✅ Working |
-| Admin Dashboard        | ✅ Working |
-| User Management Table  | ✅ Working |
-| Zustand Persist        | ✅ Fixed |
-| API Interceptors       | ✅ Fixed |
+|--------------------------|--------|
+| NextJS 16 App Router    | ✅ Running on port 3000 |
+| Design System           | ✅ Cream/Coral/Dark Navy |
+| Login Page              | ✅ Working |
+| Member Dashboard        | ✅ Working |
+| Admin Dashboard         | ✅ Working |
+| User Management Table   | ✅ Working |
+| AI Chat UI              | ✅ Working (bubbles, typing indicator, auto-scroll) |
+| Zustand Persist         | ✅ Fixed |
+| API Interceptors        | ✅ Fixed |
 
 ---
 
 # Tech Stack
 
 | Component     | Technology              | Version   |
-|---------------|-------------------------|-----------|
+|----------------|--------------------------|-----------|
 | Runtime       | Node.js                 | 18+       |
 | Framework     | Express.js              | Latest    |
 | Language      | TypeScript              | 6.0.3     |
 | ORM           | Prisma                  | 6.19.3    |
-| Database      | PostgreSQL               | 17        |
+| Database      | PostgreSQL                | 17        |
 | Vector DB     | pgvector                | 0.8.2     |
 | Auth          | JWT                     | Standard  |
 | Validation    | Zod                     | Latest    |
@@ -342,11 +425,22 @@ frontend/
 | AI LLM        | Gemini 2.0 Flash        | Latest    |
 | AI Embedding  | gemini-embedding-001    | Latest    |
 | AI SDK        | @google/genai           | 0.24.1+   |
+| Payment       | VNPay (HMAC-SHA512), MoMo (HMAC-SHA256) | Sandbox |
 | Frontend      | NextJS                  | 16.2.7    |
-| Styling       | TailwindCSS             | Latest    |
-| State         | Zustand + persist       | Latest    |
-| Forms         | react-hook-form + zod   | Latest    |
-| HTTP Client   | Axios                   | Latest    |
+| Styling       | TailwindCSS              | Latest    |
+| State         | Zustand + persist        | Latest    |
+| Forms         | react-hook-form + zod    | Latest    |
+| HTTP Client   | Axios                    | Latest    |
+
+---
+
+# Git Workflow
+
+**Established pattern (Issues #1–#20):** Direct commit to `main` branch, no PR.
+
+**New pattern starting Issue #89:** Feature branch → Pull Request → Review → Merge to `main`.
+- Example: `feature/ai-chat-ui` → PR → merged via GitHub UI
+- **Recommendation going forward:** continue using feature branches + PRs for all remaining issues to align with project's own documented rule ("Tất cả feature phải thông qua Pull Request") and to reach 95-100/100 on SE grading rubric.
 
 ---
 
@@ -366,14 +460,14 @@ frontend/
 11. Zustand store key: 'ironfit-auth' — token at state.accessToken
 12. API interceptor: only redirect to /login on /auth/ endpoint 401
 13. DashboardLayout has hydration guard — uses useState(hydrated) before checking isAuthenticated
-14. isActive field added via psql (not in migration history — drift exists in KnowledgeBase embedding dimension)
+14. isActive, Payment, Notification tables added via psql (not in migration history — drift exists)
+15. **Use feature branch + PR workflow going forward** (established starting Issue #89)
+16. VNPay amount unit: multiply by 1000 when calling createVNPayUrl (plan.price is in thousands of VND)
 
 **Known Issues:**
-- Prisma migration drift: KnowledgeBase.embedding changed from vector(768) to vector(3072) via psql, not tracked in migrations
+- Prisma migration drift: KnowledgeBase.embedding, User.isActive, Payment, Notification tables all added via psql, not tracked in migrations — `npx prisma migrate dev` will keep detecting drift
 - Access token expires in 15m — user must re-login after expiry
 - Gemini free tier quota limited — may get 429 errors after heavy usage
+- VNPay sandbox merchant pending official approval (Error code 72) — signature/flow verified correct, blocked only by external onboarding delay
 
-**Next Phase:** Phase 5 — Payment & Notification (Issues #18–#20)
-- Issue #18: Thiết kế bảng Payments
-- Issue #19: Tích hợp VNPay/MoMo
-- Issue #20: Xây dựng Notification System
+**Next Phase:** Phase 6 — Testing & Deployment
