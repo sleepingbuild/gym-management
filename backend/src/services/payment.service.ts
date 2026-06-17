@@ -3,6 +3,7 @@ import axios from 'axios';
 import qs from 'qs';
 import { prisma } from '../config/prisma';
 import { AppError } from '../utils/errors';
+import { notificationService } from './notification.service';
 
 // ─── VNPay ───────────────────────────────────────────
 
@@ -133,6 +134,9 @@ const verifyVNPayReturn = async (
             status: 'ACTIVE',
           },
         });
+
+        await notificationService.notifyPaymentSuccess(payment.userId, payment.amount, plan.name);
+        await notificationService.notifyMembershipActivated(payment.userId, plan.name);
       }
     }
   }
@@ -232,6 +236,9 @@ const verifyMoMoWebhook = async (
           update: { planId: plan.id, startDate, expiryDate, status: 'ACTIVE', aiUsageCount: 0, aiDailyCount: 0 },
           create: { userId: payment.userId, planId: plan.id, startDate, expiryDate, status: 'ACTIVE' },
         });
+
+        await notificationService.notifyPaymentSuccess(payment.userId, payment.amount, plan.name);
+        await notificationService.notifyMembershipActivated(payment.userId, plan.name);
       }
     }
   }

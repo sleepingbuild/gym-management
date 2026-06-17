@@ -37,6 +37,7 @@ model User {
   userMembership UserMembership?
   chatHistory    ChatHistory[]
   paymentHistory Payment[]
+  notifications Notification[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -135,4 +136,30 @@ model Payment {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+enum NotificationType {
+  MEMBERSHIP_ACTIVATED
+  MEMBERSHIP_EXPIRING
+  MEMBERSHIP_EXPIRED
+  PAYMENT_SUCCESS
+  PAYMENT_FAILED
+  SYSTEM
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  isRead    Boolean          @default(false)
+  metadata  Json?
+
+  user User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
 }
