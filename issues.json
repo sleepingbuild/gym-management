@@ -1,8 +1,9 @@
-
 {
   "project": "Gym Management System",
   "repository": "https://github.com/sleepingbuild/gym-management",
   "roles": ["ADMIN", "PT", "MEMBER"],
+  "current_phase": "PHASE 6 - TESTING & DEPLOYMENT",
+  "last_synced_with_project_status": "12/06/2026",
   "phases": [
     {
       "phase": "PHASE 1 - PROJECT INITIALIZATION",
@@ -163,7 +164,8 @@
           "title": "[Database] Thiet ke Membership System",
           "labels": ["database", "backend"],
           "priority": "Critical",
-          "status": "pending",
+          "status": "completed",
+          "completed_date": "03/06/2026",
           "description": {
             "packages": {
               "Basic": "10 AI messages/month (1/day)",
@@ -171,7 +173,12 @@
               "Elite": "Unlimited AI usage"
             },
             "tables": ["MembershipPlan", "UserMembership"]
-          }
+          },
+          "implementation_notes": [
+            "MembershipStatus enum added: ACTIVE / EXPIRED / SUSPENDED",
+            "Migration add_membership_system applied",
+            "Seeded 3 plans (Basic/Premium/Elite)"
+          ]
         }
       ]
     },
@@ -183,28 +190,46 @@
           "title": "[Membership] API lay danh sach packages",
           "labels": ["backend"],
           "priority": "Medium",
-          "status": "pending"
+          "status": "completed",
+          "completed_date": "03/06/2026",
+          "implementation_notes": [
+            "GET /api/memberships/plans - public endpoint, no auth required",
+            "Returns all active plans sorted by price ascending"
+          ]
         },
         {
           "issue_number": 10,
           "title": "[Membership] API mua goi thanh vien",
           "labels": ["backend", "enhancement"],
           "priority": "High",
-          "status": "pending"
+          "status": "completed",
+          "completed_date": "03/06/2026",
+          "implementation_notes": [
+            "POST /api/memberships/buy (JWT required)",
+            "GET /api/memberships/current (JWT required)",
+            "Blocks duplicate active membership (error MEMBERSHIP_003)"
+          ]
         },
         {
           "issue_number": 11,
           "title": "[AI] Thiet ke bang AI Chat History",
           "labels": ["database", "ai"],
           "priority": "High",
-          "status": "pending"
+          "status": "completed",
+          "completed_date": "04/06/2026",
+          "implementation_notes": [
+            "ChatHistory model: sessionId, role (ChatRole enum: user/assistant), content, tokens",
+            "Indexes: [userId, sessionId] and [userId, createdAt]",
+            "Migration add_chat_history applied"
+          ]
         },
         {
           "issue_number": 12,
           "title": "[AI] Tich hop Gemini/Claude API",
           "labels": ["ai", "backend"],
           "priority": "Critical",
-          "status": "pending",
+          "status": "completed",
+          "completed_date": "05/06/2026",
           "description": {
             "features": [
               "Workout recommendation",
@@ -212,14 +237,28 @@
               "Gym assistant chatbot",
               "Calorie calculation"
             ]
-          }
+          },
+          "implementation_notes": [
+            "Actual implementation: full RAG pipeline, not plain API call",
+            "pgvector extension installed on PostgreSQL 17 (v0.8.2)",
+            "KnowledgeBase table with vector(3072) embeddings, 24 gym knowledge documents seeded",
+            "Pipeline: gemini-embedding-001 -> cosine similarity search -> Gemini 2.0 Flash",
+            "Endpoints: POST /api/ai/chat, GET /api/ai/history, GET /api/ai/usage"
+          ]
         },
         {
           "issue_number": 13,
           "title": "[AI] Gioi han AI usage theo membership",
           "labels": ["ai", "backend"],
           "priority": "Critical",
-          "status": "pending"
+          "status": "completed",
+          "completed_date": "05/06/2026",
+          "implementation_notes": [
+            "Implemented within Issue #12 (checkAndUpdateUsage)",
+            "Enforces limits before every AI call; auto-resets daily/monthly counters",
+            "Error codes: AI_001 (no membership), AI_002 (daily limit), AI_003 (monthly limit)",
+            "Limits: Basic 1/day-10/month, Premium 10/day-100/month, Elite unlimited"
+          ]
         }
       ]
     },
@@ -230,25 +269,51 @@
           "issue_number": 14,
           "title": "[Frontend] Setup NextJS Frontend",
           "labels": ["frontend", "high priority"],
-          "status": "pending"
+          "status": "completed",
+          "completed_date": "07/06/2026",
+          "implementation_notes": [
+            "NextJS 16.2.7 + TypeScript + TailwindCSS + App Router + Turbopack",
+            "Design system: cream canvas (#faf9f5), coral (#cc785c), dark navy (#181715)",
+            "Fonts: Cormorant Garamond (serif) + Inter (sans) + JetBrains Mono (mono)",
+            "Axios client with JWT interceptors; Zustand auth store with persist middleware"
+          ]
         },
         {
           "issue_number": 15,
           "title": "[Frontend] Thiet ke Login Page",
           "labels": ["frontend", "ui/ux"],
-          "status": "pending"
+          "status": "completed",
+          "completed_date": "07/06/2026",
+          "implementation_notes": [
+            "Route /login (redirect from /), react-hook-form + zod validation",
+            "Role-based redirect: ADMIN -> /admin, PT -> /pt, MEMBER -> /member"
+          ]
         },
         {
           "issue_number": 16,
           "title": "[Frontend] Dashboard Overview UI (Admin, PT, Member)",
           "labels": ["frontend", "ui/ux"],
-          "status": "pending"
+          "status": "completed",
+          "completed_date": "08/06/2026",
+          "implementation_notes": [
+            "Dark navy sidebar (240px): logo, avatar, role-based nav, logout",
+            "Member Dashboard: membership card, AI usage stats, quick actions",
+            "Admin Dashboard: stats cards, quick management links",
+            "Fixed: Zustand persist hydration + DashboardLayout redirect flash"
+          ]
         },
         {
           "issue_number": 17,
           "title": "[Frontend] User Management Table (Admin)",
           "labels": ["frontend"],
-          "status": "pending"
+          "status": "completed",
+          "completed_date": "10/06/2026",
+          "implementation_notes": [
+            "Route /admin/users; search + filter by plan",
+            "Lock/unlock account (cannot lock own account)",
+            "Inline role edit dropdown ADMIN/PT/MEMBER",
+            "Backend: PATCH /admin/users/:id/toggle-active, PATCH /admin/users/:id/role"
+          ]
         }
       ]
     },
@@ -259,19 +324,52 @@
           "issue_number": 18,
           "title": "[Payment] Thiet ke bang Payments",
           "labels": ["database", "backend"],
-          "status": "pending"
+          "status": "completed",
+          "completed_date": "11/06/2026",
+          "implementation_notes": [
+            "Payment model: amount, currency, status, paymentMethod, transactionId, metadata",
+            "PaymentStatus enum: PENDING/SUCCESS/FAILED/REFUNDED; PaymentMethod enum: VNPAY/MOMO/CASH",
+            "Created via psql (migration drift workaround, not in migration history)"
+          ]
         },
         {
           "issue_number": 19,
           "title": "[Payment] Tich hop VNPay/MoMo",
           "labels": ["backend", "enhancement"],
-          "status": "pending"
+          "status": "completed",
+          "completed_date": "12/06/2026",
+          "implementation_notes": [
+            "VNPay: createVNPayUrl (HMAC-SHA512) + verifyVNPayReturn callback",
+            "MoMo: createMoMoUrl (HMAC-SHA256) + verifyMoMoWebhook IPN handler",
+            "Auto-create/upsert UserMembership on successful payment",
+            "Note: VNPay sandbox merchant pending official approval (Error 72) - signature/flow verified correct, blocked only by external onboarding delay"
+          ]
         },
         {
           "issue_number": 20,
           "title": "[Notification] Xay dung Notification System",
           "labels": ["backend"],
-          "status": "pending"
+          "status": "completed",
+          "completed_date": "12/06/2026",
+          "implementation_notes": [
+            "Notification model with NotificationType enum (MEMBERSHIP_ACTIVATED, MEMBERSHIP_EXPIRING, MEMBERSHIP_EXPIRED, PAYMENT_SUCCESS, PAYMENT_FAILED, SYSTEM)",
+            "GET /api/notifications, PATCH /api/notifications/:id/read, PATCH /api/notifications/read-all",
+            "Integrated into payment flow (auto-notify on payment success)"
+          ]
+        },
+        {
+          "issue_number": 20.5,
+          "title": "[Frontend] AI Chat UI (scope-pivoted from mobile)",
+          "labels": ["frontend", "ai", "ui/ux"],
+          "status": "completed",
+          "completed_date": "12/06/2026",
+          "note": "Not part of original 26-issue roadmap. Originally scoped for mobile (React Native FlatList); pivoted to NextJS web after mobile was dropped from roadmap at Phase 4.",
+          "implementation_notes": [
+            "Route /member/ai-chat",
+            "Chat bubble UI: user (coral, right) / assistant (cream, left) with avatars",
+            "Typing indicator, auto-scroll, real-time usage badge with progress bar",
+            "First PR-based workflow of the project: feature/ai-chat-ui branch -> PR -> merged to main"
+          ]
         }
       ]
     },
@@ -324,6 +422,7 @@
     "Tat ca APIs phai co validation",
     "Tat ca features phai co error handling",
     "Roles: ADMIN, PT, MEMBER (khong co STAFF)",
+    "Git workflow: Issues #1-#20 committed directly to main (no PR). Starting Issue #89, dung feature branch + Pull Request cho tat ca issues con lai.",
     "Tat ca AI agents va code assistants phai doc ky project structure, schema, services, middleware, routing va coding conventions truoc khi code de tranh code bi loan hoac conflict logic"
   ]
 }
