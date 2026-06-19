@@ -210,6 +210,26 @@ POST /api/payments/webhook
 | Database | PostgreSQL Cloud       |
 
 ---
+# 🐳 Docker Support
+
+## Backend Container
+
+Build Docker image:
+
+```bash
+cd backend
+docker build -t gym-management-backend .
+```
+
+Run container:
+
+```bash
+docker run -p 5000:5000 gym-management-backend
+```
+
+The Docker setup provides a reproducible backend runtime environment for development and deployment workflows.
+
+---
 
 # 📖 Documentation
 
