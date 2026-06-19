@@ -4,18 +4,16 @@ on:
 push:
 branches:
 - main
-
 pull_request:
 
 jobs:
 backend:
 runs-on: ubuntu-latest
+defaults:
+run:
+working-directory: backend
 
 ```
-defaults:
-  run:
-    working-directory: backend
-
 steps:
   - name: Checkout repository
     uses: actions/checkout@v4
@@ -37,12 +35,11 @@ steps:
 
 frontend:
 runs-on: ubuntu-latest
+defaults:
+run:
+working-directory: frontend
 
 ```
-defaults:
-  run:
-    working-directory: frontend
-
 steps:
   - name: Checkout repository
     uses: actions/checkout@v4
