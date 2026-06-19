@@ -1,4 +1,5 @@
-# 🏋️ Gym Management System
+# 🏋️ Gym Management System Platform
+Early-stage full-stack gym management platform focused on membership operations, trainer coordination, AI-assisted fitness workflows, and scalable service architecture.
 
 A comprehensive gym management platform featuring membership management, personal trainer scheduling, AI-powered fitness coaching, online payments, and real-time analytics.
 
@@ -266,6 +267,18 @@ git commit -m "[feat] add new feature"
 
 git push origin feature/your-feature
 ```
+---
+# 🚀 Releases
+
+The project follows semantic versioning.
+
+Current release:
+
+* `v0.1.0` — Initial Public Release
+
+GitHub Releases:
+
+* https://github.com/sleepingbuild/gym-management/releases
 
 Then create a Pull Request.
 
