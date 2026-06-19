@@ -59,6 +59,22 @@ A comprehensive gym management platform featuring membership management, persona
 
 ---
 
+# 🏗️ Architecture Overview
+
+The system follows a modular full-stack architecture:
+
+* Frontend: Next.js application layer
+* Backend: Express.js REST API services
+* Database: PostgreSQL + Prisma ORM
+* AI Layer: Gemini API integration
+* Authentication: JWT-based security model
+
+For detailed architecture documentation, see:
+
+* `ARCHITECTURE.md`
+
+---
+
 # 📁 Project Structure
 
 ```text
