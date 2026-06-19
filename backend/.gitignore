@@ -10,3 +10,9 @@ coverage/
 .env
 .env.*
 node_modules/
+
+dist/
+*.js
+*.js.map
+node_modules/
+.env
