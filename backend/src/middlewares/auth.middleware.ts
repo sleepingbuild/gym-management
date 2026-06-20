@@ -3,11 +3,9 @@ import { verifyToken } from "../utils/generateToken";
 import { AppError } from "../utils/errors";
 import { TokenPayload } from "../types/auth.types";
 
-declare global {
-    namespace Express {
-        interface Request {
-            user?: TokenPayload;
-        }
+declare module "express-serve-static-core" {
+    interface Request {
+        user?: TokenPayload;
     }
 }
 
