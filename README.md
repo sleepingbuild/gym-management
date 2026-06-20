@@ -1,4 +1,6 @@
 # 🏋️ Gym Management System Platform
+![CI](https://github.com/sleepingbuild/gym-management/actions/workflows/ci.yml/badge.svg)
+
 Early-stage full-stack gym management platform focused on membership operations, trainer coordination, AI-assisted fitness workflows, and scalable service architecture.
 
 A comprehensive gym management platform featuring membership management, personal trainer scheduling, AI-powered fitness coaching, online payments, and real-time analytics.
