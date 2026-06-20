@@ -1,44 +1,43 @@
 // src/types/auth.types.ts
 
-import { Role } from '@prisma/client';
+import { Role } from "@prisma/client";
 
 export interface TokenPayload {
-  userId: string;
-  email: string;
-  role: Role;
+    userId: string;
+    email: string;
+    role: Role;
 }
 
 export interface RegisterDTO {
-  fullName: string;
-  email: string;
-  password: string;
+    fullName: string;
+    email: string;
+    password: string;
 }
 
 export interface LoginDTO {
-  email: string;
-  password: string;
+    email: string;
+    password: string;
 }
 
 export interface AuthTokens {
-  accessToken: string;
-  refreshToken: string;
+    accessToken: string;
+    refreshToken: string;
 }
 
 export interface AuthResponse {
-  user: {
-    id: string;
-    fullName: string;
-    email: string;
-    role: Role;
-  };
-  tokens: AuthTokens;
+    user: {
+        id: string;
+        fullName: string;
+        email: string;
+        role: Role;
+    };
+    tokens: AuthTokens;
 }
 
-
 declare global {
-  namespace Express {
-    interface Request {
-      user?: TokenPayload;
+    namespace Express {
+        interface Request {
+            user?: TokenPayload;
+        }
     }
-  }
 }
