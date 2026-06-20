@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import api from '@/lib/api';
 
@@ -28,13 +28,13 @@ export default function AIChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom
-  const scrollToEnd = () => {
+  const scrollToEnd = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  }, []);
 
   useEffect(() => {
     scrollToEnd();
-  }, [messages, loading]);
+  }, [messages, loading, scrollToEnd]);
 
   // Load usage stats
   useEffect(() => {

@@ -26,20 +26,20 @@ export default function AdminUsersPage() {
   const [editRoleId, setEditRoleId] = useState<string | null>(null);
   const [editRoleValue, setEditRoleValue] = useState('');
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
+ const fetchUsers = async () => {
+  try {
+    const res = await api.get('/admin/users');
+    setUsers(res.data.data.users);
+  } catch (err) {
+    console.error(err);
+  } finally {
+    setLoading(false);
+  }
+};
 
-  const fetchUsers = async () => {
-    try {
-      const res = await api.get('/admin/users');
-      setUsers(res.data.data.users);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+useEffect(() => {
+  fetchUsers();
+}, []);
 
   const handleToggleActive = async (id: string) => {
     try {
