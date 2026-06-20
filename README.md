@@ -1,291 +1,220 @@
-# 🏋️ Gym Management System Platform
+# 🏋️ IronFit Pro — Gym Management System
+
 ![CI](https://github.com/sleepingbuild/gym-management/actions/workflows/ci.yml/badge.svg)
-
-Early-stage full-stack gym management platform focused on membership operations, trainer coordination, AI-assisted fitness workflows, and scalable service architecture.
-
-A comprehensive gym management platform featuring membership management, personal trainer scheduling, AI-powered fitness coaching, online payments, and real-time analytics.
-
-![Node.js](https://img.shields.io/badge/Node.js-18+-green)
-![Next.js](https://img.shields.io/badge/Next.js-14+-black)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14+-blue)
+![Node.js](https://img.shields.io/badge/Node.js-20+-green)
+![Next.js](https://img.shields.io/badge/Next.js-16+-black)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16+-blue)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5+-3178C6)
 ![License](https://img.shields.io/badge/License-MIT-blue)
+![Version](https://img.shields.io/badge/version-0.1.0-orange)
+
+A full-stack gym management platform with membership management, AI-powered fitness coaching (RAG), and online payments. Built as a course project demonstrating modern software engineering practices.
+
+🌐 **Live Demo:** https://gym-management-ct9i4d6vr-sleeping-team.vercel.app  
+📦 **API:** https://gym-management-production-44b5.up.railway.app/api
 
 ---
 
-# ✨ Features
+## 👥 User Personas
 
-## 👤 Member Features
+### 🧑‍💼 Admin — Quản lý phòng gym
+Cần một nền tảng để quản lý toàn bộ hội viên, theo dõi trạng thái tài khoản, và kiểm soát quyền truy cập hệ thống.
+- Quản lý danh sách user, lock/unlock tài khoản
+- Thay đổi role (ADMIN / PT / MEMBER)
+- Xem thống kê tổng quan
 
-* JWT Authentication
-* Membership registration and renewal
-* Personal Trainer booking
-* AI Fitness Coach
-* Progress tracking
-* QR Check-in
-* Online payments (VNPay, MoMo)
+### 🏃 Member — Hội viên phòng gym
+Muốn đăng ký gói tập, nhận tư vấn AI về luyện tập và dinh dưỡng, và thanh toán online.
+- Đăng ký và quản lý gói membership
+- Chat với AI Personal Trainer
+- Thanh toán qua VNPay / MoMo
 
-## 🧑‍💼 Admin Features
-
-* User management
-* Personal Trainer management
-* Membership management
-* Revenue analytics
-* AI usage analytics
-* System monitoring dashboard
-
-## 🤖 AI Features
-
-* Workout recommendations
-* Muscle gain guidance
-* Weight loss planning
-* Nutrition suggestions
-* Exercise explanations
-* Calorie calculation
-* Fitness Q&A
+### 🤸 PT — Personal Trainer *(planned v0.2.0)*
+Muốn quản lý lịch dạy và theo dõi tiến trình học viên.
+- Role đã có trong hệ thống
+- Features đang phát triển
 
 ---
 
-# 🛠️ Tech Stack
+## ✨ Features (v0.1.0)
 
-| Component      | Technology              |
-| -------------- | ----------------------- |
-| Backend        | Node.js + Express       |
-| Frontend       | Next.js                 |
-| Database       | PostgreSQL              |
-| ORM            | Prisma                  |
-| Authentication | JWT                     |
-| AI Integration | Gemini API / Claude API |
-| Payment        | VNPay, MoMo             |
-| Styling        | TailwindCSS + shadcn/ui |
-| Language       | TypeScript              |
+### ✅ Đã implement
+| Feature | Chi tiết |
+|---|---|
+| Authentication | JWT register/login, bcrypt, access (15m) + refresh (7d) token |
+| Role-Based Access | ADMIN / PT / MEMBER, middleware phân quyền |
+| Membership System | 3 gói Basic/Premium/Elite, auto-expiry tracking |
+| AI Fitness Chatbot | RAG pipeline: pgvector + gemini-embedding-001 + Gemini 2.0 Flash |
+| AI Usage Limiting | Daily + monthly limits theo từng gói |
+| Admin Dashboard | Quản lý users, lock/unlock, đổi role |
+| Payment Gateway | VNPay (HMAC-SHA512) + MoMo (HMAC-SHA256 + IPN webhook) |
+| Notification System | 6 loại in-app notification, auto-trigger |
+| AI Chat UI | Chat bubble, typing indicator, usage badge realtime |
 
----
-
-# 🏗️ Architecture Overview
-
-The system follows a modular full-stack architecture:
-
-* Frontend: Next.js application layer
-* Backend: Express.js REST API services
-* Database: PostgreSQL + Prisma ORM
-* AI Layer: Gemini API integration
-* Authentication: JWT-based security model
-
-For detailed architecture documentation, see:
-
-* `ARCHITECTURE.md`
+### 🔜 Planned
+- PT scheduling & student management (v0.2.0)
+- Body Progress Tracking / BMI chart (v0.2.0)
+- QR Check-in (v0.2.0)
+- Rate limiting middleware
 
 ---
 
-# 📁 Project Structure
+## 🛠️ Tech Stack
 
-```text
-gym-management/
-│
-├── backend/
-│   ├── src/
-│   │   ├── config/
-│   │   ├── controllers/
-│   │   ├── services/
-│   │   ├── routes/
-│   │   ├── middlewares/
-│   │   ├── validators/
-│   │   ├── types/
-│   │   └── utils/
-│   │
-│   ├── prisma/
-│   └── README.md
-│
-├── frontend/
-│   ├── src/
-│   │   ├── app/
-│   │   ├── components/
-│   │   ├── services/
-│   │   └── hooks/
-│   │
-│   └── README.md
-│
-├── ARCHITECTURE.md
-├── ROADMAP.md
-├── PROJECT_STATUS.md
-└── README.md
-```
+| Component | Technology |
+|---|---|
+| Backend | Node.js 20 + Express + TypeScript |
+| Frontend | Next.js 16 + TailwindCSS + Zustand |
+| Database | PostgreSQL 16 + pgvector (v0.8.2) |
+| ORM | Prisma v6 |
+| Authentication | JWT (access + refresh tokens) |
+| AI | Gemini 2.0 Flash + gemini-embedding-001 (RAG) |
+| Payment | VNPay + MoMo |
+| Deployment | Railway (backend) + Vercel (frontend) + Neon (database) |
+| CI/CD | GitHub Actions |
 
 ---
 
-# 👥 User Roles
+## 🏗️ Architecture
+┌─────────────────┐     ┌──────────────────────┐     ┌─────────────────┐
 
-| Role   | Permissions                                         |
-| ------ | --------------------------------------------------- |
-| Admin  | Full system management                              |
-| PT     | Manage assigned students and schedules              |
-| Member | Memberships, PT booking, AI chat, progress tracking |
+│   Next.js 16    │────▶│  Express REST API     │────▶│  PostgreSQL 16  │
+
+│   (Vercel)      │     │  (Railway)            │     │  + pgvector     │
+
+│                 │     │                       │     │  (Neon)         │
+
+│  Zustand store  │     │  JWT Auth middleware  │     │                 │
+
+│  Axios client   │     │  Zod validation       │     │  Prisma ORM     │
+
+└─────────────────┘     │  Prisma queries       │     └─────────────────┘
+
+│                       │
+
+│  ┌─────────────────┐  │
+
+│  │  RAG Pipeline   │  │
+
+│  │  Gemini 2.0     │  │
+
+│  │  Flash + embed  │  │
+
+│  └─────────────────┘  │
+
+└──────────────────────┘
+
+Xem chi tiết: [ARCHITECTURE.MD](./ARCHITECTURE.MD)
 
 ---
 
-# 🚀 Quick Start
+## 🚀 Quick Start
 
-## Prerequisites
+### Prerequisites
+- Node.js 20+
+- PostgreSQL 16+ với pgvector extension
+- Gemini API key
 
-* Node.js 18+
-* PostgreSQL 14+
-* npm
-
-## Backend Setup
-
+### Backend Setup
 ```bash
 git clone https://github.com/sleepingbuild/gym-management.git
-
 cd gym-management/backend
-
-cp .env.example .env
-
+cp .env.example .env        # điền API keys
 npm install
-
 npx prisma migrate dev
-
+npx prisma db seed
+npx tsx prisma/seed-knowledge.ts   # seed AI knowledge base
 npm run dev
 ```
 
-## Frontend Setup
-
+### Frontend Setup
 ```bash
 cd frontend
-
-cp .env.example .env.local
-
+cp .env.example .env.local  # set NEXT_PUBLIC_API_URL
 npm install
-
 npm run dev
 ```
 
 ---
 
-# 📚 Main API Modules
+## 📚 API Endpoints
 
-## Authentication
-
+### Authentication
 ```http
 POST /api/auth/register
 POST /api/auth/login
-POST /api/auth/refresh
-POST /api/auth/logout
 ```
 
-## Membership
-
+### Membership
 ```http
 GET  /api/memberships/plans
 POST /api/memberships/buy
 GET  /api/memberships/current
 ```
 
-## PT Management
-
-```http
-GET  /api/pts
-GET  /api/pts/:id
-POST /api/pts/assign
-GET  /api/pts/my-students
-```
-
-## AI Chat
-
+### AI Chat
 ```http
 POST /api/ai/chat
 GET  /api/ai/history
 GET  /api/ai/usage
 ```
 
-## Payment
+### Admin
+```http
+GET   /api/admin/stats
+GET   /api/admin/users
+PATCH /api/admin/users/:id/toggle-active
+PATCH /api/admin/users/:id/role
+```
 
+### Payment
 ```http
 POST /api/payments/create
 GET  /api/payments/history
-POST /api/payments/webhook
+GET  /api/payments/vnpay-return
+POST /api/payments/momo-webhook
+```
+
+### Notification
+```http
+GET   /api/notifications
+PATCH /api/notifications/:id/read
+PATCH /api/notifications/read-all
 ```
 
 ---
 
-# 🔒 Security
-
-* JWT Authentication
-* Password Hashing (bcrypt)
-* Role-Based Access Control (RBAC)
-* Input Validation (Zod)
-* Rate Limiting
-* Secure Environment Variables
-* HTTPS Ready
+## 🔒 Security
+- JWT Authentication (access + refresh tokens)
+- Password hashing (bcrypt, cost 12)
+- Role-Based Access Control (RBAC)
+- Input validation (Zod)
+- HTTPS in production
+- Environment variables (never hardcoded)
 
 ---
 
-# 📦 Deployment
+## 📦 Deployment
 
-| Service  | Platform               |
-| -------- | ---------------------- |
-| Frontend | Vercel                 |
-| Backend  | Railway / Render / VPS |
-| Database | PostgreSQL Cloud       |
-
----
-# 🐳 Docker Support
-
-## Backend Container
-
-Build Docker image:
-
-```bash
-cd backend
-docker build -t gym-management-backend .
-```
-
-Run container:
-
-```bash
-docker run -p 5000:5000 gym-management-backend
-```
-
-The Docker setup provides a reproducible backend runtime environment for development and deployment workflows.
+| Service | Platform | URL |
+|---|---|---|
+| Frontend | Vercel | https://gym-management-ct9i4d6vr-sleeping-team.vercel.app |
+| Backend | Railway | https://gym-management-production-44b5.up.railway.app |
+| Database | Neon | PostgreSQL + pgvector (Singapore region) |
 
 ---
 
-# 📖 Documentation
+## 📖 Documentation
 
-| File              | Description              |
-| ----------------- | ------------------------ |
-| ARCHITECTURE.md   | System architecture      |
-| ROADMAP.md        | Development roadmap      |
-| PROJECT_STATUS.md | Current project progress |
-
----
-
-# 🤝 Contributing
-
-```bash
-git checkout -b feature/your-feature
-
-git commit -m "[feat] add new feature"
-
-git push origin feature/your-feature
-```
----
-# 🚀 Releases
-
-The project follows semantic versioning.
-
-Current release:
-
-* `v0.1.0` — Initial Public Release
-
-GitHub Releases:
-
-* https://github.com/sleepingbuild/gym-management/releases
-
-Then create a Pull Request.
+| File | Mô tả |
+|---|---|
+| [ARCHITECTURE.MD](./ARCHITECTURE.MD) | System architecture, DB schema, API standards |
+| [ROADMAP.md](./ROADMAP.md) | 26-issue development plan, 6 phases |
+| [CHANGELOG.md](./CHANGELOG.md) | Version history |
+| [PROJECT_STATUS.md](./PROJECT_STATUS.md) | Current progress tracking |
 
 ---
 
-# 📄 License
+## 📄 License
 
-This project is licensed under the MIT License.
+MIT License — see [LICENSE](./LICENSE)
