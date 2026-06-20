@@ -1,8 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { authService } from "../services/auth.service";
 import { registerSchema, loginSchema } from "../validators/auth.validator";
-import { ZodError } from "zod";
-import { AppError } from "../utils/errors";
 
 export const authController = {
     async register(req: Request, res: Response, next: NextFunction) {
