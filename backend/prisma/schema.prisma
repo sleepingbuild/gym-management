@@ -43,6 +43,13 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   isDeleted Boolean  @default(false)
+
+
+  @@index([email])        // Unique, but index for performance
+  @@index([role])
+  @@index([isActive])
+  @@index([createdAt])
+  @@index([isDeleted])
 }
 
 model MembershipPlan {
@@ -78,6 +85,12 @@ model UserMembership {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([expiryDate])
+  @@index([userId, status])  // Composite index
+  @@index([planId])
 }
 
 model ChatHistory {
@@ -92,6 +105,9 @@ model ChatHistory {
 
   createdAt DateTime @default(now())
 
+  @@index([userId])
+  @@index([sessionId])
+  @@index([createdAt])
   @@index([userId, sessionId])
   @@index([userId, createdAt])
 }
@@ -135,6 +151,12 @@ model Payment {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([userId, status])
+  @@index([transactionId])
 }
 
 enum NotificationType {
@@ -159,8 +181,10 @@ model Notification {
 
   createdAt DateTime @default(now())
 
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
   @@index([userId, isRead])
-  @@index([userId, createdAt])
 }
 
 model BodyProgress {
@@ -180,5 +204,6 @@ model BodyProgress {
   updatedAt DateTime @updatedAt
   
   @@index([userId])
+  @@index([recordedAt])
   @@index([userId, recordedAt])
 }
