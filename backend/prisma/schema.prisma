@@ -38,6 +38,7 @@ model User {
   chatHistory    ChatHistory[]
   paymentHistory Payment[]
   notifications Notification[]
+  bodyProgress   BodyProgress[] 
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -97,13 +98,11 @@ model ChatHistory {
 
 model KnowledgeBase {
   id        String   @id @default(cuid())
-  category  String   // "workout", "nutrition", "general"
+  category  String
   title     String
   content   String   @db.Text
-  embedding Unsupported("vector(3072)")?
-
+  // embedding Unsupported("vector(3072)")?
   createdAt DateTime @default(now())
-
   @@index([category])
 }
 
@@ -162,4 +161,24 @@ model Notification {
 
   @@index([userId, isRead])
   @@index([userId, createdAt])
+}
+
+model BodyProgress {
+  id         String   @id @default(cuid())
+  userId     String
+  weight     Float    // Cân nặng (kg)
+  height     Float?   // Chiều cao (cm) - optional, lấy từ profile
+  bodyFat    Float?   // % mỡ cơ thể
+  muscleMass Float?   // Khối lượng cơ (kg)
+  bmi        Float?   // Chỉ số BMI (tự động tính)
+  notes      String?  @db.Text
+  recordedAt DateTime @default(now())
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([userId, recordedAt])
 }

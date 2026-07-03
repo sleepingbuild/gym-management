@@ -1,6 +1,7 @@
 ﻿import { Request, Response, NextFunction } from "express";
 import { membershipService } from "../services/membership.service";
 import { buyMembershipSchema } from "../validators/membership.validator";
+import { prisma } from "../config/prisma";
 
 const getPlans = async (
     req: Request,
@@ -67,8 +68,31 @@ const getCurrentMembership = async (
     }
 };
 
+// Debug function
+const debugPlans = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+): Promise<void> => {
+    try {
+        const allPlans = await prisma.membershipPlan.findMany();
+        const activePlans = allPlans.filter((p: any) => p.isActive);
+        res.status(200).json({
+            success: true,
+            data: {
+                total: allPlans.length,
+                all: allPlans,
+                active: activePlans,
+            },
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 export const membershipController = {
     getPlans,
     buyMembership,
     getCurrentMembership,
+    debugPlans,
 };

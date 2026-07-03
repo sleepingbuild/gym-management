@@ -1,5 +1,3 @@
-// src/types/auth.types.ts
-
 import { Role } from "@prisma/client";
 
 export interface TokenPayload {
@@ -8,10 +6,16 @@ export interface TokenPayload {
     role: Role;
 }
 
+export interface AuthTokens {
+    accessToken: string;
+    refreshToken: string;
+}
+
 export interface RegisterDTO {
     fullName: string;
     email: string;
     password: string;
+    phone?: string;
 }
 
 export interface LoginDTO {
@@ -19,17 +23,20 @@ export interface LoginDTO {
     password: string;
 }
 
-export interface AuthTokens {
-    accessToken: string;
-    refreshToken: string;
-}
-
 export interface AuthResponse {
     user: {
         id: string;
-        fullName: string;
         email: string;
+        fullName: string;
         role: Role;
+        phone?: string | null;
+        avatar?: string | null;
+        isActive: boolean;
     };
     tokens: AuthTokens;
+}
+
+export interface RefreshTokenResponse {
+    accessToken: string;
+    refreshToken?: string;
 }

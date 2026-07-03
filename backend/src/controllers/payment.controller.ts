@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { paymentService } from "../services/payment.service";
 import { z } from "zod";
 import { AppError } from "../utils/errors";
+import { prisma } from "../config/prisma";
 
 const createPaymentSchema = z.object({
     planId: z.string().min(1, "PAYMENT_003: Plan ID is required"),
@@ -24,7 +25,6 @@ const createPayment = async (
             "127.0.0.1";
 
         // Lay amount tu plan
-        const { prisma } = await import("../config/prisma");
         const plan = await prisma.membershipPlan.findFirst({
             where: { id: planId, isActive: true },
         });

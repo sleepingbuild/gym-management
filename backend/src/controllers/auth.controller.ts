@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { authService } from "../services/auth.service";
-import { registerSchema, loginSchema } from "../validators/auth.validator";
+import { registerSchema, loginSchema, refreshTokenSchema } from "../validators/auth.validator";
+import { AppError } from "../utils/errors";
 
 export const authController = {
     async register(req: Request, res: Response, next: NextFunction) {
@@ -29,6 +30,36 @@ export const authController = {
                 statusCode: 200,
                 message: "Login successful",
                 data: result,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
+
+    async refresh(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { refreshToken } = refreshTokenSchema.parse(req.body);
+            const result = await authService.refresh(refreshToken);
+
+            res.status(200).json({
+                success: true,
+                statusCode: 200,
+                message: "Token refreshed successfully",
+                data: result,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
+
+    async logout(req: Request, res: Response, next: NextFunction) {
+        try {
+            // JWT logout is client-side
+            // But we can add token to blacklist here if needed
+            res.status(200).json({
+                success: true,
+                statusCode: 200,
+                message: "Logout successful",
             });
         } catch (err) {
             next(err);
