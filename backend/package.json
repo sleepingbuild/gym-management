@@ -14,7 +14,7 @@
     "test": "jest --runInBand --forceExit",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage --forceExit",
-    "test:ci": "jest --runInBand --coverage"
+    "test:ci": "jest --runInBand --coverage --forceExit"
   },
   "keywords": [
     "gym",
