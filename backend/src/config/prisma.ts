@@ -1,3 +1,25 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from '@prisma/client';
 
-export const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+    log: process.env.NODE_ENV === 'development'
+        ? ['query', 'info', 'warn', 'error']
+        : ['error'],
+});
+
+// Slow query logging (>100ms)
+if (process.env.NODE_ENV === 'development') {
+    prisma.$use(async (params, next) => {
+        const before = Date.now();
+        const result = await next(params);
+        const after = Date.now();
+        const duration = after - before;
+
+        if (duration > 100) {
+            console.log(`⚠️ Slow query: ${params.model}.${params.action} took ${duration}ms`);
+            console.log(`   Query:`, params);
+        }
+        return result;
+    });
+}
+
+export { prisma };
