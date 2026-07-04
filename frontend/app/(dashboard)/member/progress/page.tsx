@@ -7,15 +7,15 @@ import { ProgressStats } from './components/ProgressStats';
 import { ProgressChart } from './components/ProgressChart';
 import { ProgressForm } from './components/ProgressForm';
 import { ProgressHistory } from './components/ProgressHistory';
-import { CreateProgressDTO } from '@/services/bodyProgress.service';
+import { CreateProgressDTO, ProgressStats as StatsType, ChartData, BodyProgressRecord } from '@/services/bodyProgress.service';
 
 export default function ProgressPage() {
   const { user } = useAuthStore();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [stats, setStats] = useState(null);
-  const [chartData, setChartData] = useState(null);
-  const [records, setRecords] = useState([]);
+  const [stats, setStats] = useState<StatsType | null>(null);
+  const [chartData, setChartData] = useState<ChartData | null>(null);
+  const [records, setRecords] = useState<BodyProgressRecord[]>([]);
 
   const fetchData = async () => {
     setLoading(true);
