@@ -6,6 +6,8 @@ import adminRoutes from "./admin.routes";
 import paymentRoutes from "./payment.routes";
 import notificationRoutes from "./notification.routes";
 import bodyProgressRoutes from "./bodyProgress.routes";
+import attendanceRoutes from "./attendance.routes";
+import bodyGoalRoutes from "./bodyGoal.routes";
 
 const router = Router();
 
@@ -16,5 +18,7 @@ router.use("/admin", adminRoutes);
 router.use("/payments", paymentRoutes);
 router.use("/notifications", notificationRoutes);
 router.use("/body-progress", bodyProgressRoutes);
+router.use("/attendance", attendanceRoutes);
+router.use("/body-goal", bodyGoalRoutes);
 
 export default router;

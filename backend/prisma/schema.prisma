@@ -33,23 +33,65 @@ model User {
   avatar   String?
   role     Role    @default(MEMBER)
   isActive Boolean @default(true) 
+  isDeleted Boolean @default(false)
 
   userMembership UserMembership?
   chatHistory    ChatHistory[]
   paymentHistory Payment[]
-  notifications Notification[]
-  bodyProgress   BodyProgress[] 
+  notifications  Notification[]
+  bodyProgress   BodyProgress[]      
+  attendances    Attendance[]        // ✅ GIỮ
+  bodyGoal       BodyGoal?           // ✅ GIỮ
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  isDeleted Boolean  @default(false)
 
-
-  @@index([email])        // Unique, but index for performance
+  @@index([email])
   @@index([role])
   @@index([isActive])
   @@index([createdAt])
-  @@index([isDeleted])
+}
+
+// ✅ GIỮ LẠI Attendance
+model Attendance {
+  id           String   @id @default(cuid())
+  userId       String
+  checkInTime  DateTime @default(now())
+  checkOutTime DateTime?
+  qrCode       String   @unique
+  qrExpiry     DateTime
+  notes        String?  @db.Text
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([qrCode])
+  @@index([checkInTime])
+}
+
+// ✅ GIỮ LẠI BodyGoal
+model BodyGoal {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  targetWeight   Float?
+  targetBmi      Float?
+  targetBodyFat  Float?
+  targetMuscle   Float?
+  startDate      DateTime @default(now())
+  targetDate     DateTime
+  status         String   @default("ACTIVE")
+  notes          String?  @db.Text
+
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
 }
 
 model MembershipPlan {
