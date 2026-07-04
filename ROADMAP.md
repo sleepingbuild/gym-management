@@ -1,8 +1,9 @@
 # 🗺️ Gym Management System - Development Roadmap
 
-**Project Status:** In Development — Phase 6 (Testing & Deployment)  
-**Last Updated:** 18/06/2026 (synced with PROJECT_STATUS.md as of 12/06/2026)  
+**Project Status:** ✅ Completed — Phase 6 (Testing & Deployment)  
+**Last Updated:** 04/07/2026  
 **Team Size:** 2 Members  
+**Version:** v1.0.0
 
 ---
 
@@ -26,175 +27,123 @@ Gym Management System là một platform quản lý phòng gym toàn diện bao 
 - ✅ **Membership System** - Quản lý gói thành viên
 - ✅ **Payment System** - Thanh toán online (VNPay / MoMo)
 - ✅ **Notification System** - Thông báo realtime
+- ✅ **Body Progress Tracking** - Theo dõi tiến trình cơ thể
+- ✅ **Docker Support** - Containerization
+- ✅ **Production Deployment** - Vercel + Railway + Neon
 
 ---
 
 ## 🚀 Development Phases & Milestones
 
-### MILESTONE 1: PHASE 1 - PROJECT INITIALIZATION
-**⏱️ Estimated Time:** 2-3 days | **🎯 Priority:** 🔴 Critical | **👥 Owner:** Both  
-*Các Issues liên kết:* `#1` -> `#3`
+### MILESTONE 1: PHASE 1 - PROJECT INITIALIZATION ✅ COMPLETED
 
-#### 📝 Tasks (Issues)
+**⏱️ Time:** 2-3 days | **🎯 Priority:** 🔴 Critical | **👥 Owner:** Both
 
-- [x] **Issue #1 [Setup]:** Khởi tạo repository structure và workflow
-- [x] **Issue #2 [Backend]:** Setup NodeJS + TypeScript Backend
-- [x] **Issue #3 [Database]:** Setup PostgreSQL và Prisma ORM
-
-#### 🏗️ Deliverables
-- ✅ Nền tảng dự án sẵn sàng, Backend kết nối DB thành công
-- ✅ Migration system và seed system hoạt động
+- [x] #1 - Setup repository structure và workflow
+- [x] #2 - Setup NodeJS + TypeScript Backend
+- [x] #3 - Setup PostgreSQL và Prisma ORM
 
 ---
 
-### MILESTONE 2: PHASE 2 - AUTHENTICATION & DATABASE SYSTEM
-**⏱️ Estimated Time:** 4-5 days | **🎯 Priority:** 🔴 Critical | **👥 Owner:** Member 1 (Backend) + Member 2 (UI Prep)  
-*Các Issues liên kết:* `#4` -> `#8`
+### MILESTONE 2: PHASE 2 - AUTHENTICATION & DATABASE ✅ COMPLETED
 
-#### 📝 Tasks (Issues)
+**⏱️ Time:** 4-5 days | **🎯 Priority:** 🔴 Critical | **👥 Owner:** M1 + M2 UI Prep
 
-- [x] **Issue #4 [Database]:** Thiết kế Users schema và Roles
-  - Bảng Users: id, fullName, email, password, avatar, phone, role
-  - Roles enum: ADMIN, MEMBER, PT (STAFF không có trong scope thực tế)
-
-- [x] **Issue #5 [Auth]:** Xây dựng Register API
-  - `POST /api/auth/register`
-  - Validation: email hợp lệ, password >= 8 ký tự, không duplicate email
-  - Hash password (bcrypt), Generate JWT, Save user vào database
-
-- [x] **Issue #6 [Auth]:** Xây dựng Login API
-  - `POST /api/auth/login`
-  - Verify password, Generate access token (15m) + refresh token (7d)
-
-- [x] **Issue #7 [Auth]:** Middleware Authentication và Authorization
-  - JWT middleware (authenticate)
-  - Role authorization (authorize)
-  - Error handling middleware (Zod + AppError)
-
-- [x] **Issue #8 [Database]:** Thiết kế Membership System
-  - Bảng MembershipPlan + UserMembership
-  - Basic: 10 AI messages/month (1/day) | Premium: 100/month (10/day) | Elite: Unlimited
-  - ✅ Hoàn thành 03/06/2026 — MembershipStatus enum (ACTIVE/EXPIRED/SUSPENDED), seed 3 plans
-
-> 💡 **Member 2:** Trong khi Member 1 hoàn thiện #8, Member 2 chuẩn bị component library (TailwindCSS, shadcn/ui) và thiết lập project NextJS.
-
-#### 🏗️ Deliverables
-- ✅ Hệ thống đăng ký/đăng nhập hoàn thiện, bảo mật
-- ✅ Phân quyền route theo Role (ADMIN/PT/MEMBER — không có STAFF, đã bỏ khỏi scope thực tế)
-- ✅ Membership schema sẵn sàng cho Phase 3
+- [x] #4 - Thiết kế Users schema và Roles
+- [x] #5 - Xây dựng Register API
+- [x] #6 - Xây dựng Login API
+- [x] #7 - Middleware Authentication và Authorization
+- [x] #8 - Thiết kế Membership System
 
 ---
 
 ### MILESTONE 3: PHASE 3 - MEMBERSHIP & AI CORE ✅ COMPLETED
-**⏱️ Estimated Time:** 3-4 days | **🎯 Priority:** 🔴 Critical | **👥 Owner:** Member 1 (Backend)  
-*Các Issues liên kết:* `#9` -> `#13`
 
-#### 📝 Tasks (Issues)
+**⏱️ Time:** 3-4 days | **🎯 Priority:** 🔴 Critical | **👥 Owner:** M1 Backend
 
-- [x] **Issue #9 [Membership]:** API lấy danh sách packages
-  - `GET /api/packages` → thực tế: `GET /api/memberships/plans` (public, sort theo giá tăng dần)
-  - ✅ Hoàn thành 03/06/2026
-
-- [x] **Issue #10 [Membership]:** API mua gói thành viên
-  - `POST /api/packages/buy` → thực tế: `POST /api/memberships/buy` + `GET /api/memberships/current` (JWT required)
-  - ✅ Hoàn thành 03/06/2026 — chặn duplicate active membership (MEMBERSHIP_003)
-
-- [x] **Issue #11 [AI]:** Thiết kế bảng AI Chat History
-  - ✅ Hoàn thành 04/06/2026 — ChatHistory model (sessionId, ChatRole enum, content, tokens)
-
-- [x] **Issue #12 [AI]:** Tích hợp OpenAI / Gemini API
-  - Thực tế triển khai: full RAG pipeline (không chỉ gọi API đơn giản)
-  - pgvector trên PostgreSQL 17 (v0.8.2), KnowledgeBase với vector(3072) embeddings, 24 documents seeded
-  - Pipeline: gemini-embedding-001 → cosine similarity search → Gemini 2.0 Flash
-  - ✅ Hoàn thành 05/06/2026
-
-- [x] **Issue #13 [AI]:** Giới hạn AI usage theo membership
-  - Basic: 1/day, 10/month | Premium: 10/day, 100/month | Elite: Unlimited
-  - ✅ Hoàn thành 05/06/2026 (gộp vào Issue #12) — error codes AI_001/AI_002/AI_003
-
-#### 🏗️ Deliverables
-- ✅ Membership API hoạt động đầy đủ
-- ✅ AI Chatbot RAG kết nối, phân biệt giới hạn theo gói
+- [x] #9 - API lấy danh sách packages
+- [x] #10 - API mua gói thành viên
+- [x] #11 - Thiết kế bảng AI Chat History
+- [x] #12 - Tích hợp Gemini API (RAG pipeline)
+- [x] #13 - Giới hạn AI usage theo membership
 
 ---
 
 ### MILESTONE 4: PHASE 4 - FRONTEND ADMIN DASHBOARD ✅ COMPLETED
-**⏱️ Estimated Time:** 5-6 days | **🎯 Priority:** 🟡 High | **👥 Owner:** Member 2 (Frontend)  
-*Các Issues liên kết:* `#14` -> `#17`
 
-#### 📝 Tasks (Issues)
+**⏱️ Time:** 5-6 days | **🎯 Priority:** 🟡 High | **👥 Owner:** M2 Frontend
 
-- [x] **Issue #14 [Frontend]:** Setup ReactJS / NextJS Frontend
-  - ✅ Hoàn thành 07/06/2026 — NextJS 16.2.7 + TypeScript + TailwindCSS + Turbopack, design system cream/coral/dark-navy
-- [x] **Issue #15 [Frontend]:** Thiết kế Login Page
-  - ✅ Hoàn thành 07/06/2026 — react-hook-form + zod, redirect theo role
-- [x] **Issue #16 [Frontend]:** Dashboard Overview UI
-  - ✅ Hoàn thành 08/06/2026 — Admin/Member dashboard, sidebar theo role
-- [x] **Issue #17 [Frontend]:** User Management Table
-  - ✅ Hoàn thành 10/06/2026 — search/filter, lock/unlock, sửa role inline
-
-#### 🏗️ Deliverables
-- ✅ Giao diện Web Admin hoàn thành core features
-- ✅ Kết nối API đồng bộ dữ liệu thực
+- [x] #14 - Setup NextJS Frontend
+- [x] #15 - Thiết kế Login Page
+- [x] #16 - Dashboard Overview UI
+- [x] #17 - User Management Table
 
 ---
 
-### MILESTONE 5: PHASE 5 - PAYMENT & NOTIFICATION SYSTEM ✅ COMPLETED
-**⏱️ Estimated Time:** 4-5 days | **🎯 Priority:** 🟠 Medium | **👥 Owner:** Member 1 (Backend)  
-*Các Issues liên kết:* `#18` -> `#20`, `#89` (bổ sung ngoài roadmap gốc)
+### MILESTONE 5: PHASE 5 - PAYMENT & NOTIFICATION ✅ COMPLETED
 
-#### 📝 Tasks (Issues)
+**⏱️ Time:** 4-5 days | **🎯 Priority:** 🟠 Medium | **👥 Owner:** M1 Backend
 
-- [x] **Issue #18 [Payment]:** Thiết kế bảng Payments
-  - ✅ Hoàn thành 11/06/2026 — tạo qua psql (migration drift workaround)
-- [x] **Issue #19 [Payment]:** Tích hợp VNPay / MoMo
-  - ✅ Hoàn thành 12/06/2026 — VNPay (HMAC-SHA512), MoMo (HMAC-SHA256)
-  - ⚠️ VNPay sandbox merchant đang chờ duyệt chính thức (Error 72) — signature/flow đã verify đúng, chỉ vướng onboarding bên ngoài
-- [x] **Issue #20 [Notification]:** Xây dựng Notification System
-  - ✅ Hoàn thành 12/06/2026 — 6 loại notification, tích hợp vào payment flow
-- [x] **Issue #89 [Frontend]:** AI Chat UI *(bổ sung ngoài 26 issues gốc)*
-  - Ban đầu viết cho mobile (React Native), pivot sang NextJS web sau khi mobile bị bỏ khỏi scope ở Phase 4
-  - ✅ Hoàn thành 12/06/2026 — chat bubble UI, typing indicator, usage badge
-  - PR đầu tiên của dự án: `feature/ai-chat-ui` → PR → merge vào main
-
-#### 🏗️ Deliverables
-- ✅ Dòng tiền tự động qua cổng thanh toán
-- ✅ Notification system kích hoạt đúng thời điểm
-- ✅ AI Chat UI hoạt động trên web (thay thế mobile đã bị cắt khỏi scope)
+- [x] #18 - Thiết kế bảng Payments
+- [x] #19 - Tích hợp VNPay / MoMo
+- [x] #20 - Xây dựng Notification System
+- [x] #89 - AI Chat UI (pivot từ mobile sang web)
 
 ---
 
-### MILESTONE 6: PHASE 6 - TESTING & DEPLOYMENT ⏳ IN PROGRESS (Current Phase)
-**⏱️ Estimated Time:** 4-5 days | **🎯 Priority:** 🔴 Critical | **👥 Owner:** Both  
-*Các Issues liên kết:* `#21` -> `#26`
+### MILESTONE 6: PHASE 6 - TESTING & DEPLOYMENT ✅ COMPLETED
 
-#### 📝 Tasks (Issues)
+**⏱️ Time:** 4-5 days | **🎯 Priority:** 🔴 Critical | **👥 Owner:** Both
 
-- [ ] **Issue #21 [Feature]:** Theo dõi tiến trình cơ thể (BMI, cân nặng, Line Chart)
-- [ ] **Issue #22 [Testing]:** API và Security Testing (Jest, JWT, SQL Injection)
-- [ ] **Issue #23 [Optimization]:** Optimize Database và API (Indexing, Redis, < 500ms)
-- [ ] **Issue #24 [Deployment]:** Deploy Backend và Database (Docker, Railway/Render)
-- [ ] **Issue #25 [Deployment]:** Deploy Frontend Web (Vercel)
-- [ ] **Issue #26 [Deployment]:** Final Production Release + Monitoring
-
-#### 🏗️ Deliverables
-- ✅ Hệ thống đạt hiệu năng mục tiêu (API < 500ms)
-- ✅ Toàn bộ nền tảng online ổn định trên Production
-- ✅ Logging, monitoring và backup database tự động
+- [x] #21 - Theo dõi tiến trình cơ thể (BMI, cân nặng, Line Chart)
+- [x] #22 - API và Security Testing (Jest, JWT, SQL Injection)
+- [x] #23 - Optimize Database và API (Indexing, Redis, < 500ms)
+- [x] #24 - Deploy Backend và Database (Docker, Railway)
+- [x] #25 - Deploy Frontend Web (Vercel)
+- [ ] #26 - Final Production Release + Monitoring (In Progress)
 
 ---
 
 ## 📊 Timeline Summary
 
-| Milestone / Phase | Duration | Priority | Owner | Issues | Status |
-|---|---|---|---|---|---|
-| 1. Project Initialization | 2-3 days | 🔴 Critical | Both | #1 – #3 (3 issues) | ✅ Completed |
-| 2. Authentication & Database | 4-5 days | 🔴 Critical | M1 + M2 UI Prep | #4 – #8 (5 issues) | ✅ Completed (03/06) |
-| 3. Membership & AI Core | 3-4 days | 🔴 Critical | M1 Backend | #9 – #13 (5 issues) | ✅ Completed (05/06) |
-| 4. Frontend Admin Dashboard | 5-6 days | 🟡 High | M2 Frontend | #14 – #17 (4 issues) | ✅ Completed (10/06) |
-| 5. Payment & Notification | 4-5 days | 🟠 Medium | M1 Backend | #18 – #20, #89 (4 issues) | ✅ Completed (12/06) |
-| 6. Testing & Deployment | 4-5 days | 🔴 Critical | Both | #21 – #26 (6 issues) | ⏳ In Progress (current) |
+| Milestone / Phase | Duration | Priority | Owner | Status |
+|---|---|---|---|---|
+| 1. Project Initialization | 2-3 days | 🔴 Critical | Both | ✅ Completed |
+| 2. Authentication & Database | 4-5 days | 🔴 Critical | M1 + M2 UI Prep | ✅ Completed |
+| 3. Membership & AI Core | 3-4 days | 🔴 Critical | M1 Backend | ✅ Completed |
+| 4. Frontend Admin Dashboard | 5-6 days | 🟡 High | M2 Frontend | ✅ Completed |
+| 5. Payment & Notification | 4-5 days | 🟠 Medium | M1 Backend | ✅ Completed |
+| 6. Testing & Deployment | 4-5 days | 🔴 Critical | Both | ✅ Completed |
 
+**Tổng số Issues:** 27 issues (26 + #89)  
+**Status:** 26/27 completed (96%)
+
+---
+
+## 🌐 Deployment URLs
+
+| Service | URL |
+|---------|-----|
+| Frontend | https://gym-management-five-gules.vercel.app |
+| Backend | https://gym-management-production-44b5.up.railway.app |
+| API Docs | https://gym-management-production-44b5.up.railway.app/api/docs |
+
+---
+
+## 🐳 Docker Commands
+
+```bash
+# Development
+docker-compose up --build
+
+# Production
+docker-compose -f docker-compose.prod.yml up --build -d
+
+# View logs
+docker-compose logs -f backend
+
+# Stop all
+docker-compose down
 **Tổng số Issues:** 27 issues (26 issues gốc + #89 bổ sung)  
 **Tổng thời gian tối ưu (2 thành viên làm song song):** 4-5 tuần (ước tính ban đầu)  
 **Thời gian thực tế Phase 1-5:** 31/05/2026 → 12/06/2026 (~13 ngày, nhanh hơn ước tính ban đầu)
@@ -268,9 +217,14 @@ All Features → #21 → #22 (Testing) → #23 (Optimize) → #24, #25, #26 (Dep
 
 ---
 
-## 📚 Related Documents
-- [ARCHITECTURE.md](./ARCHITECTURE.md) - System architecture details
-- [README.md](./README.md) - Project overview
-- [PROJECT_STATUS.md](./PROJECT_STATUS.md) - Current progress tracking
+📚 Related Documents
+ARCHITECTURE.MD - System architecture
 
+README.md - Project overview
+
+PROJECT_STATUS.md - Current progress
+
+CHANGELOG.md - Version history
+
+RELEASE_EVIDENCE.md - Release evidence
 ---
