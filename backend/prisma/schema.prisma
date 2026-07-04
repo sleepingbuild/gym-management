@@ -105,7 +105,6 @@ model ChatHistory {
 
   createdAt DateTime @default(now())
 
-  @@index([userId])
   @@index([sessionId])
   @@index([createdAt])
   @@index([userId, sessionId])
@@ -117,9 +116,11 @@ model KnowledgeBase {
   category  String
   title     String
   content   String   @db.Text
-  // embedding Unsupported("vector(3072)")?
+  // embedding Unsupported("vector(768)")?
   createdAt DateTime @default(now())
+
   @@index([category])
+  @@index([createdAt])
 }
 
 enum PaymentStatus {
