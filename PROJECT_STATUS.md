@@ -152,3 +152,27 @@ Docker Compose available for local development
 All tests pass (16/16)
 
 Redis is optional (app runs without it)
+
+```
+**Current Version:** v0.2.0
+**Last Updated:** 05/07/2026
+
+---
+
+## ✅ Completed Features
+
+### v0.1.0 (Done)
+- ✅ Authentication (Register/Login/JWT)
+- ✅ Role-Based Access (Admin/Member/PT)
+- ✅ Membership System (3 tiers)
+- ✅ AI Fitness Chatbot (RAG with Gemini)
+- ✅ Body Progress Tracking
+- ✅ Payment Gateway (VNPay/MoMo)
+- ✅ Notification System
+- ✅ Admin Dashboard
+
+### v0.2.0 (Done)
+- ✅ QR Check-in
+- ✅ Goal Setting (Body Progress)
+- ✅ PT Dashboard (UI)
+- ✅ Attendance History & Stats
