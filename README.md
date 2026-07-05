@@ -110,32 +110,52 @@ text
 ```bash
 git clone https://github.com/sleepingbuild/gym-management.git
 cd gym-management/backend
-cp .env.example .env        # điền API keys
+cp .env.example .env       
 npm install
 npx prisma migrate dev
 npx prisma db seed
-npx tsx prisma/seed-knowledge.ts   # seed AI knowledge base
+npx tsx prisma/seed-knowledge.ts   
 npm run dev
+```
 Frontend Setup
-bash
+```bash
 cd frontend
-cp .env.example .env.local  # set NEXT_PUBLIC_API_URL
+cp .env.example .env.local 
 npm install
 npm run dev
-Docker Setup
-bash
+```
+## Docker Setup
 # Development
+```bash
 docker-compose up --build
+```
 
 # Production
+```
 docker-compose -f docker-compose.prod.yml up --build -d
-🌐 Deployment
+```
+
+## 🌐 Deployment
 Service	Platform	URL
-Frontend	Vercel	https://gym-management-five-gules.vercel.app
-Backend	Railway	https://gym-management-production-44b5.up.railway.app
-Database	Neon	PostgreSQL + pgvector (Singapore region)
-API Docs	Swagger	https://gym-management-production-44b5.up.railway.app/api/docs
-🔒 Security
+Frontend -Vercel	
+```
+https://gym-management-five-gules.vercel.app
+```
+Backend	- Railway	
+```
+https://gym-management-production-44b5.up.railway.app
+```
+Database - Neon	
+```
+PostgreSQL + pgvector (Singapore region)
+```
+API Docs -Swagger	
+```
+https://gym-management-production-44b5.up.railway.app/api/docs
+```
+
+## 🔒 Security
+```
 JWT Authentication (access + refresh tokens)
 
 Password hashing (bcrypt, cost 12)
@@ -149,25 +169,36 @@ HTTPS in production
 Environment variables (never hardcoded)
 
 Rate limiting middleware
+```
 
-📚 API Endpoints
+## 📚 API Endpoints
 Authentication
+```
 http
 POST /api/auth/register
 POST /api/auth/login
 POST /api/auth/refresh
 POST /api/auth/logout
+```
+
 Membership
+```
 http
 GET  /api/memberships/plans
 POST /api/memberships/buy
 GET  /api/memberships/current
+```
+
 AI Chat
+```
 http
 POST /api/ai/chat
 GET  /api/ai/history
 GET  /api/ai/usage
+```
+
 Body Progress
+```
 http
 POST /api/body-progress
 GET  /api/body-progress
@@ -176,29 +207,55 @@ GET  /api/body-progress/chart
 GET  /api/body-progress/stats
 PUT  /api/body-progress/:id
 DELETE /api/body-progress/:id
+```
+
 Admin
+```
 http
 GET   /api/admin/stats
 GET   /api/admin/users
 PATCH /api/admin/users/:id/toggle-active
 PATCH /api/admin/users/:id/role
+```
+
 Payment
+```
 http
 POST /api/payments/create
 GET  /api/payments/history
 GET  /api/payments/vnpay-return
 POST /api/payments/momo-webhook
+```
+
 Notification
+```
 http
 GET   /api/notifications
 PATCH /api/notifications/:id/read
 PATCH /api/notifications/read-all
-📖 Documentation
-File	Mô tả
-ARCHITECTURE.MD	System architecture, DB schema, API standards
+```
+
+## 📖 Documentation
+```
+ARCHITECTURE.MD	System architecture
+```
+```
+DB schema
+```
+```
+API standards
+```
+```
 ROADMAP.md	26-issue development plan, 6 phases
+```
+```
 CHANGELOG.md	Version history
+```
+```
 PROJECT_STATUS.md	Current progress tracking
+```
+```
 RELEASE_EVIDENCE.md	Release evidence and test results
-📄 License
+```
+## 📄 License
 MIT License — see LICENSE
