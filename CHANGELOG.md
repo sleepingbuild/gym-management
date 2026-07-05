@@ -102,3 +102,31 @@
 - Frontend: Next.js 16 + TailwindCSS + Zustand
 - AI: Gemini 2.0 Flash + gemini-embedding-001 (RAG)
 - Payment: VNPay + MoMo
+
+## [0.2.0] - 2026-07-05
+
+### Added
+- **QR Check-in** — Check-in/Check-out bằng QR code
+  - Tạo QR code cho mỗi hội viên
+  - Check-in bằng QR
+  - Lịch sử check-in
+  - Thống kê attendance
+
+- **Goal Setting** — Đặt mục tiêu cho Body Progress
+  - Đặt mục tiêu cân nặng, BMI, mỡ cơ thể
+  - Theo dõi tiến trình so với mục tiêu
+  - Tự động cập nhật khi đạt mục tiêu
+
+- **PT Dashboard** — Dashboard cho PT
+  - Xem danh sách học viên
+  - Xem thông tin học viên
+
+### Changed
+- Update Prisma schema (Attendance, BodyGoal)
+- Update frontend services
+- Update API routes
+
+### Fixed
+- Fix CORS issues
+- Fix 401 error on frontend
+- Fix goal creation conflict
