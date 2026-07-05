@@ -1,0 +1,7 @@
+﻿[build]
+builder = "nixpacks"
+buildCommand = "npm ci && npx prisma generate"
+startCommand = "npx prisma migrate deploy && npm start"
+
+[deploy]
+healthcheckTimeout = 30
