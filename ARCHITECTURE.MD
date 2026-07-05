@@ -1,4 +1,3 @@
-
 # 🏗️ GYM MANAGEMENT SYSTEM - ARCHITECTURE GUIDE
 
 ## 📌 Project Overview
@@ -12,6 +11,7 @@ Gym Management System là một nền tảng quản lý phòng gym bao gồm:
 * Payment Gateway
 * Notification System
 * AI Fitness Chatbot
+* Body Progress Tracking
 
 ---
 
@@ -25,7 +25,9 @@ Gym Management System là một nền tảng quản lý phòng gym bao gồm:
 6. [API Standards](#api-standards)
 7. [System Flows](#system-flows)
 8. [Environment Variables](#environment-variables)
-9. [Critical Rules Summary](#critical-rules-summary)
+9. [Docker Support](#docker-support)
+10. [Deployment](#deployment)
+11. [Critical Rules Summary](#critical-rules-summary)
 
 ---
 
@@ -34,7 +36,6 @@ Gym Management System là một nền tảng quản lý phòng gym bao gồm:
 ## 1. KHÔNG PHÁ VỠ KIẾN TRÚC HIỆN TẠI
 
 Trước khi tạo:
-
 * file mới
 * folder mới
 * service mới
@@ -42,38 +43,29 @@ Trước khi tạo:
 
 => bắt buộc đọc structure hiện tại.
 
----
-
 ## 2. KHÔNG DUPLICATE CODE
 
 * Không tạo service trùng chức năng.
 * Không tạo helper/function trùng.
 * Không copy business logic sang nhiều nơi.
 
----
-
 ## 3. KHÔNG VIẾT BUSINESS LOGIC TRONG CONTROLLER
 
 ### Controller chỉ làm:
-
 * nhận request
 * gọi service
 * trả response
 
 ### Service mới xử lý:
-
 * logic hệ thống
 * database
 * AI
 * payment
 * validation nâng cao
 
----
-
 ## 4. KHÔNG HARDCODE
 
 Tất cả:
-
 * API KEY
 * DATABASE URL
 * JWT SECRET
@@ -82,17 +74,13 @@ Tất cả:
 
 => phải nằm trong `.env`
 
----
-
 ## 5. TYPESCRIPT STRICT MODE
 
 * Không dùng `any`
 * Luôn định nghĩa types/interfaces rõ ràng
 * Ưu tiên DTO pattern
 
----
-
-## 6. MỌI API PHẢI CÓ
+## 6. MỖI API PHẢI CÓ
 
 * validation (Zod)
 * try/catch
@@ -103,161 +91,182 @@ Tất cả:
 ---
 
 # 📂 ROOT PROJECT STRUCTURE
-
-```text
 gym-management/
 │
-├── backend/                    # NodeJS + Express + TypeScript
-├── frontend/                   # NextJS + TailwindCSS
+├── backend/ # NodeJS + Express + TypeScript
+├── frontend/ # NextJS + TailwindCSS
 │
-├── ROADMAP.md                  # Development timeline
-├── ARCHITECTURE.md             # This file
-├── PROJECT_STATUS.md           # Current progress tracking
+├── .github/workflows/ # CI/CD
+├── docker-compose.yml # Docker Compose
+├── docker-compose.prod.yml # Docker Compose Production
+│
+├── ROADMAP.md # Development timeline
+├── ARCHITECTURE.md # This file
+├── PROJECT_STATUS.md # Current progress tracking
+├── README.md # Project overview
+├── CHANGELOG.md # Version history
+├── RELEASE_EVIDENCE.md # Release evidence
 ├── .gitignore
-└── README.md
-🖥️ BACKEND ARCHITECTURE
-⚙️ Tech Stack
-NodeJS (v18+)
+└── LICENSE
 
-ExpressJS
-
-TypeScript
-
-PostgreSQL
-
-Prisma ORM
-
-JWT Authentication
-
-OpenAI / Gemini SDK
-
-VNPay / MoMo SDK
-
-📂 BACKEND STRUCTURE
 text
+
+---
+
+# 🖥️ BACKEND ARCHITECTURE
+
+## ⚙️ Tech Stack
+
+NodeJS (v20+)
+ExpressJS
+TypeScript
+PostgreSQL + pgvector
+Prisma ORM
+JWT Authentication
+Gemini SDK
+VNPay / MoMo SDK
+Redis (ioredis)
+
+## 📂 BACKEND STRUCTURE
 backend/
 │
 ├── prisma/
-│   ├── schema.prisma           # Database schema definition
-│   ├── migrations/             # DB migration history
-│   └── seed.ts                 # Initial data seeding
+│ ├── schema.prisma # Database schema definition
+│ ├── migrations/ # DB migration history
+│ ├── seed.ts # Initial data seeding
+│ ├── seed-knowledge.ts # AI knowledge base seeding
+│ └── knowledge-base.ts # Knowledge base data
 │
 ├── src/
-│   ├── config/                 # Configuration files
-│   │   ├── database.ts
-│   │   ├── jwt.ts
-│   │   ├── ai.ts
-│   │   ├── payment.ts
-│   │   └── email.ts
-│   │
-│   ├── controllers/            # Request handlers
-│   │   ├── auth.controller.ts
-│   │   ├── user.controller.ts
-│   │   ├── membership.controller.ts
-│   │   ├── attendance.controller.ts
-│   │   ├── ai.controller.ts
-│   │   ├── payment.controller.ts
-│   │   ├── pt.controller.ts
-│   │   └── notification.controller.ts
-│   │
-│   ├── services/               # Business logic
-│   │   ├── auth.service.ts
-│   │   ├── user.service.ts
-│   │   ├── membership.service.ts
-│   │   ├── attendance.service.ts
-│   │   ├── ai.service.ts
-│   │   ├── payment.service.ts
-│   │   ├── pt.service.ts
-│   │   ├── notification.service.ts
-│   │   └── qr.service.ts
-│   │
-│   ├── repositories/           # Database access layer (optional)
-│   │   ├── user.repository.ts
-│   │   ├── membership.repository.ts
-│   │   └── ...
-│   │
-│   ├── middlewares/            # Express middlewares
-│   │   ├── auth.middleware.ts
-│   │   ├── role.middleware.ts
-│   │   ├── error.middleware.ts
-│   │   ├── rateLimit.middleware.ts
-│   │   └── validation.middleware.ts
-│   │
-│   ├── validators/             # Request validation schemas
-│   │   ├── auth.validator.ts
-│   │   ├── membership.validator.ts
-│   │   ├── payment.validator.ts
-│   │   ├── attendance.validator.ts
-│   │   └── ai.validator.ts
-│   │
-│   ├── types/                  # TypeScript types & interfaces
-│   │   ├── auth.types.ts
-│   │   ├── user.types.ts
-│   │   ├── membership.types.ts
-│   │   ├── payment.types.ts
-│   │   ├── ai.types.ts
-│   │   └── common.types.ts
-│   │
-│   ├── utils/                  # Helper functions
-│   │   ├── generateToken.ts
-│   │   ├── hashPassword.ts
-│   │   ├── qrGenerator.ts
-│   │   ├── calculateBMI.ts
-│   │   ├── errors.ts
-│   │   └── logger.ts
-│   │
-│   ├── constants/              # Constants & enums
-│   │   ├── roles.ts
-│   │   ├── membership.ts
-│   │   ├── aiLimits.ts
-│   │   ├── paymentStatus.ts
-│   │   └── httpStatus.ts
-│   │
-│   ├── docs/                   # API Documentation
-│   │   ├── swagger.ts
-│   │   └── endpoints/
-│   │
-│   ├── routes/                 # API routes
-│   │   ├── auth.routes.ts
-│   │   ├── user.routes.ts
-│   │   ├── membership.routes.ts
-│   │   ├── attendance.routes.ts
-│   │   ├── ai.routes.ts
-│   │   ├── payment.routes.ts
-│   │   ├── pt.routes.ts
-│   │   └── index.ts
-│   │
-│   ├── server.ts               # Express app setup
-│   └── main.ts                 # Entry point
+│ ├── config/ # Configuration files
+│ │ ├── jwt.ts
+│ │ ├── logger.ts
+│ │ ├── prisma.ts
+│ │ └── redis.ts
+│ │
+│ ├── constants/ # Constants & enums
+│ │ ├── membership.ts
+│ │ └── aiLimits.ts
+│ │
+│ ├── controllers/ # Request handlers
+│ │ ├── auth.controller.ts
+│ │ ├── user.controller.ts
+│ │ ├── membership.controller.ts
+│ │ ├── ai.controller.ts
+│ │ ├── payment.controller.ts
+│ │ ├── notification.controller.ts
+│ │ ├── admin.controller.ts
+│ │ └── bodyProgress.controller.ts
+│ │
+│ ├── services/ # Business logic
+│ │ ├── auth.service.ts
+│ │ ├── user.service.ts
+│ │ ├── membership.service.ts
+│ │ ├── ai.service.ts
+│ │ ├── payment.service.ts
+│ │ ├── notification.service.ts
+│ │ └── bodyProgress.service.ts
+│ │
+│ ├── middlewares/ # Express middlewares
+│ │ ├── auth.middleware.ts
+│ │ ├── role.middleware.ts
+│ │ ├── error.middleware.ts
+│ │ ├── rateLimit.middleware.ts
+│ │ └── cache.middleware.ts
+│ │
+│ ├── validators/ # Request validation schemas
+│ │ ├── auth.validator.ts
+│ │ ├── membership.validator.ts
+│ │ ├── payment.validator.ts
+│ │ └── bodyProgress.validator.ts
+│ │
+│ ├── types/ # TypeScript types & interfaces
+│ │ ├── auth.types.ts
+│ │ ├── user.types.ts
+│ │ ├── membership.types.ts
+│ │ ├── payment.types.ts
+│ │ ├── ai.types.ts
+│ │ └── bodyProgress.types.ts
+│ │
+│ ├── utils/ # Helper functions
+│ │ ├── generateToken.ts
+│ │ ├── hashPassword.ts
+│ │ ├── errors.ts
+│ │ └── logger.ts
+│ │
+│ ├── docs/ # API Documentation
+│ │ └── swagger.ts
+│ │
+│ ├── routes/ # API routes
+│ │ ├── auth.routes.ts
+│ │ ├── user.routes.ts
+│ │ ├── membership.routes.ts
+│ │ ├── ai.routes.ts
+│ │ ├── payment.routes.ts
+│ │ ├── notification.routes.ts
+│ │ ├── admin.routes.ts
+│ │ ├── bodyProgress.routes.ts
+│ │ └── index.ts
+│ │
+│ ├── server.ts # Express app setup
+│ └── main.ts # Entry point
 │
+├── tests/
+│ ├── setup.ts # Jest setup
+│ ├── helpers/
+│ │ └── testDb.ts
+│ ├── unit/
+│ │ ├── auth.test.ts
+│ │ ├── membership.test.ts
+│ │ ├── admin.test.ts
+│ │ ├── bodyProgress.test.ts
+│ │ └── security.test.ts
+│ └── integration/
+│ └── api.test.ts
+│
+├── Dockerfile
+├── Dockerfile.dev
+├── .dockerignore
 ├── .env.example
 ├── .env
 ├── package.json
 ├── tsconfig.json
+├── jest.config.js
 ├── eslint.config.js
 └── README.md
-📌 FOLDER RESPONSIBILITIES
-config/
+
+text
+
+## 📂 FOLDER RESPONSIBILITIES
+
+### config/
 Chứa toàn bộ cấu hình ứng dụng. Không logic gì ở đây, chỉ là biến config.
 
-ts
+```typescript
 // config/jwt.ts
 export const JWT_CONFIG = {
   accessTokenExpiry: process.env.JWT_ACCESS_EXPIRY || '15m',
   refreshTokenExpiry: process.env.JWT_REFRESH_EXPIRY || '7d',
   secret: process.env.JWT_SECRET || 'your-secret'
 };
+
+// config/redis.ts
+import Redis from 'ioredis';
+export const redis = new Redis({
+  host: process.env.REDIS_HOST || 'localhost',
+  port: parseInt(process.env.REDIS_PORT || '6379'),
+});
 controllers/
 Chỉ xử lý request/response, gọi service duy nhất. Không query DB, không logic.
 
-ts
-// Sai ❌
+typescript
+// ❌ Sai
 async login(req, res) {
   const user = await db.user.findUnique(...);
   res.json(user);
 }
 
-// Đúng ✅
+// ✅ Đúng
 async login(req, res) {
   const result = await authService.login(req.body);
   res.json(result);
@@ -275,7 +284,7 @@ Xử lý business rules
 
 Gọi service khác
 
-ts
+typescript
 // auth.service.ts
 async login(credentials: LoginDTO): Promise<LoginResponse> {
   const user = await prisma.user.findUnique(...);
@@ -296,12 +305,12 @@ error.middleware.ts: Centralized error handling
 
 rateLimit.middleware.ts: Rate limiting
 
-validation.middleware.ts: Validate request schema
+cache.middleware.ts: Redis caching
 
 validators/
 Dùng Zod để định nghĩa schema validation.
 
-ts
+typescript
 // auth.validator.ts
 import { z } from 'zod';
 
@@ -314,7 +323,7 @@ export type LoginRequest = z.infer<typeof loginSchema>;
 types/
 Tất cả TypeScript interfaces đặt ở đây.
 
-ts
+typescript
 // auth.types.ts
 export interface User {
   id: string;
@@ -332,11 +341,11 @@ export enum Role {
 utils/
 Helper functions không liên quan đến business logic.
 
-ts
+typescript
 // utils/errors.ts
 export class AppError extends Error {
   public statusCode: number;
-  public errorCode: string;
+  public errorCode?: string;
   
   constructor(statusCode: number, errorCode: string, message: string) {
     super(message);
@@ -344,43 +353,26 @@ export class AppError extends Error {
     this.errorCode = errorCode;
   }
 }
-
-// utils/logger.ts
-export const logger = {
-  info: (msg: string) => console.log(`[INFO] ${msg}`),
-  error: (msg: string) => console.error(`[ERROR] ${msg}`)
-};
-constants/
-Các hằng số của hệ thống.
-
-ts
-// constants/aiLimits.ts
-export const AI_LIMITS = {
-  BASIC: 10,
-  PREMIUM: 100,
-  ELITE: Infinity
-};
-
-// constants/paymentStatus.ts
-export enum PaymentStatus {
-  PENDING = 'PENDING',
-  SUCCESS = 'SUCCESS',
-  FAILED = 'FAILED'
-}
-🌐 FRONTEND ARCHITECTURE (Web Admin Dashboard)
+🌐 FRONTEND ARCHITECTURE
 ⚙️ Tech Stack
-NextJS 14+ (App Router)
-
+NextJS 16+ (App Router)
 TailwindCSS
-
-shadcn/ui
-
+shadcn/ui (custom)
+Zustand
 Axios
-
+Recharts
 TypeScript
 
-React Query / SWR
-
+🎨 Design System
+Color	Hex	Usage
+Cream Canvas	#faf9f5	Nền chính
+Coral	#cc785c	Primary CTA, accent
+Dark Navy	#181715	Sidebar, dark surfaces
+Ink	#141413	Text chính
+Body	#3d3d3a	Body text
+Muted	#6c6a64	Muted text
+Success	#5db872	Success states
+Error	#c64545	Error states
 📂 FRONTEND STRUCTURE
 text
 frontend/
@@ -389,142 +381,84 @@ frontend/
 │   ├── images/
 │   └── icons/
 │
-├── src/
-│   ├── app/
-│   │   ├── (auth)/
-│   │   │   ├── login/
+├── app/
+│   ├── (auth)/
+│   │   ├── login/
+│   │   │   └── page.tsx
+│   │   ├── register/
+│   │   │   └── page.tsx
+│   │   └── layout.tsx
+│   │
+│   ├── (dashboard)/
+│   │   ├── admin/              # Admin only routes
+│   │   │   ├── dashboard/
 │   │   │   │   └── page.tsx
-│   │   │   ├── register/
+│   │   │   ├── users/
+│   │   │   │   ├── page.tsx
+│   │   │   │   └── [id]/page.tsx
+│   │   │   └── memberships/
+│   │   │       └── page.tsx
+│   │   │
+│   │   ├── member/             # Member only routes
+│   │   │   ├── dashboard/
 │   │   │   │   └── page.tsx
-│   │   │   └── layout.tsx
+│   │   │   ├── ai-chat/
+│   │   │   │   └── page.tsx
+│   │   │   └── progress/
+│   │   │       ├── page.tsx
+│   │   │       └── components/
+│   │   │           ├── ProgressStats.tsx
+│   │   │           ├── ProgressChart.tsx
+│   │   │           ├── ProgressForm.tsx
+│   │   │           └── ProgressHistory.tsx
 │   │   │
-│   │   ├── (dashboard)/
-│   │   │   ├── admin/          # Admin only routes
-│   │   │   │   ├── dashboard/
-│   │   │   │   │   └── page.tsx
-│   │   │   │   ├── users/
-│   │   │   │   │   ├── page.tsx
-│   │   │   │   │   └── [id]/page.tsx
-│   │   │   │   ├── memberships/
-│   │   │   │   │   ├── page.tsx
-│   │   │   │   │   └── [id]/edit/page.tsx
-│   │   │   │   ├── payments/
-│   │   │   │   │   └── page.tsx
-│   │   │   │   └── pts/
-│   │   │   │       ├── page.tsx
-│   │   │   │       └── [id]/page.tsx
-│   │   │   │
-│   │   │   ├── pt/             # PT only routes
-│   │   │   │   ├── students/
-│   │   │   │   │   └── page.tsx
-│   │   │   │   ├── schedules/
-│   │   │   │   │   └── page.tsx
-│   │   │   │   └── progress/
-│   │   │   │       └── page.tsx
-│   │   │   │
-│   │   │   ├── member/         # Member only routes
-│   │   │   │   ├── dashboard/
-│   │   │   │   │   └── page.tsx
-│   │   │   │   ├── schedule/
-│   │   │   │   │   └── page.tsx
-│   │   │   │   ├── attendance/
-│   │   │   │   │   └── page.tsx
-│   │   │   │   ├── ai-chat/
-│   │   │   │   │   └── page.tsx
-│   │   │   │   └── progress/
-│   │   │   │       └── page.tsx
-│   │   │   │
-│   │   │   └── layout.tsx
+│   │   ├── pt/                 # PT only routes (planned)
+│   │   │   └── page.tsx
 │   │   │
-│   │   ├── layout.tsx
-│   │   └── page.tsx
+│   │   └── layout.tsx
 │   │
-│   ├── components/
-│   │   ├── common/
-│   │   │   ├── Header.tsx
-│   │   │   ├── Sidebar.tsx
-│   │   │   ├── Button.tsx
-│   │   │   ├── Modal.tsx
-│   │   │   ├── Table.tsx
-│   │   │   ├── Form.tsx
-│   │   │   └── Card.tsx
-│   │   │
-│   │   ├── auth/
-│   │   │   ├── LoginForm.tsx
-│   │   │   └── RegisterForm.tsx
-│   │   │
-│   │   ├── membership/
-│   │   │   ├── MembershipCard.tsx
-│   │   │   ├── PlanSelector.tsx
-│   │   │   └── MembershipTable.tsx
-│   │   │
-│   │   ├── attendance/
-│   │   │   ├── AttendanceChart.tsx
-│   │   │   ├── CheckinHistory.tsx
-│   │   │   └── QRCodeGenerator.tsx
-│   │   │
-│   │   ├── payment/
-│   │   │   ├── PaymentForm.tsx
-│   │   │   └── TransactionTable.tsx
-│   │   │
-│   │   ├── pt/
-│   │   │   ├── PTCard.tsx
-│   │   │   ├── PTAssignment.tsx
-│   │   │   └── PTScheduleForm.tsx
-│   │   │
-│   │   └── ai/
-│   │       ├── ChatMessage.tsx
-│   │       ├── ChatInput.tsx
-│   │       └── UsageLimit.tsx
-│   │
-│   ├── services/
-│   │   ├── api.client.ts
-│   │   ├── auth.service.ts
-│   │   ├── user.service.ts
-│   │   ├── membership.service.ts
-│   │   ├── attendance.service.ts
-│   │   ├── payment.service.ts
-│   │   ├── pt.service.ts
-│   │   └── ai.service.ts
-│   │
-│   ├── hooks/
-│   │   ├── useAuth.ts
-│   │   ├── useFetch.ts
-│   │   ├── usePagination.ts
-│   │   └── useLocalStorage.ts
-│   │
-│   ├── context/
-│   │   ├── AuthContext.tsx
-│   │   └── AppProvider.tsx
-│   │
-│   ├── types/
-│   │   ├── auth.types.ts
-│   │   ├── user.types.ts
-│   │   ├── membership.types.ts
-│   │   └── common.types.ts
-│   │
-│   ├── utils/
-│   │   ├── formatDate.ts
-│   │   ├── formatCurrency.ts
-│   │   ├── validation.ts
-│   │   └── constants.ts
-│   │
-│   ├── styles/
-│   │   └── globals.css
-│   │
-│   └── lib/
-│       └── axios.config.ts
+│   ├── favicon.ico
+│   ├── globals.css
+│   ├── layout.tsx
+│   └── page.tsx
 │
+├── components/
+│   ├── ui/                     # Reusable UI components
+│   │   ├── Card.tsx
+│   │   ├── Button.tsx
+│   │   └── Input.tsx
+│   ├── common/
+│   │   ├── Header.tsx
+│   │   └── Sidebar.tsx
+│   └── auth/
+│       ├── LoginForm.tsx
+│       └── RegisterForm.tsx
+│
+├── lib/
+│   └── api.ts                  # Axios client with interceptors
+│
+├── store/
+│   └── auth.store.ts           # Zustand auth store
+│
+├── services/
+│   ├── bodyProgress.service.ts
+│   └── auth.service.ts
+│
+├── types/
+│   └── index.ts
+│
+├── Dockerfile
+├── Dockerfile.dev
+├── .dockerignore
 ├── .env.example
 ├── .env.local
+├── next.config.ts
 ├── tailwind.config.ts
-├── tsconfig.json
-├── next.config.js
 ├── package.json
-└── README.md
-📌 FRONTEND RULES
+└── tsconfig.json
+📂 FRONTEND RULES
 1. API calls phải qua service layer
-ts
+typescript
 // ❌ WRONG
 export function UserList() {
   const [users, setUsers] = useState([]);
@@ -548,11 +482,11 @@ Tất cả API calls phải có error handling.
 
 🗄️ DATABASE ARCHITECTURE
 ⚙️ Tech Stack
-PostgreSQL
-
+PostgreSQL 16
+pgvector extension
 Prisma ORM
 
-📌 DATABASE SCHEMA
+📊 DATABASE SCHEMA
 prisma
 // User & Authentication
 model User {
@@ -563,17 +497,22 @@ model User {
   phone     String?
   avatar    String?
   role      Role      @default(MEMBER)
+  isActive  Boolean   @default(true)
+  isDeleted Boolean   @default(false)
   
   userMembership    UserMembership?
   paymentHistory    Payment[]
   chatHistory       ChatHistory[]
-  attendance        Attendance[]
-  ptAssignments     PTAssignment[]  // as student
-  ptProfile         PTProfile?      // as PT
+  notifications     Notification[]
+  bodyProgress      BodyProgress[]
   
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-  isDeleted Boolean   @default(false)
+  
+  @@index([email])
+  @@index([role])
+  @@index([isActive])
+  @@index([createdAt])
 }
 
 enum Role {
@@ -589,7 +528,9 @@ model MembershipPlan {
   price       Float
   duration    Int       // days
   aiLimit     Int       // Monthly AI usage limit
+  aiDailyLimit Int      // Daily AI usage limit
   description String?
+  isActive    Boolean   @default(true)
   
   userMemberships UserMembership[]
   
@@ -604,142 +545,155 @@ model UserMembership {
   startDate       DateTime  @default(now())
   expiryDate      DateTime
   aiUsageCount    Int       @default(0)
+  aiDailyCount    Int       @default(0)
   aiUsageReset    DateTime  @default(now())
-  status          String    @default("ACTIVE")  // ACTIVE, EXPIRED, SUSPENDED
+  aiDailyReset    DateTime  @default(now())
+  status          MembershipStatus @default(ACTIVE)
   
   user            User            @relation(fields: [userId], references: [id])
   plan            MembershipPlan  @relation(fields: [planId], references: [id])
   
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+  
+  @@index([userId])
+  @@index([status])
+  @@index([expiryDate])
+  @@index([userId, status])
 }
 
-// Check-in / Attendance
-model Attendance {
-  id          String    @id @default(cuid())
-  userId      String
-  checkInTime DateTime
-  checkOutTime DateTime?
-  qrCode      String    @unique
-  qrExpiry    DateTime
-  
-  user        User      @relation(fields: [userId], references: [id])
-  
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+enum MembershipStatus {
+  ACTIVE
+  EXPIRED
+  SUSPENDED
 }
 
 // AI Chat
 model ChatHistory {
   id        String    @id @default(cuid())
   userId    String
-  role      String    // "user" or "assistant"
+  sessionId String
+  role      ChatRole  // "user" or "assistant"
   content   String    @db.Text
+  tokens    Int?
   
   user      User      @relation(fields: [userId], references: [id])
   
   createdAt DateTime  @default(now())
+  
+  @@index([userId, sessionId])
+  @@index([userId, createdAt])
+  @@index([sessionId])
+}
+
+enum ChatRole {
+  user
+  assistant
+}
+
+// Knowledge Base (RAG)
+model KnowledgeBase {
+  id        String   @id @default(cuid())
+  category  String   // "workout", "nutrition", "general"
+  title     String
+  content   String   @db.Text
+  embedding Unsupported("vector(3072)")?
+  
+  createdAt DateTime @default(now())
+  
+  @@index([category])
+  @@index([createdAt])
+}
+
+// Body Progress Tracking
+model BodyProgress {
+  id         String   @id @default(cuid())
+  userId     String
+  weight     Float    // kg
+  height     Float?   // cm
+  bodyFat    Float?   // percentage
+  muscleMass Float?   // kg
+  bmi        Float?   // auto-calculated
+  notes      String?  @db.Text
+  recordedAt DateTime @default(now())
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([recordedAt])
+  @@index([userId, recordedAt])
 }
 
 // Payment
 model Payment {
-  id              String        @id @default(cuid())
-  userId          String
+  id               String        @id @default(cuid())
+  userId           String
   membershipPlanId String
-  amount          Float
-  status          PaymentStatus @default(PENDING)
-  paymentMethod   String
-  transactionId   String?       @unique
-  description     String?
+  amount           Float
+  currency         String        @default("VND")
+  status           PaymentStatus @default(PENDING)
+  paymentMethod    PaymentMethod
+  transactionId    String?       @unique
+  description      String?
+  metadata         Json?
   
-  user            User          @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id])
   
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([userId, status])
+  @@index([transactionId])
 }
 
 enum PaymentStatus {
   PENDING
   SUCCESS
   FAILED
+  REFUNDED
 }
 
-// Personal Trainer Profile
-model PTProfile {
-  id            String    @id @default(cuid())
-  userId        String    @unique
-  specialization String
-  bio           String?
-  experience    Int       // years
-  rate          Float     // per session
-  availability  Json      // { "Monday": ["09:00-12:00", "14:00-18:00"], ... }
-  
-  user          User      @relation(fields: [userId], references: [id])
-  assignments   PTAssignment[]
-  schedule      PTSchedule[]
-  
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-}
-
-// PT Assignment (PT-Student relationship)
-model PTAssignment {
-  id          String    @id @default(cuid())
-  ptId        String    // PT's user ID
-  studentId   String    // Student's user ID
-  status      String    @default("ACTIVE")  // ACTIVE, PAUSED, ENDED
-  startDate   DateTime  @default(now())
-  endDate     DateTime?
-  
-  pt          User      @relation("PTAssignments", fields: [ptId], references: [id])
-  student     User      @relation("StudentAssignments", fields: [studentId], references: [id])
-  
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-}
-
-// PT Schedule
-model PTSchedule {
-  id        String    @id @default(cuid())
-  ptId      String
-  date      DateTime
-  startTime String    // "09:00"
-  endTime   String    // "12:00"
-  isBooked  Boolean   @default(false)
-  studentId String?   // Member who booked this slot
-  
-  pt        PTProfile @relation(fields: [ptId], references: [id])
-  
-  createdAt DateTime  @default(now())
-}
-
-// Body Progress Tracking
-model BodyProgress {
-  id        String    @id @default(cuid())
-  userId    String
-  weight    Float     // kg
-  bodyFat   Float     // percentage
-  bmi       Float
-  notes     String?
-  
-  user      User      @relation(fields: [userId], references: [id])
-  
-  recordedAt DateTime  @default(now())
+enum PaymentMethod {
+  VNPAY
+  MOMO
+  CASH
 }
 
 // Notification
 model Notification {
-  id        String    @id @default(cuid())
+  id        String           @id @default(cuid())
   userId    String
+  type      NotificationType
   title     String
-  message   String    @db.Text
-  type      String    // "MEMBERSHIP_EXPIRY", "PAYMENT_SUCCESS", "CHECKIN_SUCCESS", "AI_LIMIT_WARNING"
-  read      Boolean   @default(false)
-  data      Json?     // Additional metadata
+  message   String
+  isRead    Boolean          @default(false)
+  metadata  Json?
   
-  createdAt DateTime  @default(now())
+  user User @relation(fields: [userId], references: [id])
+  
+  createdAt DateTime @default(now())
+  
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+  @@index([userId, isRead])
 }
-📌 DATABASE RULES
+
+enum NotificationType {
+  MEMBERSHIP_ACTIVATED
+  MEMBERSHIP_EXPIRING
+  MEMBERSHIP_EXPIRED
+  PAYMENT_SUCCESS
+  PAYMENT_FAILED
+  SYSTEM
+}
+📊 DATABASE RULES
 1. Migrations
 Mọi thay đổi DB phải qua migrations.
 
@@ -750,9 +704,7 @@ npx prisma migrate dev --name add_new_field
 
 3. Naming Convention
 Table/Model: PascalCase
-
 Column/Field: camelCase
-
 Enum: UPPERCASE
 
 4. Timestamps
@@ -775,14 +727,20 @@ text
    ↓
 7. Route handler xử lý logic
 JWT Structure
-text
-Access Token:
-- Expires: 15 minutes
-- Contains: userId, email, role
+typescript
+// Access Token
+{
+  userId: string,
+  email: string,
+  role: Role,
+  exp: timestamp  // 15 minutes
+}
 
-Refresh Token:
-- Expires: 7 days
-- Contains: userId
+// Refresh Token
+{
+  userId: string,
+  exp: timestamp  // 7 days
+}
 Roles & Permissions
 Role	Permissions
 ADMIN	Quản lý toàn bộ hệ thống (users, PT, memberships, payments, settings)
@@ -790,13 +748,10 @@ PT	Xem học viên, quản lý lịch, tạo workout plan, theo dõi tiến đ�
 MEMBER	Đăng ký gói tập, đặt lịch với PT, chat AI, track progress, check-in
 🤖 AI SYSTEM ARCHITECTURE
 AI Provider
-CHỌN 1 PROVIDER DUY NHẤT:
+Gemini 2.0 Flash (Google)
+gemini-embedding-001 for embeddings
 
-Gemini API (recommended - free tier tốt)
-
-hoặc OpenAI API
-
-AI Flow
+RAG Pipeline
 text
 1. User gửi tin nhắn chat
    ↓
@@ -806,25 +761,57 @@ text
    ↓
 4. Nếu hết lượt → trả về error
    ↓
-5. Gọi AI Provider API với system prompt
+5. Embed user query → gemini-embedding-001
    ↓
-6. AI trả về response
+6. Cosine similarity search trên pgvector
    ↓
-7. Lưu chat history (user message + AI response)
+7. Lấy top 5 relevant documents
    ↓
-8. Increment AI usage count
+8. Build prompt với context + user query
    ↓
-9. Trả response về client
+9. Gọi Gemini 2.0 Flash API
+   ↓
+10. AI trả về response
+   ↓
+11. Lưu chat history (user message + AI response)
+   ↓
+12. Increment AI usage count
+   ↓
+13. Trả response về client
 AI Limits by Plan
 Plan	Monthly Limit	Daily Limit
 BASIC	10	1
 PREMIUM	100	10
 ELITE	Unlimited	Unlimited
+💪 BODY PROGRESS TRACKING
+API Endpoints
+Method	Endpoint	Description
+POST	/api/body-progress	Create new record (auto BMI)
+GET	/api/body-progress	Get all records
+GET	/api/body-progress/latest	Get latest record
+GET	/api/body-progress/chart	Get chart data (last N days)
+GET	/api/body-progress/stats	Get statistics summary
+PUT	/api/body-progress/:id	Update record
+DELETE	/api/body-progress/:id	Delete record
+BMI Calculation
+typescript
+// Auto-calculated from weight and height
+const bmi = weight / ((height / 100) ** 2);
+// Rounded to 1 decimal place
+return Math.round(bmi * 10) / 10;
+Business Rules
+Only active members can track progress
+
+BMI auto-calculated when height and weight provided
+
+Records sorted by recordedAt (newest first)
+
+Stats include: total records, first/latest, progress, average
+
 💳 PAYMENT ARCHITECTURE
 Payment Providers
-VNPay (Vietnam)
-
-MoMo (Vietnam)
+VNPay (Vietnam) — HMAC-SHA512
+MoMo (Vietnam) — HMAC-SHA256
 
 Payment Flow
 text
@@ -848,7 +835,7 @@ text
 ⚠️ CRITICAL PAYMENT RULE
 KHÔNG activate membership trước khi nhận webhook xác nhận từ payment gateway.
 
-ts
+typescript
 // ❌ WRONG
 async buyMembership(userId, planId) {
   await userMembershipService.upgrade(userId, planId);
@@ -867,32 +854,107 @@ async handlePaymentCallback(webhookData) {
     await userMembershipService.upgrade(payment.userId, payment.membershipPlanId);
   }
 }
-🔐 QR CHECK-IN SYSTEM
-QR Generation & Validation Flow
-text
-1. Member requests QR code (GET /api/attendance/qr)
-   ↓
-2. Server creates Attendance record with:
-   - qrCode (unique random string)
-   - qrExpiry (now + 5 minutes)
-   ↓
-3. Member displays QR code
-   ↓
-4. Member scans QR code (or staff scans)
-   ↓
-5. Server verifies: QR exists? Not expired? Membership valid?
-   ↓
-6. If valid: update checkInTime, return success
-Security Rules
-Expiry: 5 minutes
+🐳 DOCKER SUPPORT
+Services
+Service	Port	Image	Status
+Backend API	5000	Node.js 20	✅
+Frontend	3000	Next.js 16	✅
+PostgreSQL	5432	PostgreSQL 16	✅
+Redis	6379	Redis 7	✅
+Dockerfile (Backend)
+dockerfile
+FROM node:20-alpine
 
-One-time use
+RUN apk add --no-cache openssl
 
-Signature: HMAC-SHA256
+WORKDIR /app
 
+COPY package*.json ./
+RUN npm ci --only=production
+
+COPY prisma ./prisma/
+RUN npx prisma generate
+
+COPY . .
+RUN npm run build
+
+EXPOSE 5000
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:5000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
+
+CMD ["npm", "start"]
+Docker Compose Commands
+bash
+# Development
+docker-compose up --build
+
+# Production
+docker-compose -f docker-compose.prod.yml up --build -d
+
+# View logs
+docker-compose logs -f backend
+
+# Stop all
+docker-compose down
+🚀 DEPLOYMENT
+Production URLs
+Service	Platform	URL
+Frontend	Vercel	https://gym-management-five-gules.vercel.app
+Backend	Railway	https://gym-management-production-44b5.up.railway.app
+Database	Neon	PostgreSQL + pgvector (Singapore)
+API Docs	Swagger	https://gym-management-production-44b5.up.railway.app/api/docs
+CI/CD (GitHub Actions)
+yaml
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: cd backend && npm ci
+      - run: cd backend && npx prisma generate
+      - run: cd backend && npm run lint
+      - run: cd backend && npx tsc --noEmit
+      - run: cd backend && npm test
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: cd frontend && npm ci
+      - run: cd frontend && npm run lint
+      - run: cd frontend && npm run build
+
+  deploy:
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+          working-directory: ./frontend
 🔗 API STANDARDS
 Response Format
-ts
+typescript
 // Success Response
 {
   success: true,
@@ -905,6 +967,7 @@ ts
 {
   success: false,
   statusCode: 400,
+  errorCode: "AUTH_001",
   message: "Error description",
   errors: [
     {
@@ -921,29 +984,40 @@ Code	Usage
 401	Unauthorized
 403	Forbidden
 404	Not Found
+429	Too Many Requests
 500	Internal Server Error
 Error Codes
-ts
+typescript
 // AUTH Errors
 AUTH_001: "Invalid email format"
 AUTH_002: "Password too short"
 AUTH_003: "User not found"
 AUTH_004: "Invalid password"
 AUTH_005: "Email already exists"
+AUTH_006: "Invalid or expired token"
+AUTH_007: "Refresh token required"
+AUTH_008: "Too many login attempts"
 
 // MEMBERSHIP Errors
-MEMBERSHIP_001: "Membership plan not found"
-MEMBERSHIP_002: "Membership already active"
-MEMBERSHIP_003: "AI limit exceeded"
+MEMBERSHIP_001: "Plan ID is required"
+MEMBERSHIP_002: "Plan not found or inactive"
+MEMBERSHIP_003: "User already has an active membership"
+MEMBERSHIP_004: "User not found"
+MEMBERSHIP_005: "Active membership required"
+
+// PROGRESS Errors
+PROGRESS_001: "Progress record not found"
+PROGRESS_002: "Invalid progress data"
+PROGRESS_003: "Active membership required to track progress"
 
 // PAYMENT Errors
-PAYMENT_001: "Payment failed"
-PAYMENT_002: "Invalid amount"
+PAYMENT_001: "Plan not found"
+PAYMENT_002: "User already has active membership"
+PAYMENT_003: "Plan ID is required"
+PAYMENT_004: "Basic plan is free"
 
-// ATTENDANCE Errors
-ATTENDANCE_001: "Invalid QR code"
-ATTENDANCE_002: "QR code expired"
-ATTENDANCE_003: "Membership not active"
+// RATE LIMIT Errors
+RATE_001: "Too many requests, please slow down"
 🌍 ENVIRONMENT VARIABLES
 Backend (.env)
 bash
@@ -957,33 +1031,35 @@ DATABASE_URL=postgresql://user:password@localhost:5432/gym_management
 
 # JWT
 JWT_SECRET=your-super-secret-key
+JWT_REFRESH_SECRET=your-refresh-secret-key
 JWT_ACCESS_EXPIRY=15m
 JWT_REFRESH_EXPIRY=7d
 
 # AI
-AI_PROVIDER=GEMINI
 GEMINI_API_KEY=your-gemini-api-key
-OPENAI_API_KEY=your-openai-api-key
+
+# Redis
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=
+
+# Frontend URL (CORS)
+FRONTEND_URL=http://localhost:3000
 
 # Payment (VNPay)
 VNPAY_TMN_CODE=your-merchant-code
 VNPAY_HASH_SECRET=your-hash-secret
-VNPAY_RETURN_URL=http://localhost:5000/api/payment/vnpay-callback
+VNPAY_RETURN_URL=http://localhost:5000/api/payments/vnpay-return
 
 # Payment (MoMo)
 MOMO_PARTNER_CODE=your-momo-partner-code
 MOMO_ACCESS_KEY=your-momo-access-key
 MOMO_SECRET_KEY=your-momo-secret-key
-
-# Email
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_USER=your-email@gmail.com
-EMAIL_PASSWORD=your-app-password
+MOMO_RETURN_URL=http://localhost:5000/api/payments/momo-return
 Frontend (.env.local)
 bash
-NEXT_PUBLIC_API_URL=http://localhost:5000
-🚫 CRITICAL RULES SUMMARY
+NEXT_PUBLIC_API_URL=http://localhost:5000/api
+⚠️ CRITICAL RULES SUMMARY
 Code Structure
 ✅ Controller → Service → DB
 
@@ -1027,26 +1103,36 @@ Security
 
 ✅ Password hashing (bcrypt)
 
-✅ QR code expiry (5 minutes)
+✅ Rate limiting
+
+✅ CORS configuration
+
+✅ HTTPS in production
 
 🎯 FINAL CHECKLIST
 Before committing code:
 
-- [ ] Read ROADMAP.md & ARCHITECTURE.md
-- [ ] Follow folder structure exactly
-- [ ] No `any` types in TypeScript
-- [ ] All secrets in .env
-- [ ] Service → Controller flow
-- [ ] Standardized API response
-- [ ] Error handling with proper codes
-- [ ] Swagger/API docs updated
-- [ ] Unit tests written (if critical path)
-- [ ] No duplicate code
-- [ ] Run linter & formatter
+Read ROADMAP.md & ARCHITECTURE.md
 
----
+Follow folder structure exactly
 
-**Last Updated:** May 28, 2026  
-**Version:** 1.0
+No any types in TypeScript
 
-[feat] Phase 2 Issues #4-#7: Authentication & Authorization
+All secrets in .env
+
+Service → Controller flow
+
+Standardized API response
+
+Error handling with proper codes
+
+Swagger/API docs updated
+
+Unit tests written (if critical path)
+
+No duplicate code
+
+Run linter & formatter
+
+Last Updated: 04/07/2026
+Version: 1.0.0-rc

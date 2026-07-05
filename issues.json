@@ -79,13 +79,8 @@
     "Khong duplicate components",
     "Tat ca APIs phai co validation",
     "Tat ca features phai co error handling",
-    "Roles: ADMIN, PT, MEMBER",
-    "TypeScript strict mode (no any)",
-    "All secrets in .env files"
-  ],
-  "production_urls": {
-    "frontend": "https://gym-management-five-gules.vercel.app",
-    "backend": "https://gym-management-production-44b5.up.railway.app",
-    "api_docs": "https://gym-management-production-44b5.up.railway.app/api/docs"
-  }
+    "Roles: ADMIN, PT, MEMBER (khong co STAFF)",
+    "Git workflow: Issues #1-#20 committed directly to main (no PR). Starting Issue #89, dung feature branch + Pull Request cho tat ca issues con lai.",
+    "Tat ca AI agents va code assistants phai doc ky project structure, schema, services, middleware, routing va coding conventions truoc khi code de tranh code bi loan hoac conflict logic"
+  ]
 }

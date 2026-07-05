@@ -7,19 +7,25 @@ const api = axios.create({
   },
 });
 
+// ✅ Interceptor để gắn token
 api.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
     const stored = localStorage.getItem('ironfit-auth');
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
+        // 🟢 Lấy token từ parsed.state.accessToken
         const token = parsed?.state?.accessToken;
         if (token) {
-          config.headers.Authorization = `Bearer ` + token;
+          config.headers.Authorization = `Bearer ${token}`;
+        } else {
+          console.warn('⚠️ Token not found in stored auth data');
         }
-      } catch {
-        // ignore
+      } catch (e) {
+        console.error('❌ Error parsing auth data:', e);
       }
+    } else {
+      console.warn('⚠️ No auth data in localStorage');
     }
   }
   return config;
@@ -28,16 +34,13 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Chi redirect ve login khi goi auth endpoint bi 401
-    // Khong redirect khi cac API khac bi 401/403
-    const url = error.config?.url || '';
-    const is401 = error.response?.status === 401;
-    const isAuthError = is401 && url.includes('/auth/');
-
-    if (isAuthError) {
+    if (error.response?.status === 401) {
       if (typeof window !== 'undefined') {
-        localStorage.removeItem('ironfit-auth');
-        window.location.href = '/login';
+        const currentPath = window.location.pathname;
+        if (!currentPath.includes('/login')) {
+          localStorage.removeItem('ironfit-auth');
+          window.location.href = '/login';
+        }
       }
     }
     return Promise.reject(error);

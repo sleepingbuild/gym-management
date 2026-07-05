@@ -8,6 +8,7 @@ import { ProgressChart } from './components/ProgressChart';
 import { ProgressForm } from './components/ProgressForm';
 import { ProgressHistory } from './components/ProgressHistory';
 import { CreateProgressDTO, ProgressStats as StatsType, ChartData, BodyProgressRecord } from '@/services/bodyProgress.service';
+import { GoalSetting } from './components/GoalSetting';
 
 export default function ProgressPage() {
   const { user } = useAuthStore();
@@ -80,6 +81,10 @@ export default function ProgressPage() {
 
       {/* Chart */}
       <ProgressChart data={chartData} loading={loading} />
+
+      <div>
+        <GoalSetting />
+      </div>
 
       {/* Form + History */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
