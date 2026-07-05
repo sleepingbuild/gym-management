@@ -69,6 +69,34 @@
 - QR Check-in chưa implement
 - Body Progress Tracking đang phát triển (hoàn thành ở v1.0.0-rc)
 
+## [0.2.0] - 2026-07-05
+
+### Added
+- **QR Check-in** — Check-in/Check-out bằng QR code
+  - Tạo QR code cho mỗi hội viên
+  - Check-in bằng QR
+  - Lịch sử check-in
+  - Thống kê attendance
+
+- **Goal Setting** — Đặt mục tiêu cho Body Progress
+  - Đặt mục tiêu cân nặng, BMI, mỡ cơ thể
+  - Theo dõi tiến trình so với mục tiêu
+  - Tự động cập nhật khi đạt mục tiêu
+
+- **PT Dashboard** — Dashboard cho PT
+  - Xem danh sách học viên
+  - Xem thông tin học viên
+
+### Changed
+- Update Prisma schema (Attendance, BodyGoal)
+- Update frontend services
+- Update API routes
+
+### Fixed
+- Fix CORS issues
+- Fix 401 error on frontend
+- Fix goal creation conflict
+
 ### Tech Stack (v0.1.0)
 - Backend: Node.js + Express + TypeScript + Prisma + PostgreSQL + pgvector
 - Frontend: Next.js 16 + TailwindCSS + Zustand
