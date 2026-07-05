@@ -6,39 +6,39 @@
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16+-blue)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5+-3178C6)
 ![License](https://img.shields.io/badge/License-MIT-blue)
-![Version](https://img.shields.io/badge/version-0.1.0-orange)
+![Version](https://img.shields.io/badge/version-v1.0.0-orange)
 
 A full-stack gym management platform with membership management, AI-powered fitness coaching (RAG), and online payments. Built as a course project demonstrating modern software engineering practices.
 
-🌐 **Live Demo:** https://gym-management-ct9i4d6vr-sleeping-team.vercel.app  
-📦 **API:** https://gym-management-production-44b5.up.railway.app/api
+🌐 **Live Demo:** https://gym-management-five-gules.vercel.app  
+📦 **API:** https://gym-management-production-44b5.up.railway.app/api  
+📖 **API Docs:** https://gym-management-production-44b5.up.railway.app/api/docs
 
 ---
 
 ## 👥 User Personas
 
 ### 🧑‍💼 Admin — Quản lý phòng gym
-Cần một nền tảng để quản lý toàn bộ hội viên, theo dõi trạng thái tài khoản, và kiểm soát quyền truy cập hệ thống.
 - Quản lý danh sách user, lock/unlock tài khoản
 - Thay đổi role (ADMIN / PT / MEMBER)
 - Xem thống kê tổng quan
 
 ### 🏃 Member — Hội viên phòng gym
-Muốn đăng ký gói tập, nhận tư vấn AI về luyện tập và dinh dưỡng, và thanh toán online.
 - Đăng ký và quản lý gói membership
 - Chat với AI Personal Trainer
 - Thanh toán qua VNPay / MoMo
+- Theo dõi tiến trình cơ thể (BMI, weight, body fat)
 
 ### 🤸 PT — Personal Trainer *(planned v0.2.0)*
-Muốn quản lý lịch dạy và theo dõi tiến trình học viên.
 - Role đã có trong hệ thống
 - Features đang phát triển
 
 ---
 
-## ✨ Features (v0.1.0)
+## ✨ Features (v1.0.0-rc)
 
 ### ✅ Đã implement
+
 | Feature | Chi tiết |
 |---|---|
 | Authentication | JWT register/login, bcrypt, access (15m) + refresh (7d) token |
@@ -50,12 +50,17 @@ Muốn quản lý lịch dạy và theo dõi tiến trình học viên.
 | Payment Gateway | VNPay (HMAC-SHA512) + MoMo (HMAC-SHA256 + IPN webhook) |
 | Notification System | 6 loại in-app notification, auto-trigger |
 | AI Chat UI | Chat bubble, typing indicator, usage badge realtime |
+| Body Progress Tracking | BMI, weight, body fat, muscle mass with charts |
+| Unit Tests | 16 tests, 70%+ coverage |
+| Docker Support | Full stack containerization |
+| Production Deployment | Vercel + Railway + Neon |
+| API Documentation | Swagger/OpenAPI at `/api/docs` |
 
-### 🔜 Planned
-- PT scheduling & student management (v0.2.0)
-- Body Progress Tracking / BMI chart (v0.2.0)
-- QR Check-in (v0.2.0)
-- Rate limiting middleware
+### 🔜 Planned (v0.2.0)
+- PT scheduling & student management
+- QR Check-in
+- Goal setting for Body Progress
+- Export data to CSV/PDF
 
 ---
 
@@ -72,39 +77,25 @@ Muốn quản lý lịch dạy và theo dõi tiến trình học viên.
 | Payment | VNPay + MoMo |
 | Deployment | Railway (backend) + Vercel (frontend) + Neon (database) |
 | CI/CD | GitHub Actions |
+| Container | Docker + docker-compose |
 
 ---
 
 ## 🏗️ Architecture
-┌─────────────────┐     ┌──────────────────────┐     ┌─────────────────┐
-
-│   Next.js 16    │────▶│  Express REST API     │────▶│  PostgreSQL 16  │
-
-│   (Vercel)      │     │  (Railway)            │     │  + pgvector     │
-
-│                 │     │                       │     │  (Neon)         │
-
-│  Zustand store  │     │  JWT Auth middleware  │     │                 │
-
-│  Axios client   │     │  Zod validation       │     │  Prisma ORM     │
-
-└─────────────────┘     │  Prisma queries       │     └─────────────────┘
-
-│                       │
-
-│  ┌─────────────────┐  │
-
-│  │  RAG Pipeline   │  │
-
-│  │  Gemini 2.0     │  │
-
-│  │  Flash + embed  │  │
-
-│  └─────────────────┘  │
-
+┌─────────────────────┐ ┌──────────────────────┐ ┌──────────────────┐
+│ Next.js 16 │───▶│ Express REST API │───▶│ PostgreSQL 16 │
+│ (Vercel) │ │ (Railway) │ │ + pgvector │
+│ Zustand + Axios │ │ JWT + Zod + Prisma │ │ (Neon) │
+└─────────────────────┘ │ │ └──────────────────┘
+│ RAG Pipeline: │
+│ embed → pgvector │
+│ → Gemini 2.0 Flash │
 └──────────────────────┘
 
-Xem chi tiết: [ARCHITECTURE.MD](./ARCHITECTURE.MD)
+text
+
+**Pattern:** Controller → Service → Prisma  
+**API format:** `{ success, statusCode, message, data }`
 
 ---
 
@@ -112,7 +103,7 @@ Xem chi tiết: [ARCHITECTURE.MD](./ARCHITECTURE.MD)
 
 ### Prerequisites
 - Node.js 20+
-- PostgreSQL 16+ với pgvector extension
+- PostgreSQL 16+ with pgvector extension
 - Gemini API key
 
 ### Backend Setup
@@ -125,96 +116,89 @@ npx prisma migrate dev
 npx prisma db seed
 npx tsx prisma/seed-knowledge.ts   # seed AI knowledge base
 npm run dev
-```
-
-### Frontend Setup
-```bash
+Frontend Setup
+bash
 cd frontend
 cp .env.example .env.local  # set NEXT_PUBLIC_API_URL
 npm install
 npm run dev
-```
+Docker Setup
+bash
+# Development
+docker-compose up --build
 
----
+# Production
+docker-compose -f docker-compose.prod.yml up --build -d
+🌐 Deployment
+Service	Platform	URL
+Frontend	Vercel	https://gym-management-five-gules.vercel.app
+Backend	Railway	https://gym-management-production-44b5.up.railway.app
+Database	Neon	PostgreSQL + pgvector (Singapore region)
+API Docs	Swagger	https://gym-management-production-44b5.up.railway.app/api/docs
+🔒 Security
+JWT Authentication (access + refresh tokens)
 
-## 📚 API Endpoints
+Password hashing (bcrypt, cost 12)
 
-### Authentication
-```http
+Role-Based Access Control (RBAC)
+
+Input validation (Zod)
+
+HTTPS in production
+
+Environment variables (never hardcoded)
+
+Rate limiting middleware
+
+📚 API Endpoints
+Authentication
+http
 POST /api/auth/register
 POST /api/auth/login
-```
-
-### Membership
-```http
+POST /api/auth/refresh
+POST /api/auth/logout
+Membership
+http
 GET  /api/memberships/plans
 POST /api/memberships/buy
 GET  /api/memberships/current
-```
-
-### AI Chat
-```http
+AI Chat
+http
 POST /api/ai/chat
 GET  /api/ai/history
 GET  /api/ai/usage
-```
-
-### Admin
-```http
+Body Progress
+http
+POST /api/body-progress
+GET  /api/body-progress
+GET  /api/body-progress/latest
+GET  /api/body-progress/chart
+GET  /api/body-progress/stats
+PUT  /api/body-progress/:id
+DELETE /api/body-progress/:id
+Admin
+http
 GET   /api/admin/stats
 GET   /api/admin/users
 PATCH /api/admin/users/:id/toggle-active
 PATCH /api/admin/users/:id/role
-```
-
-### Payment
-```http
+Payment
+http
 POST /api/payments/create
 GET  /api/payments/history
 GET  /api/payments/vnpay-return
 POST /api/payments/momo-webhook
-```
-
-### Notification
-```http
+Notification
+http
 GET   /api/notifications
 PATCH /api/notifications/:id/read
 PATCH /api/notifications/read-all
-```
-
----
-
-## 🔒 Security
-- JWT Authentication (access + refresh tokens)
-- Password hashing (bcrypt, cost 12)
-- Role-Based Access Control (RBAC)
-- Input validation (Zod)
-- HTTPS in production
-- Environment variables (never hardcoded)
-
----
-
-## 📦 Deployment
-
-| Service | Platform | URL |
-|---|---|---|
-| Frontend | Vercel | https://gym-management-ct9i4d6vr-sleeping-team.vercel.app |
-| Backend | Railway | https://gym-management-production-44b5.up.railway.app |
-| Database | Neon | PostgreSQL + pgvector (Singapore region) |
-
----
-
-## 📖 Documentation
-
-| File | Mô tả |
-|---|---|
-| [ARCHITECTURE.MD](./ARCHITECTURE.MD) | System architecture, DB schema, API standards |
-| [ROADMAP.md](./ROADMAP.md) | 26-issue development plan, 6 phases |
-| [CHANGELOG.md](./CHANGELOG.md) | Version history |
-| [PROJECT_STATUS.md](./PROJECT_STATUS.md) | Current progress tracking |
-
----
-
-## 📄 License
-
-MIT License — see [LICENSE](./LICENSE)
+📖 Documentation
+File	Mô tả
+ARCHITECTURE.MD	System architecture, DB schema, API standards
+ROADMAP.md	26-issue development plan, 6 phases
+CHANGELOG.md	Version history
+PROJECT_STATUS.md	Current progress tracking
+RELEASE_EVIDENCE.md	Release evidence and test results
+📄 License
+MIT License — see LICENSE
