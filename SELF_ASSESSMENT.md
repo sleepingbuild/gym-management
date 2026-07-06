@@ -8,12 +8,9 @@ This template is aligned with Ian Sommerville's *Engineering Software Products*.
 - Repository URL: https://github.com/sleepingbuild/gym-management
 - Team name: IronFit Team
 - Team members:
-  - [Your Name] - Fullstack Developer (Backend & Frontend)
-- Course / assignment: Software Engineering
-- Demo URL or video:
-  - Frontend Live: https://gym-management-five-gules.vercel.app
-  - Backend API: https://gym-management-production-44b5.up.railway.app
-  - Screenshots: [Thêm link ảnh nếu có]
+- Team members:
+  - Phạm Hoàng Phi - Backend Lead & Fullstack (Backend APIs, Database, Deployment, Frontend Integration)
+  - Giang Văn Quang - Frontend Lead (UI/UX, Components, State Management, API Integration)
 - Main tech stack:
   - Frontend: Next.js 16, TailwindCSS, Zustand, Recharts
   - Backend: Node.js, Express, TypeScript, Prisma, PostgreSQL + pgvector, Redis
@@ -204,27 +201,37 @@ Testing	Wrote unit/integration tests for critical APIs (auth, membership, admin,
 DevOps/Reproducibility	Docker, CI/CD pipelines, environment variable management, clear documentation.	Dockerfile, docker-compose.yml, .github/workflows/	Full pipeline works; project runs from clean clone.
 
 ## 10. Individual self-assessment
-### Student name: Phạm Hoàng Phi
+**Phạm Hoàng Phi - Backend Lead & Fullstack:**
 
-| Category | Max | Self-score | Evidence |
-|---|---:|---:|---|
-| Meaningful technical contribution | 7 | 7 | ... |
-| Theory-informed ownership and explanation | 5 | 5 | ... |
-| Collaboration, agile teamwork, and professionalism | 3 | 3 | ... |
-| Testing, documentation, DevOps, and quality practices | 3 | 3 | ... |
-| Reflection and improvement mindset | 2 | 2 | ... |
-| **Total** | **20** | **20** | |
+**Main files/features owned:**
+- Backend: Tất cả controllers, services, routes, validators, types, middleware (auth, role, error, rate limit, cache)
+- Database: Thiết kế schema Prisma, migrations, seed data
+- AI: Tích hợp Gemini RAG pipeline (pgvector, embedding, chat)
+- Payment: Tích hợp VNPay và MoMo
+- Notification: Hệ thống thông báo in-app
+- Body Progress: API CRUD với BMI auto-calculation
+- QR Check-in: API generate QR, check-in/out, history, stats
+- Goal Setting: API đặt mục tiêu, kiểm tra achievement
+- Deployment: Cấu hình Docker, Railway, Vercel, GitHub Actions
+- Frontend: Tích hợp API services, xử lý state với Zustand, interceptor Axios
 
-### Student name: Giang Văn Quang
+**Important commits/PRs/issues:** https://github.com/sleepingbuild/gym-management/commits/main?author=sleepingbuild
 
-| Category | Max | Self-score | Evidence |
-|---|---:|---:|---|
-| Meaningful technical contribution | 7 | 7 | ... |
-| Theory-informed ownership and explanation | 5 | 5 | ... |
-| Collaboration, agile teamwork, and professionalism | 3 | 3 | ... |
-| Testing, documentation, DevOps, and quality practices | 3 | 3 | ... |
-| Reflection and improvement mindset | 2 | 2 | ... |
-| **Total** | **20** | **20** | |
+**Giang Văn Quang - Frontend Lead:**
+
+**Main files/features owned:**
+- Frontend: Toàn bộ UI components, pages, routing (Next.js App Router)
+- Authentication pages: Login, Register với react-hook-form + zod validation
+- Dashboard: Admin, Member, PT dashboards với sidebar theo role
+- AI Chat UI: Chat bubble, typing indicator, usage badge
+- Progress Tracking: Charts (Recharts), stats cards, form, history table
+- QR Check-in: QR generation, check-in/out UI, history, stats
+- Goal Setting: Form đặt mục tiêu, hiển thị tiến trình
+- State Management: Zustand store (auth, persist)
+- API Integration: Axios client, services layer (auth, membership, bodyProgress, attendance, bodyGoal)
+- Design System: Áp dụng design system (Cream, Coral, Dark Navy), TailwindCSS
+
+**Important commits/PRs/issues:** https://github.com/sleepingbuild/gym-management/commits/main?author=Quang1856
 
 Contribution evidence:
 **Phạm Hoàng Phi:**
@@ -243,7 +250,17 @@ Tests/docs/reviews contributed: Auth, membership, admin, body progress tests; RE
 
 Course concepts applied in my work: Layered architecture, JWT security, input validation, error handling, CI/CD, documentation.
 
-Design/security/testing/reliability trade-offs I can explain: Chose REST over GraphQL for simplicity; opted for JWT over sessions for statelessness; used pgvector for RAG despite setup complexity.
+Design/security/testing/reliability 
+**Phạm Hoàng Phi:**
+- Chose REST over GraphQL for simplicity
+- Opted for JWT over sessions for statelessness
+- Used pgvector for RAG despite setup complexity
+- Redis caching optional, falls back gracefully
+
+**Giang Văn Quang:**
+- Chose Next.js App Router for SEO and performance
+- Used Zustand over Redux for simplicity
+- TailwindCSS for rapid UI development
 
 What I learned: Importance of validation, security best practices, real-world deployment pipelines.
 
