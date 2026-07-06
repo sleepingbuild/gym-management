@@ -1,16 +1,17 @@
 # Student Repository Self-Assessment
 
-This template is aligned with Ian Sommerville's *Engineering Software Products*. Do not only state theory; connect course concepts to evidence in the repository.
-
 ## 1. Project information
 
 - Project name: IronFit Pro — Gym Management System
 - Repository URL: https://github.com/sleepingbuild/gym-management
 - Team name: IronFit Team
 - Team members:
-- Team members:
   - Phạm Hoàng Phi - Backend Lead & Fullstack (Backend APIs, Database, Deployment, Frontend Integration)
   - Giang Văn Quang - Frontend Lead (UI/UX, Components, State Management, API Integration)
+- Course / assignment: Software Engineering
+- Demo URL or video:
+  - Frontend Live: https://gym-management-five-gules.vercel.app
+  - Backend API: https://gym-management-production-44b5.up.railway.app
 - Main tech stack:
   - Frontend: Next.js 16, TailwindCSS, Zustand, Recharts
   - Backend: Node.js, Express, TypeScript, Prisma, PostgreSQL + pgvector, Redis
@@ -45,8 +46,6 @@ IronFit Pro is a comprehensive gym management platform that helps gym owners man
 | US-8 | PT | View assigned students and their progress | PT can see list of students (mock data for v0.2.0) | Partial | `/pt/dashboard` (mock) |
 
 ## 3. Architecture and design decisions
-
-Describe the architecture briefly. Add a diagram link if available.
 
 Architecture: Client-Server with RESTful API.
 
@@ -99,187 +98,152 @@ cd frontend && npm run build
 
 # Docker (optional)
 docker-compose up --build
-Required environment variables:
 
-text
-# Backend .env
-DATABASE_URL=postgresql://user:password@localhost:5432/gym_management
-JWT_SECRET=your-secret
-JWT_REFRESH_SECRET=your-refresh-secret
-GEMINI_API_KEY=your-gemini-key
-FRONTEND_URL=http://localhost:3000
-REDIS_HOST=localhost
-REDIS_PORT=6379
-# ... (other payment keys)
-
-# Frontend .env.local
-NEXT_PUBLIC_API_URL=http://localhost:5000/api
 ## 5. Testing and verification
-Test type	What is verified?	Command or evidence	Result
-Unit / Integration (Jest)	Auth, Membership, Admin, Body Progress APIs	cd backend && npm test	16 tests passed ✅
-Manual API tests	QR generation, check-in/out, goal setting	PowerShell scripts in test logs	All endpoints return success ✅
-UI manual tests	Login, registration, QR check-in, goal setting	Screenshots in repo/docs	All flows work ✅
+
+| Test type | What is verified? | Command or evidence | Result |
+|---|---|---|---|
+| Unit / Integration (Jest) | Auth, Membership, Admin, Body Progress APIs | `cd backend && npm test` | 16 tests passed ✅ |
+| Manual API tests | QR generation, check-in/out, goal setting | PowerShell scripts in test logs | All endpoints return success ✅ |
+| UI manual tests | Login, registration, QR check-in, goal setting | Screenshots in docs/screenshots/ | All flows work ✅ |
+
 Important user scenarios verified:
 
-Scenario 1 (Member signup & login): User registers, receives JWT, redirected to dashboard. (Tested with Postman and UI)
-
-Scenario 2 (Membership purchase): User buys Basic plan, membership status appears in dashboard. (Tested via API and UI)
-
-Scenario 3 (AI chat): User asks "Give me a workout plan", receives Gemini response with RAG context. (Tested via UI)
-
-Scenario 4 (Progress tracking): User adds weight/height, BMI auto-calculated, chart displays. (Tested via UI)
-
-Scenario 5 (QR check-in): User generates QR, scans (mock), history updates. (Tested via UI)
-
-Scenario 6 (Goal setting): User sets target weight, status updates when achieved. (Tested via UI)
+- **Scenario 1 (Member signup & login)**: User registers, receives JWT, redirected to dashboard. (Tested with Postman and UI)
+- **Scenario 2 (Membership purchase)**: User buys Basic plan, membership status appears in dashboard. (Tested via API and UI)
+- **Scenario 3 (AI chat)**: User asks "Give me a workout plan", receives Gemini response with RAG context. (Tested via UI)
+- **Scenario 4 (Progress tracking)**: User adds weight/height, BMI auto-calculated, chart displays. (Tested via UI)
+- **Scenario 5 (QR check-in)**: User generates QR, scans (mock), history updates. (Tested via UI)
+- **Scenario 6 (Goal setting)**: User sets target weight, status updates when achieved. (Tested via UI)
 
 ## 6. Security, privacy, and reliability
-Security/privacy checklist
-No real secrets committed.
 
-.env.example uses safe placeholder values.
+### Security/privacy checklist
 
-Authentication/authorization is implemented (JWT, RBAC).
+- [x] No real secrets committed.
+- [x] `.env.example` uses safe placeholder values.
+- [x] Authentication/authorization is implemented (JWT, RBAC).
+- [x] Important inputs are validated (Zod).
+- [x] Sensitive data is not unnecessarily collected or exposed.
+- [x] Dependency/security risks are noted (npm audit).
 
-Important inputs are validated (Zod).
+### Reliability and edge cases
 
-Sensitive data is not unnecessarily collected or exposed.
+| Edge case / failure | Handling strategy | Evidence |
+|---|---|---|
+| Invalid email/password on login | Returns 404/401 with appropriate error code | `auth.service.ts`, tests |
+| Missing JWT token | Returns 401 with AUTH_006 | `auth.middleware.ts` |
+| Expired QR code | Returns 400 with ATTENDANCE_001 | `attendance.service.ts` |
+| Duplicate goal creation | Returns 400 with GOAL_001 (handled in frontend) | `bodyGoal.service.ts` |
+| Database connection failure | Health check returns 503, app logs error | `server.ts` health endpoint |
+| Empty progress data | Chart/Stats components show "No data" state | `ProgressChart.tsx`, `ProgressStats.tsx` |
 
-Dependency/security risks are noted (npm audit).
-
-Reliability and edge cases
-Edge case / failure	Handling strategy	Evidence
-Invalid email/password on login	Returns 404/401 with appropriate error code	auth.service.ts, tests
-Missing JWT token	Returns 401 with AUTH_006	auth.middleware.ts
-Expired QR code	Returns 400 with ATTENDANCE_001	attendance.service.ts
-Duplicate goal creation	Returns 400 with GOAL_001 (handled in frontend)	bodyGoal.service.ts
-Database connection failure	Health check returns 503, app logs error	server.ts health endpoint
-Empty progress data	Chart/Stats components show "No data" state	ProgressChart.tsx, ProgressStats.tsx
 ## 7. DevOps, code management, and teamwork
-Branching strategy: Feature branches from main, PRs for major features.
 
-Issues/tasks used: GitHub Issues (#1–#26, #89).
-
-Pull requests/reviews used: PRs for #21, #22, #23, #24, #25.
-
-CI/CD used: GitHub Actions (lint, typecheck, test), Vercel auto-deploy on main push, Railway auto-deploy on main push.
-
-Deployment/demo process:
-
-Backend: Railway (auto-deploy from main)
-
-Frontend: Vercel (auto-deploy from main)
-
-Database: Neon (managed)
+- Branching strategy: Feature branches from main, PRs for major features.
+- Issues/tasks used: GitHub Issues (#1–#26, #89).
+- Pull requests/reviews used: PRs for #21, #22, #23, #24, #25.
+- CI/CD used: GitHub Actions (lint, typecheck, test), Vercel auto-deploy on main push, Railway auto-deploy on main push.
+- Deployment/demo process:
+  - Backend: Railway (auto-deploy from main)
+  - Frontend: Vercel (auto-deploy from main)
+  - Database: Neon (managed)
 
 Evidence:
 
-Commit/PR/issue links: https://github.com/sleepingbuild/gym-management/pulls?q=is%3Apr+is%3Aclosed
-
-CI/deployment links: https://github.com/sleepingbuild/gym-management/actions
+- Commit/PR/issue links: https://github.com/sleepingbuild/gym-management/pulls?q=is%3Apr+is%3Aclosed
+- CI/deployment links: https://github.com/sleepingbuild/gym-management/actions
 
 ## 8. Group self-score: 80 points
-Category	Max	Self-score	Evidence
-Product vision, users, features, scenarios, and stories	10	9	README, issue tracker, user stories table above. Product vision is clear; scenarios and user stories documented.
-Functionality and delivered product value	14	13	All core features (auth, membership, AI, progress, QR check-in, goals) work end-to-end. Minor mock in PT dashboard.
-Architecture and design rationale	12	11	Clear separation of concerns, documented in ARCHITECTURE.MD and decision table above. Minor over-engineering with Redis but optional.
-Code quality, maintainability, and reliable programming	10	9	TypeScript, Zod validation, error handling, consistent naming. Some duplicated code in tests, but acceptable.
-Testing and verification strategy	9	8	16 unit/integration tests pass, manual testing documented. Missing automated E2E tests and coverage report.
-Security, privacy, and configuration hygiene	8	8	No secrets committed, .env.example, JWT, bcrypt, validation, RBAC.
-DevOps, code management, and reproducibility	9	9	GitHub Actions, Docker, Railway, Vercel, clear README, conventional commits, PRs.
-Documentation, self-assessment, and theory-practice traceability	8	7	README, ARCHITECTURE, CHANGELOG, this SELF_ASSESSMENT. Theory-practice table provided. Missing video demo.
-Total	80	74	
-## 9. Theory-to-practice evidence
-Provide at least 3 specific examples.
 
-Course concept	Engineering decision	Repo evidence	Result / limitation
-User stories → features	Defined core user stories (registration, membership, progress, QR, goals) and implemented them in prioritized order.	Issue tracker, README, source code	All priority stories implemented; PT dashboard remains partial (mock).
-Architecture layering	Used Controller-Service-Prisma pattern to separate concerns, making code testable and maintainable.	backend/src/controllers/, services/, prisma/schema.prisma	Good separation; some services grow large (e.g., ai.service.ts) but manageable.
-Security and privacy	JWT with short-lived access tokens, refresh tokens, bcrypt hashing, input validation, environment variables.	utils/generateToken.ts, validators/*.ts, .env.example	Robust security; VNPay sandbox limitation not code issue.
-Reliable programming	Zod validation, error handling with AppError, handling empty/error states in UI.	validators/*.ts, error.middleware.ts, frontend components	Good defensive programming; edge cases handled gracefully.
-Testing	Wrote unit/integration tests for critical APIs (auth, membership, admin, progress).	tests/unit/*.test.ts, tests/integration/api.test.ts	Tests pass and cover main flows; coverage could be increased.
-DevOps/Reproducibility	Docker, CI/CD pipelines, environment variable management, clear documentation.	Dockerfile, docker-compose.yml, .github/workflows/	Full pipeline works; project runs from clean clone.
+| Category | Max | Self-score | Evidence |
+|---|---:|---:|---|
+| Product vision, users, features, scenarios, and stories | 10 | 9 | README, issue tracker, user stories table above. Product vision is clear; scenarios and user stories documented. |
+| Functionality and delivered product value | 14 | 13 | All core features (auth, membership, AI, progress, QR check-in, goals) work end-to-end. Minor mock in PT dashboard. |
+| Architecture and design rationale | 12 | 11 | Clear separation of concerns, documented in ARCHITECTURE.MD and decision table above. Minor over-engineering with Redis but optional. |
+| Code quality, maintainability, and reliable programming | 10 | 9 | TypeScript, Zod validation, error handling, consistent naming. Some duplicated code in tests, but acceptable. |
+| Testing and verification strategy | 9 | 8 | 16 unit/integration tests pass, manual testing documented. Missing automated E2E tests and coverage report. |
+| Security, privacy, and configuration hygiene | 8 | 8 | No secrets committed, .env.example, JWT, bcrypt, validation, RBAC. |
+| DevOps, code management, and reproducibility | 9 | 9 | GitHub Actions, Docker, Railway, Vercel, clear README, conventional commits, PRs. |
+| Documentation, self-assessment, and theory-practice traceability | 8 | 7 | README, ARCHITECTURE, CHANGELOG, this SELF_ASSESSMENT. Theory-practice table provided. Missing video demo. |
+| **Total** | **80** | **74** | |
+
+## 9. Theory-to-practice evidence
+
+| Course concept | Engineering decision | Repo evidence | Result / limitation |
+|---|---|---|---|
+| User stories → features | Defined core user stories (registration, membership, progress, QR, goals) and implemented them in prioritized order. | Issue tracker, README, source code | All priority stories implemented; PT dashboard remains partial (mock). |
+| Architecture layering | Used Controller-Service-Prisma pattern to separate concerns, making code testable and maintainable. | `backend/src/controllers/`, `services/`, `prisma/schema.prisma` | Good separation; some services grow large but manageable. |
+| Security and privacy | JWT with short-lived access tokens, refresh tokens, bcrypt hashing, input validation, environment variables. | `utils/generateToken.ts`, `validators/*.ts`, `.env.example` | Robust security; VNPay sandbox limitation not code issue. |
+| Reliable programming | Zod validation, error handling with AppError, handling empty/error states in UI. | `validators/*.ts`, `error.middleware.ts`, frontend components | Good defensive programming; edge cases handled gracefully. |
+| Testing | Wrote unit/integration tests for critical APIs (auth, membership, admin, progress). | `tests/unit/*.test.ts`, `tests/integration/api.test.ts` | Tests pass and cover main flows; coverage could be increased. |
+| DevOps/Reproducibility | Docker, CI/CD pipelines, environment variable management, clear documentation. | `Dockerfile`, `docker-compose.yml`, `.github/workflows/` | Full pipeline works; project runs from clean clone. |
 
 ## 10. Individual self-assessment
-**Phạm Hoàng Phi - Backend Lead & Fullstack:**
 
-**Main files/features owned:**
-- Backend: Tất cả controllers, services, routes, validators, types, middleware (auth, role, error, rate limit, cache)
-- Database: Thiết kế schema Prisma, migrations, seed data
-- AI: Tích hợp Gemini RAG pipeline (pgvector, embedding, chat)
-- Payment: Tích hợp VNPay và MoMo
-- Notification: Hệ thống thông báo in-app
-- Body Progress: API CRUD với BMI auto-calculation
-- QR Check-in: API generate QR, check-in/out, history, stats
-- Goal Setting: API đặt mục tiêu, kiểm tra achievement
-- Deployment: Cấu hình Docker, Railway, Vercel, GitHub Actions
-- Frontend: Tích hợp API services, xử lý state với Zustand, interceptor Axios
+### Student name: Phạm Hoàng Phi
 
-**Important commits/PRs/issues:** https://github.com/sleepingbuild/gym-management/commits/main?author=sleepingbuild
+| Category | Max | Self-score | Evidence |
+|---|---:|---:|---|
+| Meaningful technical contribution | 7 | 7 | Backend APIs, database schema, AI integration, payment, deployment, Docker. Owned all major backend features. |
+| Theory-informed ownership and explanation | 5 | 5 | Can explain all architecture decisions, user stories, security choices, and testing strategy with course concepts (see above). |
+| Collaboration, agile teamwork, and professionalism | 3 | 3 | Used GitHub issues, commits, PRs, maintained clear documentation and communication. |
+| Testing, documentation, DevOps, and quality practices | 3 | 3 | Wrote backend tests, comprehensive docs, set up CI/CD, Docker, deployments. |
+| Reflection and improvement mindset | 2 | 2 | Acknowledged limitations (PT mock, VNPay sandbox, missing E2E tests) and planned improvements. |
+| **Total** | **20** | **20** | |
 
-**Giang Văn Quang - Frontend Lead:**
+**Contribution evidence - Phạm Hoàng Phi:**
 
-**Main files/features owned:**
-- Frontend: Toàn bộ UI components, pages, routing (Next.js App Router)
-- Authentication pages: Login, Register với react-hook-form + zod validation
-- Dashboard: Admin, Member, PT dashboards với sidebar theo role
-- AI Chat UI: Chat bubble, typing indicator, usage badge
-- Progress Tracking: Charts (Recharts), stats cards, form, history table
-- QR Check-in: QR generation, check-in/out UI, history, stats
-- Goal Setting: Form đặt mục tiêu, hiển thị tiến trình
-- State Management: Zustand store (auth, persist)
-- API Integration: Axios client, services layer (auth, membership, bodyProgress, attendance, bodyGoal)
-- Design System: Áp dụng design system (Cream, Coral, Dark Navy), TailwindCSS
+- **Main files/features owned:** Backend controllers, services, routes, validators, types, middleware (auth, role, error, rate limit, cache); Prisma schema, migrations, seed data; AI Gemini RAG pipeline; Payment VNPay/MoMo; Notification system; Body Progress, QR Check-in, Goal Setting APIs; Docker configuration; Railway & Vercel deployment setup; Frontend API services and Zustand integration.
 
-**Important commits/PRs/issues:** https://github.com/sleepingbuild/gym-management/commits/main?author=Quang1856
+- **Important commits/PRs/issues:** https://github.com/sleepingbuild/gym-management/commits/main?author=sleepingbuild
 
-Contribution evidence:
-**Phạm Hoàng Phi:**
-- Main files/features owned: Backend APIs (auth, membership, AI, payment, notification, body progress, attendance, body goal), database schema, deployment configuration.
-- Important commits/PRs/issues: View https://github.com/sleepingbuild/gym-management/commits/main
+- **Course concepts applied:** Layered architecture (Controller-Service-Prisma), JWT security, input validation, cloud deployment, database indexing.
 
-**Giang Văn Quang:**
-- Main files/features owned: Frontend pages (login, register, dashboard, progress, check-in, PT dashboard), UI components, state management, API integration.
-- Important commits/PRs/issues: View https://github.com/sleepingbuild/gym-management/commits/main
+- **Design/security/testing/reliability trade-offs I can explain:** Chose REST over GraphQL for simplicity; opted for JWT over sessions for statelessness; used pgvector for RAG despite setup complexity; Redis caching optional, falls back gracefully.
 
-Main files/features owned: All backend controllers/services, frontend pages, schema design, deployment configuration.
+- **What I learned:** Importance of validation, security best practices, real-world deployment pipelines, and database optimization.
 
-Important commits/PRs/issues: View https://github.com/sleepingbuild/gym-management/commits/main
+- **What I would improve next:** Add E2E tests; implement real PT API; add goal notifications.
 
-Tests/docs/reviews contributed: Auth, membership, admin, body progress tests; README, ARCHITECTURE, CHANGELOG, SELF_ASSESSMENT.
+---
 
-Course concepts applied in my work: Layered architecture, JWT security, input validation, error handling, CI/CD, documentation.
+### Student name: Giang Văn Quang
 
-Design/security/testing/reliability 
-**Phạm Hoàng Phi:**
-- Chose REST over GraphQL for simplicity
-- Opted for JWT over sessions for statelessness
-- Used pgvector for RAG despite setup complexity
-- Redis caching optional, falls back gracefully
+| Category | Max | Self-score | Evidence |
+|---|---:|---:|---|
+| Meaningful technical contribution | 7 | 7 | Frontend UI/UX, components, pages, state management, API integration. Owned all frontend features. |
+| Theory-informed ownership and explanation | 5 | 5 | Can explain component-based architecture, responsive design, API integration, and state management with course concepts. |
+| Collaboration, agile teamwork, and professionalism | 3 | 3 | Collaborated on requirements, integrated with backend APIs, participated in code reviews and documentation. |
+| Testing, documentation, DevOps, and quality practices | 3 | 3 | UI manual testing, documented frontend setup, contributed to README and screenshots. |
+| Reflection and improvement mindset | 2 | 2 | Acknowledged limitations (mock QR scanner, PT dashboard mock) and planned improvements. |
+| **Total** | **20** | **20** | |
 
-**Giang Văn Quang:**
-- Chose Next.js App Router for SEO and performance
-- Used Zustand over Redux for simplicity
-- TailwindCSS for rapid UI development
+**Contribution evidence - Giang Văn Quang:**
 
-What I learned: Importance of validation, security best practices, real-world deployment pipelines.
+- **Main files/features owned:** All frontend pages (Login, Register, Admin Dashboard, Member Dashboard, PT Dashboard, AI Chat, Progress, QR Check-in, Goal Setting); UI components (Card, Button, Input, etc.); Zustand store (auth, persist); Axios client with interceptors; Services layer (auth, membership, bodyProgress, attendance, bodyGoal); Design system (TailwindCSS, Cream, Coral, Dark Navy); Screenshots and documentation.
 
-What I would improve next: Add E2E tests with Playwright; implement real PT API; add goal notifications.
+- **Important commits/PRs/issues:** https://github.com/sleepingbuild/gym-management/commits/main?author=Quang1856
+
+- **Course concepts applied:** Component-based architecture (Next.js), state management, responsive UI, API integration patterns.
+
+- **Design/security/testing/reliability trade-offs I can explain:** Chose Next.js App Router for SEO and performance; used Zustand over Redux for simplicity; TailwindCSS for rapid UI development; handled empty/loading/error states in UI.
+
+- **What I learned:** Frontend best practices, API integration, state management, responsive design, and user experience considerations.
+
+- **What I would improve next:** Add E2E tests with Playwright; implement real QR scanner with camera; add more animations and transitions.
 
 ## 11. Known limitations
-VNPay sandbox awaiting merchant approval (Error 72) — signature and flow verified, blocked only by external onboarding.
 
-PT Dashboard uses mock data; backend API for PT features not implemented.
-
-QR scanner is mock (no actual camera integration in v0.2.0); user manually enters QR code.
-
-Goal achievement check is manual (user clicks button); no push notification yet.
-
-Redis caching is optional; works without it.
-
-No automated E2E tests; coverage could be improved.
+- VNPay sandbox awaiting merchant approval (Error 72) — signature and flow verified, blocked only by external onboarding.
+- PT Dashboard uses mock data; backend API for PT features not implemented.
+- QR scanner is mock (no actual camera integration in v0.2.0); user manually enters QR code.
+- Goal achievement check is manual (user clicks button); no push notification yet.
+- Redis caching is optional; works without it.
+- No automated E2E tests; coverage could be improved.
 
 ## 12. Final submission checklist
+
 - [x] README explains project purpose and features.
 - [x] Product vision and target users are clear.
 - [x] Main scenarios/user stories are documented.
@@ -291,7 +255,7 @@ No automated E2E tests; coverage could be improved.
 - [x] Architecture/design choices are documented.
 - [x] DevOps/code management evidence is available.
 - [x] No real credentials are committed.
-- [x] Main user flows are demonstrated with screenshots/video. 
+- [x] Main user flows are demonstrated with screenshots/video.
 - [x] Team member contributions are documented.
 - [x] Theory-to-practice examples are specific and evidence-based.
 - [x] Known limitations are stated honestly.
