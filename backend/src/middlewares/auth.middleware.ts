@@ -43,7 +43,13 @@ export const authorize = (...allowedRoles: Role[]) => {
         }
 
         if (!allowedRoles.includes(req.user.role)) {
-            return next(new AppError(403, "Access denied. Insufficient permissions.", "AUTH_010"));
+            return next(
+                new AppError(
+                    403,
+                    "Access denied. Insufficient permissions.",
+                    "AUTH_010",
+                ),
+            );
         }
 
         next();

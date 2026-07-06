@@ -1,6 +1,6 @@
-import { prisma } from '../config/prisma';
-import { AppError } from '../utils/errors';
-import { CreateBodyGoalDTO, UpdateBodyGoalDTO } from '../types/bodyGoal.types';
+import { prisma } from "../config/prisma";
+import { AppError } from "../utils/errors";
+import { CreateBodyGoalDTO, UpdateBodyGoalDTO } from "../types/bodyGoal.types";
 
 export const bodyGoalService = {
     // Create goal
@@ -11,7 +11,11 @@ export const bodyGoalService = {
         });
 
         if (existing) {
-            throw new AppError(400, 'User already has a goal. Update existing goal instead.', 'GOAL_001');
+            throw new AppError(
+                400,
+                "User already has a goal. Update existing goal instead.",
+                "GOAL_001",
+            );
         }
 
         const goal = await prisma.bodyGoal.create({
@@ -23,7 +27,7 @@ export const bodyGoalService = {
                 targetMuscle: dto.targetMuscle,
                 targetDate: new Date(dto.targetDate),
                 notes: dto.notes,
-                status: 'ACTIVE',
+                status: "ACTIVE",
             },
         });
 
@@ -41,12 +45,12 @@ export const bodyGoalService = {
         }
 
         // Auto-update status if target date passed
-        if (goal.status === 'ACTIVE' && goal.targetDate < new Date()) {
+        if (goal.status === "ACTIVE" && goal.targetDate < new Date()) {
             await prisma.bodyGoal.update({
                 where: { userId },
-                data: { status: 'EXPIRED' },
+                data: { status: "EXPIRED" },
             });
-            goal.status = 'EXPIRED';
+            goal.status = "EXPIRED";
         }
 
         return goal;
@@ -59,7 +63,7 @@ export const bodyGoalService = {
         });
 
         if (!existing) {
-            throw new AppError(404, 'Goal not found', 'GOAL_002');
+            throw new AppError(404, "Goal not found", "GOAL_002");
         }
 
         const goal = await prisma.bodyGoal.update({
@@ -69,7 +73,9 @@ export const bodyGoalService = {
                 targetBmi: dto.targetBmi,
                 targetBodyFat: dto.targetBodyFat,
                 targetMuscle: dto.targetMuscle,
-                targetDate: dto.targetDate ? new Date(dto.targetDate) : undefined,
+                targetDate: dto.targetDate
+                    ? new Date(dto.targetDate)
+                    : undefined,
                 status: dto.status,
                 notes: dto.notes,
             },
@@ -84,37 +90,45 @@ export const bodyGoalService = {
             where: { userId },
         });
 
-        if (!goal || goal.status !== 'ACTIVE') {
-            return { achieved: false, message: 'No active goal found' };
+        if (!goal || goal.status !== "ACTIVE") {
+            return { achieved: false, message: "No active goal found" };
         }
 
         const latestProgress = await prisma.bodyProgress.findFirst({
             where: { userId },
-            orderBy: { recordedAt: 'desc' },
+            orderBy: { recordedAt: "desc" },
         });
 
         if (!latestProgress) {
-            return { achieved: false, message: 'No progress data found' };
+            return { achieved: false, message: "No progress data found" };
         }
 
         let achieved = false;
-        let message = '';
+        let message = "";
 
         if (goal.targetWeight && latestProgress.weight <= goal.targetWeight) {
             achieved = true;
             message = `Target weight ${goal.targetWeight}kg achieved! Current: ${latestProgress.weight}kg`;
-        } else if (goal.targetBmi && latestProgress.bmi && latestProgress.bmi <= goal.targetBmi) {
+        } else if (
+            goal.targetBmi &&
+            latestProgress.bmi &&
+            latestProgress.bmi <= goal.targetBmi
+        ) {
             achieved = true;
             message = `Target BMI ${goal.targetBmi} achieved! Current: ${latestProgress.bmi}`;
-        } else if (goal.targetBodyFat && latestProgress.bodyFat && latestProgress.bodyFat <= goal.targetBodyFat) {
+        } else if (
+            goal.targetBodyFat &&
+            latestProgress.bodyFat &&
+            latestProgress.bodyFat <= goal.targetBodyFat
+        ) {
             achieved = true;
             message = `Target body fat ${goal.targetBodyFat}% achieved! Current: ${latestProgress.bodyFat}%`;
         }
 
-        if (achieved && goal.status === 'ACTIVE') {
+        if (achieved && goal.status === "ACTIVE") {
             await prisma.bodyGoal.update({
                 where: { userId },
-                data: { status: 'ACHIEVED' },
+                data: { status: "ACHIEVED" },
             });
         }
 
@@ -128,7 +142,7 @@ export const bodyGoalService = {
         });
 
         if (!existing) {
-            throw new AppError(404, 'Goal not found', 'GOAL_002');
+            throw new AppError(404, "Goal not found", "GOAL_002");
         }
 
         await prisma.bodyGoal.delete({

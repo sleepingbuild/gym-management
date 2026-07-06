@@ -1,11 +1,11 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 export const checkInSchema = z.object({
     location: z.string().optional(),
 });
 
 export const checkOutSchema = z.object({
-    attendanceId: z.string().min(1, 'Attendance ID is required'),  // Sửa thành string bình thường
+    attendanceId: z.string().min(1, "Attendance ID is required"), // Sửa thành string bình thường
     notes: z.string().optional(),
 });
 

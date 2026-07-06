@@ -12,7 +12,11 @@ export const generateTokens = (payload: TokenPayload): AuthTokens => {
     };
 
     const accessToken = jwt.sign(payload, JWT_CONFIG.secret, accessOptions);
-    const refreshToken = jwt.sign(payload, JWT_CONFIG.refreshSecret, refreshOptions);
+    const refreshToken = jwt.sign(
+        payload,
+        JWT_CONFIG.refreshSecret,
+        refreshOptions,
+    );
 
     return { accessToken, refreshToken };
 };

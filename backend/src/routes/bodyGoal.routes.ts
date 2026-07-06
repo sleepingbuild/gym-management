@@ -1,6 +1,6 @@
-import { Router } from 'express';
-import { bodyGoalController } from '../controllers/bodyGoal.controller';
-import { authenticate } from '../middlewares/auth.middleware';
+import { Router } from "express";
+import { bodyGoalController } from "../controllers/bodyGoal.controller";
+import { authenticate } from "../middlewares/auth.middleware";
 
 const router = Router();
 
@@ -8,18 +8,18 @@ const router = Router();
 router.use(authenticate);
 
 // Create goal
-router.post('/', bodyGoalController.create);
+router.post("/", bodyGoalController.create);
 
 // Get current goal
-router.get('/current', bodyGoalController.getCurrent);
+router.get("/current", bodyGoalController.getCurrent);
 
 // Update goal
-router.put('/', bodyGoalController.update);
+router.put("/", bodyGoalController.update);
 
 // Check achievement
-router.get('/check-achievement', bodyGoalController.checkAchievement);
+router.get("/check-achievement", bodyGoalController.checkAchievement);
 
 // Delete goal
-router.delete('/', bodyGoalController.delete);
+router.delete("/", bodyGoalController.delete);
 
 export default router;

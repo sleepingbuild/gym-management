@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { Card } from '@/components/ui/Card';
-import { ProgressStats as StatsType } from '@/services/bodyProgress.service';
+import { Card } from "@/components/ui/Card";
+import { ProgressStats as StatsType } from "@/services/bodyProgress.service";
 
 interface ProgressStatsProps {
   stats: StatsType | null;
@@ -43,15 +43,18 @@ export function ProgressStats({ stats, loading }: ProgressStatsProps) {
         <p className="text-display-sm font-display text-ink">
           {latest.weight} <span className="text-body-sm text-muted">kg</span>
         </p>
-        <p className={`text-body-sm ${weightChange < 0 ? 'text-success' : weightChange > 0 ? 'text-error' : 'text-muted'}`}>
-          {weightChange > 0 ? '+' : ''}{weightChange} kg
+        <p
+          className={`text-body-sm ${weightChange < 0 ? "text-success" : weightChange > 0 ? "text-error" : "text-muted"}`}
+        >
+          {weightChange > 0 ? "+" : ""}
+          {weightChange} kg
         </p>
       </Card>
 
       <Card>
         <p className="text-caption uppercase text-muted">BMI</p>
         <p className="text-display-sm font-display text-ink">
-          {latest.bmi ?? '--'}
+          {latest.bmi ?? "--"}
         </p>
       </Card>
 
@@ -65,7 +68,8 @@ export function ProgressStats({ stats, loading }: ProgressStatsProps) {
       <Card>
         <p className="text-caption uppercase text-muted">Trung bình cân nặng</p>
         <p className="text-display-sm font-display text-ink">
-          {stats.average.weight} <span className="text-body-sm text-muted">kg</span>
+          {stats.average.weight}{" "}
+          <span className="text-body-sm text-muted">kg</span>
         </p>
       </Card>
     </div>

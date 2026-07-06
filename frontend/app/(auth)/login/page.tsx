@@ -1,42 +1,42 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { useAuthStore } from '@/store/auth.store';
-import api from '@/lib/api';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useAuthStore } from "@/store/auth.store";
+import api from "@/lib/api";
 
 export default function LoginPage() {
   const router = useRouter();
   const { setAuth } = useAuthStore();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
+    email: "",
+    password: "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
-      const response = await api.post('/auth/login', formData);
+      const response = await api.post("/auth/login", formData);
       const { user, tokens } = response.data.data;
-      
+
       setAuth(user, tokens.accessToken, tokens.refreshToken);
-      
+
       // Redirect based on role
-      if (user.role === 'ADMIN') {
-        router.push('/admin');
-      } else if (user.role === 'PT') {
-        router.push('/pt');
+      if (user.role === "ADMIN") {
+        router.push("/admin");
+      } else if (user.role === "PT") {
+        router.push("/pt");
       } else {
-        router.push('/member');
+        router.push("/member");
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Đăng nhập thất bại');
+      setError(err.response?.data?.message || "Đăng nhập thất bại");
     } finally {
       setLoading(false);
     }
@@ -78,7 +78,9 @@ export default function LoginPage() {
                   className="w-full px-3.5 py-2.5 bg-canvas text-ink border border-hairline rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   placeholder="your@email.com"
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
                 />
               </div>
 
@@ -92,7 +94,9 @@ export default function LoginPage() {
                   className="w-full px-3.5 py-2.5 bg-canvas text-ink border border-hairline rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   placeholder="********"
                   value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, password: e.target.value })
+                  }
                 />
               </div>
 
@@ -101,7 +105,7 @@ export default function LoginPage() {
                 disabled={loading}
                 className="w-full btn-primary py-3"
               >
-                {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
+                {loading ? "Đang đăng nhập..." : "Đăng nhập"}
               </button>
             </div>
           </form>

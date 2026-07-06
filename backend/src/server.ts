@@ -3,39 +3,43 @@ import cors from "cors";
 import dotenv from "dotenv";
 import helmet from "helmet";
 import morgan from "morgan";
-import swaggerUi from 'swagger-ui-express';
+import swaggerUi from "swagger-ui-express";
 import { errorMiddleware } from "./middlewares/error.middleware";
 import { prisma } from "./config/prisma";
 import routes from "./routes";
-import { specs } from './docs/swagger';
-import { logger, stream } from './config/logger';
+import { specs } from "./docs/swagger";
+import { stream } from "./config/logger";
 
 dotenv.config();
 
 const app = express();
 
 // Security Middleware
-app.use(helmet({
-    contentSecurityPolicy: {
-        directives: {
-            defaultSrc: ["'self'"],
-            scriptSrc: ["'self'"],
-            styleSrc: ["'self'", "'unsafe-inline'"],
-            imgSrc: ["'self'", "data:", "https:"],
+app.use(
+    helmet({
+        contentSecurityPolicy: {
+            directives: {
+                defaultSrc: ["'self'"],
+                scriptSrc: ["'self'"],
+                styleSrc: ["'self'", "'unsafe-inline'"],
+                imgSrc: ["'self'", "data:", "https:"],
+            },
         },
-    },
-}));
+    }),
+);
 
 // CORS Configuration
-app.use(cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:3000",
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-}));
+app.use(
+    cors({
+        origin: process.env.FRONTEND_URL || "http://localhost:3000",
+        credentials: true,
+        methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+        allowedHeaders: ["Content-Type", "Authorization"],
+    }),
+);
 
 // Logging with Morgan + Winston
-app.use(morgan('combined', { stream }));
+app.use(morgan("combined", { stream }));
 
 // Body Parser
 app.use(express.json({ limit: "10mb" }));
@@ -47,26 +51,27 @@ app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.get("/api/health", async (req, res) => {
     const startTime = Date.now();
     const health = {
-        status: 'ok',
+        status: "ok",
         timestamp: new Date().toISOString(),
         uptime: Math.floor(process.uptime()),
         services: {
-            database: 'unknown',
-            api: 'ok',
+            database: "unknown",
+            api: "ok",
         },
-        version: process.env.npm_package_version || '0.1.0',
-        environment: process.env.NODE_ENV || 'development',
+        version: process.env.npm_package_version || "0.1.0",
+        environment: process.env.NODE_ENV || "development",
         responseTime: 0,
     };
 
     try {
         await prisma.$queryRaw`SELECT 1`;
-        health.services.database = 'connected';
+        health.services.database = "connected";
         health.responseTime = Date.now() - startTime;
         res.json(health);
     } catch (error) {
-        health.status = 'degraded';
-        health.services.database = 'disconnected';
+        console.error(error);
+        health.status = "degraded";
+        health.services.database = "disconnected";
         health.responseTime = Date.now() - startTime;
         res.status(503).json(health);
     }
@@ -75,7 +80,7 @@ app.get("/api/health", async (req, res) => {
 // ============================================
 // SWAGGER API DOCS
 // ============================================
-app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(specs));
+app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(specs));
 
 // ============================================
 // API ROUTES

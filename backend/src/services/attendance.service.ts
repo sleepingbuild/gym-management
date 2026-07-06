@@ -1,6 +1,6 @@
-import { prisma } from '../config/prisma';
-import { AppError } from '../utils/errors';
-import { randomBytes } from 'crypto';
+import { prisma } from "../config/prisma";
+import { AppError } from "../utils/errors";
+import { randomBytes } from "crypto";
 
 export const attendanceService = {
     // Generate QR code for check-in
@@ -10,11 +10,11 @@ export const attendanceService = {
             where: { id: userId },
         });
         if (!user) {
-            throw new AppError(404, 'User not found', 'USER_001');
+            throw new AppError(404, "User not found", "USER_001");
         }
 
         // Generate unique QR code
-        const qrCode = randomBytes(32).toString('hex');
+        const qrCode = randomBytes(32).toString("hex");
         const qrExpiry = new Date();
         qrExpiry.setMinutes(qrExpiry.getMinutes() + duration);
 
@@ -51,7 +51,11 @@ export const attendanceService = {
         });
 
         if (!attendance) {
-            throw new AppError(400, 'Invalid or expired QR code', 'ATTENDANCE_001');
+            throw new AppError(
+                400,
+                "Invalid or expired QR code",
+                "ATTENDANCE_001",
+            );
         }
 
         // Update check-in time
@@ -77,7 +81,11 @@ export const attendanceService = {
         });
 
         if (!attendance) {
-            throw new AppError(404, 'Active attendance record not found', 'ATTENDANCE_002');
+            throw new AppError(
+                404,
+                "Active attendance record not found",
+                "ATTENDANCE_002",
+            );
         }
 
         const updated = await prisma.attendance.update({
@@ -95,7 +103,7 @@ export const attendanceService = {
     async getHistory(userId: string, limit: number = 50) {
         const records = await prisma.attendance.findMany({
             where: { userId },
-            orderBy: { checkInTime: 'desc' },
+            orderBy: { checkInTime: "desc" },
             take: limit,
         });
         return records;
@@ -111,7 +119,11 @@ export const attendanceService = {
             where: {
                 userId,
                 checkInTime: {
-                    gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+                    gte: new Date(
+                        new Date().getFullYear(),
+                        new Date().getMonth(),
+                        1,
+                    ),
                 },
             },
         });

@@ -1,15 +1,15 @@
-import { Request, Response, NextFunction } from 'express';
-import { cache } from '../config/redis';
+import { Request, Response, NextFunction } from "express";
+import { cache } from "../config/redis";
 
 export const cacheMiddleware = (ttl: number = 60) => {
     return async (req: Request, res: Response, next: NextFunction) => {
         // Only cache GET requests
-        if (req.method !== 'GET') {
+        if (req.method !== "GET") {
             return next();
         }
 
         // Skip cache if query parameter 'refresh' is present
-        if (req.query.refresh === 'true') {
+        if (req.query.refresh === "true") {
             return next();
         }
 
@@ -25,7 +25,7 @@ export const cacheMiddleware = (ttl: number = 60) => {
             const originalJson = res.json.bind(res);
 
             // Override json method
-            res.json = function (data: any) {
+            res.json = function (data: unknown) {
                 // Cache response (async, don't wait)
                 cache.set(key, data, ttl).catch(console.error);
                 return originalJson(data);
@@ -33,7 +33,7 @@ export const cacheMiddleware = (ttl: number = 60) => {
 
             next();
         } catch (error) {
-            console.error('Cache middleware error:', error);
+            console.error("Cache middleware error:", error);
             next();
         }
     };

@@ -2,7 +2,12 @@ import bcrypt from "bcryptjs";
 import { prisma } from "../config/prisma";
 import { AppError, ErrorCodes } from "../utils/errors";
 import { generateTokens, verifyRefreshToken } from "../utils/generateToken";
-import { RegisterDTO, LoginDTO, AuthResponse, RefreshTokenResponse } from "../types/auth.types";
+import {
+    RegisterDTO,
+    LoginDTO,
+    AuthResponse,
+    RefreshTokenResponse,
+} from "../types/auth.types";
 
 export const authService = {
     async register(dto: RegisterDTO): Promise<AuthResponse> {
@@ -63,11 +68,18 @@ export const authService = {
 
         // Check if user is active
         if (!user.isActive) {
-            throw new AppError(403, "Account is locked. Please contact admin.", "AUTH_009");
+            throw new AppError(
+                403,
+                "Account is locked. Please contact admin.",
+                "AUTH_009",
+            );
         }
 
         // Verify password
-        const isValidPassword = await bcrypt.compare(dto.password, user.password);
+        const isValidPassword = await bcrypt.compare(
+            dto.password,
+            user.password,
+        );
         if (!isValidPassword) {
             throw new AppError(401, ErrorCodes.AUTH_004, "AUTH_004");
         }
@@ -123,12 +135,12 @@ export const authService = {
                 // Optionally rotate refresh token too
                 refreshToken: tokens.refreshToken,
             };
-        } catch (error) {
+        } catch {
             throw new AppError(401, ErrorCodes.AUTH_006, "AUTH_006");
         }
     },
 
-    async logout(userId: string): Promise<void> {
+    async logout(_userId: string): Promise<void> {
         // For JWT, logout is client-side (remove token)
         // But we can implement token blacklist here if needed
         // For now, just return success

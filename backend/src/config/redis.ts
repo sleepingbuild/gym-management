@@ -1,12 +1,12 @@
-import Redis from 'ioredis';
+import Redis from "ioredis";
 
 const redis = new Redis({
-    host: process.env.REDIS_HOST || 'localhost',
-    port: parseInt(process.env.REDIS_PORT || '6379'),
-    password: process.env.REDIS_PASSWORD || '',
+    host: process.env.REDIS_HOST || "localhost",
+    port: parseInt(process.env.REDIS_PORT || "6379"),
+    password: process.env.REDIS_PASSWORD || "",
     retryStrategy: (times) => {
         if (times > 3) {
-            console.log('⚠️ Redis connection failed, continuing without cache');
+            console.log("⚠️ Redis connection failed, continuing without cache");
             return null;
         }
         return Math.min(times * 50, 2000);
@@ -14,12 +14,12 @@ const redis = new Redis({
     maxRetriesPerRequest: 3,
 });
 
-redis.on('connect', () => {
-    console.log('✅ Redis connected');
+redis.on("connect", () => {
+    console.log("✅ Redis connected");
 });
 
-redis.on('error', (error) => {
-    console.log('⚠️ Redis error:', error.message);
+redis.on("error", (error) => {
+    console.log("⚠️ Redis error:", error.message);
 });
 
 export const cache = {
@@ -32,7 +32,7 @@ export const cache = {
         }
     },
 
-    async set(key: string, value: any, ttl?: number): Promise<void> {
+    async set(key: string, value: unknown, ttl?: number): Promise<void> {
         try {
             const str = JSON.stringify(value);
             if (ttl) {
@@ -41,7 +41,7 @@ export const cache = {
                 await redis.set(key, str);
             }
         } catch (error) {
-            console.error('Cache set error:', error);
+            console.error("Cache set error:", error);
         }
     },
 
@@ -49,7 +49,7 @@ export const cache = {
         try {
             await redis.del(key);
         } catch (error) {
-            console.error('Cache delete error:', error);
+            console.error("Cache delete error:", error);
         }
     },
 
@@ -60,14 +60,14 @@ export const cache = {
                 await redis.del(...keys);
             }
         } catch (error) {
-            console.error('Cache clear error:', error);
+            console.error("Cache clear error:", error);
         }
     },
 
     // Invalidate cache by prefix
     async invalidate(prefix: string): Promise<void> {
         await this.clear(`${prefix}:*`);
-    }
+    },
 };
 
 export default redis;

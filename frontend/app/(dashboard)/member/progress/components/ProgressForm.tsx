@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { CreateProgressDTO } from '@/services/bodyProgress.service';
+import { useState } from "react";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { CreateProgressDTO } from "@/services/bodyProgress.service";
 
 interface ProgressFormProps {
   onSubmit: (data: CreateProgressDTO) => Promise<void>;
@@ -12,13 +12,17 @@ interface ProgressFormProps {
   onCancel?: () => void;
 }
 
-export function ProgressForm({ onSubmit, loading, onCancel }: ProgressFormProps) {
+export function ProgressForm({
+  onSubmit,
+  loading,
+  onCancel,
+}: ProgressFormProps) {
   const [formData, setFormData] = useState<CreateProgressDTO>({
     weight: 0,
     height: undefined,
     bodyFat: undefined,
     muscleMass: undefined,
-    notes: '',
+    notes: "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -30,7 +34,7 @@ export function ProgressForm({ onSubmit, loading, onCancel }: ProgressFormProps)
       height: undefined,
       bodyFat: undefined,
       muscleMass: undefined,
-      notes: '',
+      notes: "",
     });
   };
 
@@ -46,7 +50,7 @@ export function ProgressForm({ onSubmit, loading, onCancel }: ProgressFormProps)
             type="number"
             step="0.1"
             required
-            value={formData.weight || ''}
+            value={formData.weight || ""}
             onChange={(e) =>
               setFormData({ ...formData, weight: parseFloat(e.target.value) })
             }
@@ -55,7 +59,7 @@ export function ProgressForm({ onSubmit, loading, onCancel }: ProgressFormProps)
             label="Chiều cao (cm)"
             type="number"
             step="0.1"
-            value={formData.height || ''}
+            value={formData.height || ""}
             onChange={(e) =>
               setFormData({ ...formData, height: parseFloat(e.target.value) })
             }
@@ -66,7 +70,7 @@ export function ProgressForm({ onSubmit, loading, onCancel }: ProgressFormProps)
             step="0.1"
             min="0"
             max="100"
-            value={formData.bodyFat || ''}
+            value={formData.bodyFat || ""}
             onChange={(e) =>
               setFormData({ ...formData, bodyFat: parseFloat(e.target.value) })
             }
@@ -75,9 +79,12 @@ export function ProgressForm({ onSubmit, loading, onCancel }: ProgressFormProps)
             label="Khối lượng cơ (kg)"
             type="number"
             step="0.1"
-            value={formData.muscleMass || ''}
+            value={formData.muscleMass || ""}
             onChange={(e) =>
-              setFormData({ ...formData, muscleMass: parseFloat(e.target.value) })
+              setFormData({
+                ...formData,
+                muscleMass: parseFloat(e.target.value),
+              })
             }
           />
         </div>
@@ -85,14 +92,12 @@ export function ProgressForm({ onSubmit, loading, onCancel }: ProgressFormProps)
           label="Ghi chú"
           type="text"
           placeholder="Nhập ghi chú..."
-          value={formData.notes || ''}
-          onChange={(e) =>
-            setFormData({ ...formData, notes: e.target.value })
-          }
+          value={formData.notes || ""}
+          onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
         />
         <div className="flex gap-3 pt-2">
           <Button type="submit" disabled={loading}>
-            {loading ? 'Đang lưu...' : 'Lưu record'}
+            {loading ? "Đang lưu..." : "Lưu record"}
           </Button>
           {onCancel && (
             <Button type="button" variant="secondary" onClick={onCancel}>

@@ -5,7 +5,7 @@ export const membershipService = {
     // ✅ Optimized: use select instead of include
     async getCurrentMembership(userId: string) {
         const membership = await prisma.userMembership.findFirst({
-            where: { userId, status: 'ACTIVE' },
+            where: { userId, status: "ACTIVE" },
             select: {
                 id: true,
                 userId: true,
@@ -23,9 +23,9 @@ export const membershipService = {
                         aiLimit: true,
                         aiDailyLimit: true,
                         description: true,
-                    }
-                }
-            }
+                    },
+                },
+            },
         });
         return membership;
     },
@@ -36,7 +36,7 @@ export const membershipService = {
         const [plans, total] = await Promise.all([
             prisma.membershipPlan.findMany({
                 where: { isActive: true },
-                orderBy: { price: 'asc' },
+                orderBy: { price: "asc" },
                 skip,
                 take: limit,
                 select: {
@@ -47,29 +47,41 @@ export const membershipService = {
                     aiDailyLimit: true,
                     description: true,
                     isActive: true,
-                }
+                },
             }),
-            prisma.membershipPlan.count({ where: { isActive: true } })
+            prisma.membershipPlan.count({ where: { isActive: true } }),
         ]);
-        return { plans, total, page, limit, totalPages: Math.ceil(total / limit) };
+        return {
+            plans,
+            total,
+            page,
+            limit,
+            totalPages: Math.ceil(total / limit),
+        };
     },
 
     // ✅ Optimized: batch create
     async buyMembership(userId: string, planId: string) {
         const plan = await prisma.membershipPlan.findFirst({
             where: { id: planId, isActive: true },
-            select: { id: true, duration: true }
+            select: { id: true, duration: true },
         });
         if (!plan) {
-            throw new AppError(404, "MEMBERSHIP_002: Plan not found or inactive");
+            throw new AppError(
+                404,
+                "MEMBERSHIP_002: Plan not found or inactive",
+            );
         }
 
         const existing = await prisma.userMembership.findFirst({
             where: { userId, status: "ACTIVE" },
-            select: { id: true }
+            select: { id: true },
         });
         if (existing) {
-            throw new AppError(400, "MEMBERSHIP_003: User already has an active membership");
+            throw new AppError(
+                400,
+                "MEMBERSHIP_003: User already has an active membership",
+            );
         }
 
         const startDate = new Date();
@@ -102,9 +114,9 @@ export const membershipService = {
                         price: true,
                         aiLimit: true,
                         aiDailyLimit: true,
-                    }
-                }
-            }
+                    },
+                },
+            },
         });
 
         return membership;

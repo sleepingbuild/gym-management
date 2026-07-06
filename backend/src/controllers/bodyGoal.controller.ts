@@ -1,6 +1,9 @@
-import { Request, Response, NextFunction } from 'express';
-import { bodyGoalService } from '../services/bodyGoal.service';
-import { createBodyGoalSchema, updateBodyGoalSchema } from '../validators/bodyGoal.validator';
+import { Request, Response, NextFunction } from "express";
+import { bodyGoalService } from "../services/bodyGoal.service";
+import {
+    createBodyGoalSchema,
+    updateBodyGoalSchema,
+} from "../validators/bodyGoal.validator";
 
 export const bodyGoalController = {
     // Create goal
@@ -17,7 +20,7 @@ export const bodyGoalController = {
             res.status(201).json({
                 success: true,
                 statusCode: 201,
-                message: 'Goal created successfully',
+                message: "Goal created successfully",
                 data: goal,
             });
         } catch (error) {
@@ -35,7 +38,7 @@ export const bodyGoalController = {
             res.status(200).json({
                 success: true,
                 statusCode: 200,
-                message: goal ? 'Goal retrieved' : 'No active goal found',
+                message: goal ? "Goal retrieved" : "No active goal found",
                 data: goal,
             });
         } catch (error) {
@@ -51,13 +54,15 @@ export const bodyGoalController = {
 
             const goal = await bodyGoalService.update(userId, {
                 ...dto,
-                targetDate: dto.targetDate ? new Date(dto.targetDate) : undefined,
+                targetDate: dto.targetDate
+                    ? new Date(dto.targetDate)
+                    : undefined,
             });
 
             res.status(200).json({
                 success: true,
                 statusCode: 200,
-                message: 'Goal updated successfully',
+                message: "Goal updated successfully",
                 data: goal,
             });
         } catch (error) {
@@ -75,7 +80,7 @@ export const bodyGoalController = {
             res.status(200).json({
                 success: true,
                 statusCode: 200,
-                message: result.message || 'Goal status checked',
+                message: result.message || "Goal status checked",
                 data: result,
             });
         } catch (error) {
@@ -93,7 +98,7 @@ export const bodyGoalController = {
             res.status(200).json({
                 success: true,
                 statusCode: 200,
-                message: 'Goal deleted successfully',
+                message: "Goal deleted successfully",
             });
         } catch (error) {
             next(error);

@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { Card } from '@/components/ui/Card';
-import { ChartData } from '@/services/bodyProgress.service';
+import { Card } from "@/components/ui/Card";
+import { ChartData } from "@/services/bodyProgress.service";
 import {
   LineChart,
   Line,
@@ -11,7 +11,7 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-} from 'recharts';
+} from "recharts";
 
 interface ProgressChartProps {
   data: ChartData | null;
@@ -30,7 +30,9 @@ export function ProgressChart({ data, loading }: ProgressChartProps) {
   if (!data || data.labels.length === 0) {
     return (
       <Card className="h-80 flex items-center justify-center">
-        <p className="text-body text-muted">Chưa có dữ liệu để hiển thị biểu đồ</p>
+        <p className="text-body text-muted">
+          Chưa có dữ liệu để hiển thị biểu đồ
+        </p>
       </Card>
     );
   }
@@ -64,9 +66,9 @@ export function ProgressChart({ data, loading }: ProgressChartProps) {
             <YAxis stroke="#6c6a64" fontSize={12} />
             <Tooltip
               contentStyle={{
-                backgroundColor: '#faf9f5',
-                border: '1px solid #e6dfd8',
-                borderRadius: '8px',
+                backgroundColor: "#faf9f5",
+                border: "1px solid #e6dfd8",
+                borderRadius: "8px",
               }}
             />
             <Legend />
@@ -76,7 +78,7 @@ export function ProgressChart({ data, loading }: ProgressChartProps) {
               stroke="#cc785c"
               name="Cân nặng (kg)"
               strokeWidth={2}
-              dot={{ fill: '#cc785c' }}
+              dot={{ fill: "#cc785c" }}
             />
             <Line
               type="monotone"
@@ -84,7 +86,7 @@ export function ProgressChart({ data, loading }: ProgressChartProps) {
               stroke="#5db8a6"
               name="BMI"
               strokeWidth={2}
-              dot={{ fill: '#5db8a6' }}
+              dot={{ fill: "#5db8a6" }}
             />
             <Line
               type="monotone"
@@ -92,7 +94,7 @@ export function ProgressChart({ data, loading }: ProgressChartProps) {
               stroke="#e8a55a"
               name="Mỡ cơ thể (%)"
               strokeWidth={2}
-              dot={{ fill: '#e8a55a' }}
+              dot={{ fill: "#e8a55a" }}
             />
             <Line
               type="monotone"
@@ -100,7 +102,7 @@ export function ProgressChart({ data, loading }: ProgressChartProps) {
               stroke="#5db872"
               name="Cơ (kg)"
               strokeWidth={2}
-              dot={{ fill: '#5db872' }}
+              dot={{ fill: "#5db872" }}
             />
           </LineChart>
         </ResponsiveContainer>

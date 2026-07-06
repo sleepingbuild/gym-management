@@ -56,12 +56,11 @@ A full-stack gym management platform with membership management, AI-powered fitn
 | Production Deployment | Vercel + Railway + Neon |
 | API Documentation | Swagger/OpenAPI at `/api/docs` |
 
-### 🔜 Planned (v0.2.0)
-- PT scheduling & student management
-- QR Check-in
-- Goal setting for Body Progress
-- Export data to CSV/PDF
-
+### 🔜 Planned (v0.2.1)
+- PT Dashboard (real data) - hiện tại đang dùng mock data
+- Real QR Scanner (camera integration)
+- Goal achievement notification
+- E2E tests with Playwright
 ---
 
 ## 🛠️ Tech Stack
@@ -98,6 +97,33 @@ text
 **API format:** `{ success, statusCode, message, data }`
 
 ---
+
+## 📸 Screenshots
+
+### Authentication
+| Login | Register |
+|-------|----------|
+| ![Login](./docs/screenshots/login.png) | ![Register](./docs/screenshots/register.png) |
+
+### Admin Dashboard
+| Admin Dashboard | User Management |
+|-----------------|-----------------|
+| ![Admin Dashboard](./docs/screenshots/admin-dashboard.png) | ![User Management](./docs/screenshots/admin-users.png) |
+
+### Member Features
+| Member Dashboard | AI Chat | Progress Tracking | QR Check-in |
+|------------------|---------|-------------------|-------------|
+| ![Member Dashboard](./docs/screenshots/member-dashboard.png) | ![AI Chat](./docs/screenshots/ai-chat.png) | ![Progress](./docs/screenshots/progress.png) | ![QR Check-in](./docs/screenshots/qr-checkin.png) |
+
+### PT Dashboard
+| PT Dashboard |
+|--------------|
+| ![PT Dashboard](./docs/screenshots/pt-dashboard.png) |
+
+### API Documentation
+| Swagger API Docs |
+|------------------|
+| ![Swagger](./docs/screenshots/swagger.png) |
 
 ## 🚀 Quick Start
 

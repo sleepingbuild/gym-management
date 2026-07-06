@@ -1,14 +1,19 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useAuthStore } from '@/store/auth.store';
-import { bodyProgressService } from '@/services/bodyProgress.service';
-import { ProgressStats } from './components/ProgressStats';
-import { ProgressChart } from './components/ProgressChart';
-import { ProgressForm } from './components/ProgressForm';
-import { ProgressHistory } from './components/ProgressHistory';
-import { CreateProgressDTO, ProgressStats as StatsType, ChartData, BodyProgressRecord } from '@/services/bodyProgress.service';
-import { GoalSetting } from './components/GoalSetting';
+import { useEffect, useState } from "react";
+import { useAuthStore } from "@/store/auth.store";
+import { bodyProgressService } from "@/services/bodyProgress.service";
+import { ProgressStats } from "./components/ProgressStats";
+import { ProgressChart } from "./components/ProgressChart";
+import { ProgressForm } from "./components/ProgressForm";
+import { ProgressHistory } from "./components/ProgressHistory";
+import {
+  CreateProgressDTO,
+  ProgressStats as StatsType,
+  ChartData,
+  BodyProgressRecord,
+} from "@/services/bodyProgress.service";
+import { GoalSetting } from "./components/GoalSetting";
 
 export default function ProgressPage() {
   const { user } = useAuthStore();
@@ -30,7 +35,7 @@ export default function ProgressPage() {
       setChartData(chartRes);
       setRecords(recordsRes);
     } catch (error) {
-      console.error('Error fetching progress data:', error);
+      console.error("Error fetching progress data:", error);
     } finally {
       setLoading(false);
     }
@@ -46,21 +51,21 @@ export default function ProgressPage() {
       await bodyProgressService.create(data);
       await fetchData();
     } catch (error) {
-      console.error('Error creating progress record:', error);
-      alert('Không thể tạo record. Vui lòng thử lại.');
+      console.error("Error creating progress record:", error);
+      alert("Không thể tạo record. Vui lòng thử lại.");
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Bạn có chắc muốn xóa record này?')) return;
+    if (!confirm("Bạn có chắc muốn xóa record này?")) return;
     try {
       await bodyProgressService.delete(id);
       await fetchData();
     } catch (error) {
-      console.error('Error deleting record:', error);
-      alert('Không thể xóa record. Vui lòng thử lại.');
+      console.error("Error deleting record:", error);
+      alert("Không thể xóa record. Vui lòng thử lại.");
     }
   };
 

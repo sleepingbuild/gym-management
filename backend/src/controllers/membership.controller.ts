@@ -76,7 +76,10 @@ const debugPlans = async (
 ): Promise<void> => {
     try {
         const allPlans = await prisma.membershipPlan.findMany();
-        const activePlans = allPlans.filter((p: any) => p.isActive);
+        // Và thêm type:
+        const activePlans = allPlans.filter(
+            (p: { isActive: boolean }) => p.isActive,
+        );
         res.status(200).json({
             success: true,
             data: {

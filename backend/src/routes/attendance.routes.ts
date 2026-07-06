@@ -1,6 +1,6 @@
-import { Router } from 'express';
-import { attendanceController } from '../controllers/attendance.controller';
-import { authenticate } from '../middlewares/auth.middleware';
+import { Router } from "express";
+import { attendanceController } from "../controllers/attendance.controller";
+import { authenticate } from "../middlewares/auth.middleware";
 
 const router = Router();
 
@@ -8,18 +8,18 @@ const router = Router();
 router.use(authenticate);
 
 // Generate QR code for check-in
-router.get('/qr', attendanceController.generateQR);
+router.get("/qr", attendanceController.generateQR);
 
 // Check-in
-router.post('/check-in', attendanceController.checkIn);
+router.post("/check-in", attendanceController.checkIn);
 
 // Check-out
-router.post('/check-out', attendanceController.checkOut);
+router.post("/check-out", attendanceController.checkOut);
 
 // Get attendance history
-router.get('/history', attendanceController.getHistory);
+router.get("/history", attendanceController.getHistory);
 
 // Get attendance stats
-router.get('/stats', attendanceController.getStats);
+router.get("/stats", attendanceController.getStats);
 
 export default router;

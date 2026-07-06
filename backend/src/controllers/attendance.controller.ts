@@ -1,6 +1,9 @@
-import { Request, Response, NextFunction } from 'express';
-import { attendanceService } from '../services/attendance.service';
-import { checkInSchema, checkOutSchema, generateQRSchema } from '../validators/attendance.validator';
+import { Request, Response, NextFunction } from "express";
+import { attendanceService } from "../services/attendance.service";
+import {
+    checkOutSchema,
+    generateQRSchema,
+} from "../validators/attendance.validator";
 
 export const attendanceController = {
     // Generate QR code
@@ -14,7 +17,7 @@ export const attendanceController = {
             res.status(201).json({
                 success: true,
                 statusCode: 201,
-                message: 'QR code generated successfully',
+                message: "QR code generated successfully",
                 data: result,
             });
         } catch (error) {
@@ -29,7 +32,7 @@ export const attendanceController = {
             const { qrCode } = req.body;
 
             if (!qrCode) {
-                throw new Error('QR code is required');
+                throw new Error("QR code is required");
             }
 
             const result = await attendanceService.checkIn(userId, qrCode);
@@ -37,7 +40,7 @@ export const attendanceController = {
             res.status(200).json({
                 success: true,
                 statusCode: 200,
-                message: 'Check-in successful',
+                message: "Check-in successful",
                 data: result,
             });
         } catch (error) {
@@ -49,14 +52,17 @@ export const attendanceController = {
     async checkOut(req: Request, res: Response, next: NextFunction) {
         try {
             const userId = req.user!.userId;
-            const { attendanceId, notes } = checkOutSchema.parse(req.body);
+            const { attendanceId } = checkOutSchema.parse(req.body);
 
-            const result = await attendanceService.checkOut(userId, attendanceId);
+            const result = await attendanceService.checkOut(
+                userId,
+                attendanceId,
+            );
 
             res.status(200).json({
                 success: true,
                 statusCode: 200,
-                message: 'Check-out successful',
+                message: "Check-out successful",
                 data: result,
             });
         } catch (error) {
@@ -68,14 +74,16 @@ export const attendanceController = {
     async getHistory(req: Request, res: Response, next: NextFunction) {
         try {
             const userId = req.user!.userId;
-            const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
+            const limit = req.query.limit
+                ? parseInt(req.query.limit as string)
+                : 50;
 
             const records = await attendanceService.getHistory(userId, limit);
 
             res.status(200).json({
                 success: true,
                 statusCode: 200,
-                message: 'Attendance history retrieved',
+                message: "Attendance history retrieved",
                 data: { records, count: records.length },
             });
         } catch (error) {
@@ -93,7 +101,7 @@ export const attendanceController = {
             res.status(200).json({
                 success: true,
                 statusCode: 200,
-                message: 'Attendance stats retrieved',
+                message: "Attendance stats retrieved",
                 data: stats,
             });
         } catch (error) {
