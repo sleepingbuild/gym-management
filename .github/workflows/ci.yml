@@ -72,11 +72,11 @@ jobs:
           NODE_ENV: test
         run: |
           cd backend
-          # 1. Tạo extension vector
-          npx prisma db execute --stdin --url "$DATABASE_URL" <<< "CREATE EXTENSION IF NOT EXISTS vector;"
-          # 2. Push schema trực tiếp
+          # Tạo vector extension bằng Prisma
+          echo "CREATE EXTENSION IF NOT EXISTS vector;" | npx prisma db execute --stdin --url "$DATABASE_URL"
+          # Push schema
           npx prisma db push --force-reset
-          # 3. Chạy test
+          # Chạy test
           npm test
 
   frontend-lint-build:
