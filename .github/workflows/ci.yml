@@ -7,9 +7,6 @@ on:
     branches: [ main ]
 
 jobs:
-  # ============================================
-  # BACKEND: Lint & Typecheck
-  # ============================================
   backend-lint:
     runs-on: ubuntu-latest
     steps:
@@ -19,86 +16,76 @@ jobs:
           node-version: '20'
           cache: 'npm'
           cache-dependency-path: backend/package-lock.json
-
       - name: Install backend dependencies
         run: |
           cd backend
           npm ci
-
       - name: Generate Prisma Client
         run: |
           cd backend
           npx prisma generate
-
       - name: Run backend lint
         run: |
           cd backend
           npm run lint
-
       - name: Run TypeScript typecheck
         run: |
           cd backend
           npx tsc --noEmit
 
-  # ============================================
-  # BACKEND: Test
-  # ============================================
   backend-test:
-  runs-on: ubuntu-latest
-  services:
-    postgres:
-      image: postgres:16
-      env:
-        POSTGRES_USER: postgres
-        POSTGRES_PASSWORD: postgres
-        POSTGRES_DB: test_db
-      ports:
-        - 5432:5432
-      options: >-
-        --health-cmd pg_isready
-        --health-interval 10s
-        --health-timeout 5s
-        --health-retries 5
-  steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
-        cache-dependency-path: backend/package-lock.json
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+      - name: Install backend dependencies
+        run: |
+          cd backend
+          npm ci
+      - name: Generate Prisma Client
+        run: |
+          cd backend
+          npx prisma generate
+      - name: Create pgvector extension
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+        run: |
+          cd backend
+          npx prisma db execute --stdin --url "$DATABASE_URL" <<< "CREATE EXTENSION IF NOT EXISTS vector;"
+      - name: Run migrations
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+        run: |
+          cd backend
+          npx prisma migrate deploy
+      - name: Run backend tests
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+          JWT_SECRET: test-secret
+          JWT_REFRESH_SECRET: test-refresh-secret
+          NODE_ENV: test
+        run: |
+          cd backend
+          npm test
 
-    - name: Install backend dependencies
-      run: |
-        cd backend
-        npm ci
-
-    - name: Generate Prisma Client
-      run: |
-        cd backend
-        npx prisma generate
-
-    - name: Run migrations
-      env:
-        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
-      run: |
-        cd backend
-        # 👇 Thêm dòng này
-        npx prisma db execute --stdin --url "$DATABASE_URL" <<< "CREATE EXTENSION IF NOT EXISTS vector;"
-        npx prisma migrate deploy
-
-    - name: Run backend tests
-      env:
-        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
-        JWT_SECRET: test-secret
-        JWT_REFRESH_SECRET: test-refresh-secret
-        NODE_ENV: test
-      run: |
-        cd backend
-        npm test
-
-  # ============================================
-  # FRONTEND: Lint & Build
-  # ============================================
   frontend-lint-build:
     runs-on: ubuntu-latest
     steps:
@@ -108,17 +95,14 @@ jobs:
           node-version: '20'
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
-
       - name: Install frontend dependencies
         run: |
           cd frontend
           npm ci
-
       - name: Run frontend lint
         run: |
           cd frontend
           npm run lint
-
       - name: Build frontend
         run: |
           cd frontend
