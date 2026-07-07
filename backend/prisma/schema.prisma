@@ -158,6 +158,7 @@ model KnowledgeBase {
   category  String
   title     String
   content   String   @db.Text
+  embedding Unsupported("vector(3072)")?  
   createdAt DateTime @default(now())
 
   @@index([category])
