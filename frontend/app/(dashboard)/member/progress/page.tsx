@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAuthStore } from "@/store/auth.store";
 import { bodyProgressService } from "@/services/bodyProgress.service";
 import { ProgressStats } from "./components/ProgressStats";
 import { ProgressChart } from "./components/ProgressChart";
@@ -16,7 +15,6 @@ import {
 import { GoalSetting } from "./components/GoalSetting";
 
 export default function ProgressPage() {
-  const { user } = useAuthStore();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [stats, setStats] = useState<StatsType | null>(null);

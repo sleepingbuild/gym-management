@@ -35,8 +35,19 @@ export default function LoginPage() {
       } else {
         router.push("/member");
       }
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Đăng nhập thất bại");
+    } catch (err: unknown) {
+      let message = "Đăng nhập thất bại";
+      if (
+        err &&
+        typeof err === "object" &&
+        "response" in err &&
+        (err as { response: { data?: { message?: string } } }).response?.data
+          ?.message
+      ) {
+        message = (err as { response: { data?: { message?: string } } }).response
+          .data!.message!;
+      }
+      setError(message);
     } finally {
       setLoading(false);
     }

@@ -73,9 +73,13 @@ export const bodyGoalService = {
             // Thử tạo mới
             return await this.create(data);
         } catch (error: unknown) {
-            // Nếu lỗi là đã tồn tại, update
-            const err: any = error;
-            if (err?.response?.data?.errorCode === 'GOAL_001') {
+            // Kiểm tra nếu lỗi là do goal đã tồn tại
+            if (
+                error &&
+                typeof error === 'object' &&
+                'response' in error &&
+                (error as { response: { data?: { errorCode?: string } } }).response?.data?.errorCode === 'GOAL_001'
+            ) {
                 const updateData: UpdateGoalDTO = {
                     targetWeight: data.targetWeight,
                     targetBmi: data.targetBmi,

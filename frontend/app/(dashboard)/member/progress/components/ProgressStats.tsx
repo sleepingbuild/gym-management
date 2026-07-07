@@ -33,7 +33,6 @@ export function ProgressStats({ stats, loading }: ProgressStatsProps) {
   }
 
   const latest = stats.latestRecord;
-  const first = stats.firstRecord;
   const weightChange = stats.progress.weight;
 
   return (

@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/Card";
-import { useAuthStore } from "@/store/auth.store";
 
 interface PTStudent {
   id: string;
@@ -14,7 +13,7 @@ interface PTStudent {
 }
 
 export default function PTDashboardPage() {
-  const { user } = useAuthStore();
+  // Remove unused 'user' variable
   const [students, setStudents] = useState<PTStudent[]>([]);
   const [loading, setLoading] = useState(true);
 

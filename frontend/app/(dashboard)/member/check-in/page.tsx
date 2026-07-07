@@ -8,6 +8,7 @@ import {
   AttendanceRecord,
   AttendanceStats,
 } from "@/services/attendance.service";
+import Image from "next/image";
 
 export default function CheckInPage() {
   const [loading, setLoading] = useState(false);
@@ -152,10 +153,13 @@ export default function CheckInPage() {
           {qrCode ? (
             <>
               <div className="bg-white p-4 rounded-lg mb-4">
-                <img
+                <Image
                   src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${qrCode}`}
                   alt="QR Code"
+                  width={192}
+                  height={192}
                   className="w-48 h-48"
+                  unoptimized // Vì đây là API bên ngoài
                 />
               </div>
               <p className="text-body-sm text-muted mb-4">
@@ -241,11 +245,10 @@ export default function CheckInPage() {
                     </td>
                     <td className="py-2">
                       <span
-                        className={`px-2 py-1 rounded text-xs ${
-                          record.checkOutTime
+                        className={`px-2 py-1 rounded text-xs ${record.checkOutTime
                             ? "bg-success/10 text-success"
                             : "bg-accent-amber/10 text-warning"
-                        }`}
+                          }`}
                       >
                         {record.checkOutTime ? "Hoàn thành" : "Đang check-in"}
                       </span>

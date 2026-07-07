@@ -39,10 +39,19 @@ export default function RegisterPage() {
       } else {
         setError(response.data.message || "Đăng ký thất bại");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Registration error:", err);
-      const message =
-        err.response?.data?.message || "Đăng ký thất bại. Vui lòng thử lại.";
+      let message = "Đăng ký thất bại. Vui lòng thử lại.";
+      if (
+        err &&
+        typeof err === "object" &&
+        "response" in err &&
+        (err as { response: { data?: { message?: string } } }).response?.data
+          ?.message
+      ) {
+        message = (err as { response: { data?: { message?: string } } }).response
+          .data!.message!;
+      }
       setError(message);
     } finally {
       setLoading(false);
