@@ -14,7 +14,6 @@
     },
     moduleNameMapper: {
         "^@/(.*)$": "<rootDir>/src/$1",
-        // 👇 Mock uuid để tránh lỗi ESM
         "^uuid$": "<rootDir>/tests/__mocks__/uuid.js",
     },
     transformIgnorePatterns: [],
