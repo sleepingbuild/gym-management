@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: pgvector/pgvector:pg16   # ✅ Thay đổi ở đây
+        image: pgvector/pgvector:pg16
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -64,19 +64,7 @@ jobs:
         run: |
           cd backend
           npx prisma generate
-      - name: Create pgvector extension
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
-        run: |
-          cd backend
-          npx prisma db execute --stdin --url "$DATABASE_URL" <<< "CREATE EXTENSION IF NOT EXISTS vector;"
-      - name: Run migrations
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
-        run: |
-          cd backend
-          npx prisma migrate deploy
-      - name: Run backend tests
+      - name: Setup database and run tests
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
           JWT_SECRET: test-secret
@@ -84,6 +72,11 @@ jobs:
           NODE_ENV: test
         run: |
           cd backend
+          # 1. Tạo extension vector
+          npx prisma db execute --stdin --url "$DATABASE_URL" <<< "CREATE EXTENSION IF NOT EXISTS vector;"
+          # 2. Push schema trực tiếp
+          npx prisma db push --force-reset
+          # 3. Chạy test
           npm test
 
   frontend-lint-build:
