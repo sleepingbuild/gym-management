@@ -1,88 +1,122 @@
-﻿name: CI Pipeline
+﻿name: CI/CD Pipeline
 
 on:
   push:
-    branches: [main, develop]
+    branches: [ main ]
   pull_request:
-    branches: [main]
-
+    branches: [ main ]
 
 jobs:
-  test-backend:
-  runs-on: ubuntu-latest
-  services:
-    postgres:
-      image: postgres:16
-      env:
-        POSTGRES_USER: postgres
-        POSTGRES_PASSWORD: postgres
-        POSTGRES_DB: test_db
-      ports:
-        - 5432:5432
-      options: >-
-        --health-cmd pg_isready
-        --health-interval 10s
-        --health-timeout 5s
-        --health-retries 5
-  steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
-        cache-dependency-path: backend/package-lock.json
-
-    - name: Install backend dependencies
-      run: |
-        cd backend
-        npm ci
-
-    - name: Generate Prisma Client
-      run: |
-        cd backend
-        npx prisma generate
-
-    - name: Run migrations
-      env:
-        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
-      run: |
-        cd backend
-        npx prisma migrate deploy
-
-    - name: Run backend tests
-      env:
-        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
-        JWT_SECRET: test-secret
-        JWT_REFRESH_SECRET: test-refresh-secret
-      run: |
-        cd backend
-        npm test
-        
-  frontend:
-    name: Frontend â€” Lint & Build
+  # ============================================
+  # BACKEND: Lint & Typecheck
+  # ============================================
+  backend-lint:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Install backend dependencies
+        run: |
+          cd backend
+          npm ci
+
+      - name: Generate Prisma Client
+        run: |
+          cd backend
+          npx prisma generate
+
+      - name: Run backend lint
+        run: |
+          cd backend
+          npm run lint
+
+      - name: Run TypeScript typecheck
+        run: |
+          cd backend
+          npx tsc --noEmit
+
+  # ============================================
+  # BACKEND: Test
+  # ============================================
+  backend-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install backend dependencies
+        run: |
+          cd backend
+          npm ci
+
+      - name: Generate Prisma Client
+        run: |
+          cd backend
+          npx prisma generate
+
+      - name: Run migrations
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+        run: |
+          cd backend
+          npx prisma migrate deploy
+
+      - name: Run backend tests
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+          JWT_SECRET: test-secret
+          JWT_REFRESH_SECRET: test-refresh-secret
+        run: |
+          cd backend
+          npm test
+
+  # ============================================
+  # FRONTEND: Lint & Build
+  # ============================================
+  frontend-lint-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Install dependencies
-        working-directory: frontend
-        run: npm ci
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm ci
 
-      - name: Run linter
-        working-directory: frontend
-        run: npm run lint
+      - name: Run frontend lint
+        run: |
+          cd frontend
+          npm run lint
 
-      - name: Build check
-        working-directory: frontend
-        run: npm run build
-        env:
-          NEXT_PUBLIC_API_URL: http://localhost:5000/api
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm run build
