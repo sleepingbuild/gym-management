@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:16
+        image: pgvector/pgvector:pg16   # ✅ Thay đổi ở đây
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
