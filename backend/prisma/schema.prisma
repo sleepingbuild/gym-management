@@ -5,6 +5,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  extensions = [vector]
 }
 
 enum Role {
@@ -159,6 +160,7 @@ model KnowledgeBase {
   title     String
   content   String   @db.Text
   embedding Unsupported("vector(3072)")?  
+  
   createdAt DateTime @default(now())
 
   @@index([category])
