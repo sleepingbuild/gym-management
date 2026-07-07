@@ -14,23 +14,24 @@ afterAll(async () => {
 
 afterEach(async () => {
     const tables = [
+        "Attendance",
+        "BodyGoal",
+        "BodyProgress",
+        "ChatHistory",
         "Notification",
         "Payment",
-        "ChatHistory",
         "UserMembership",
         "User",
-        "BodyProgress",
     ];
+
     for (const table of tables) {
         try {
             await prisma.$executeRawUnsafe(
                 `TRUNCATE TABLE "${table}" CASCADE;`,
             );
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (error) {
-            console.error(
-                `Error occurred while truncating table "${table}":`,
-                error,
-            );
+            // Table might not exist
         }
     }
 });
