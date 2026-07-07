@@ -14,13 +14,10 @@
     },
     moduleNameMapper: {
         "^@/(.*)$": "<rootDir>/src/$1",
-        // 👇 Xử lý uuid ESM
-        "^uuid$": "<rootDir>/node_modules/uuid/dist/index.js",
+        // 👇 Mock uuid để tránh lỗi ESM
+        "^uuid$": "<rootDir>/tests/__mocks__/uuid.js",
     },
-    transformIgnorePatterns: [
-        // 👇 Cho phép transform uuid
-        "node_modules/(?!(uuid)/)",
-    ],
+    transformIgnorePatterns: [],
     collectCoverageFrom: [
         "src/**/*.ts",
         "!src/**/*.d.ts",
