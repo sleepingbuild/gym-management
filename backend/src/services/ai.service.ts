@@ -1,38 +1,18 @@
 import { PrismaClient } from "@prisma/client";
-import { GoogleGenAI } from "@google/genai";
 import { v4 as uuidv4 } from "uuid";
 import { AppError } from "../utils/errors";
+import { geminiProvider } from "./providers/gemini.provider";
+import { qwenProvider } from "./providers/qwen.provider";
+import { AIProvider } from "../types/ai-provider.types";
 
 const prisma = new PrismaClient();
-const ai = new GoogleGenAI({
-    apiKey: process.env.GEMINI_API_KEY!,
-});
 
-async function embedQuery(text: string): Promise<number[]> {
-    const result = await ai.models.embedContent({
-        model: "gemini-embedding-001",
-        contents: text,
-    });
-    return result.embeddings![0].values!;
-}
-
-async function retrieveContext(query: string): Promise<string> {
-    const embedding = await embedQuery(query);
-    const embeddingStr = `[${embedding.join(",")}]`;
-
-    const docs = await prisma.$queryRaw<{ title: string; content: string }[]>`
-    SELECT title, content
-    FROM "KnowledgeBase"
-    WHERE embedding IS NOT NULL
-    ORDER BY embedding <=> ${embeddingStr}::vector
-    LIMIT 3
-  `;
-
-    if (docs.length === 0) return "";
-    return docs
-        .map((d, i) => `[${i + 1}] ${d.title}: ${d.content}`)
-        .join("\n\n");
-}
+// Chon provider dua tren env var AI_PROVIDER (mac dinh: gemini)
+const getProvider = (): AIProvider => {
+    const providerName = (process.env.AI_PROVIDER || "gemini").toLowerCase();
+    if (providerName === "qwen") return qwenProvider;
+    return geminiProvider;
+};
 
 async function checkAndUpdateUsage(userId: string): Promise<void> {
     const membership = await prisma.userMembership.findFirst({
@@ -89,7 +69,6 @@ async function chat(
     message: string,
     sessionId?: string,
 ): Promise<{ sessionId: string; answer: string; usage: object }> {
-    console.log("=== AI SERVICE CHAT CALLED ===", { userId, message }); // ADD THIS
     await checkAndUpdateUsage(userId);
 
     const currentSessionId = sessionId || uuidv4();
@@ -100,44 +79,13 @@ async function chat(
         take: 10,
     });
 
-    const context = await retrieveContext(message);
-
-    const conversationHistory = history.map((h) => ({
-        role: h.role === "user" ? "user" : "model",
-        parts: [{ text: h.content }],
+    const chatHistory = history.map((h) => ({
+        role: h.role === "user" ? ("user" as const) : ("assistant" as const),
+        content: h.content,
     }));
 
-    const systemPrompt = `Ban la AI Personal Trainer cua IronFit Pro - mot phong gym chuyen nghiep.
-Nhiem vu cua ban la tu van ve tap luyen, dinh duong va suc khoe cho thanh vien.
-
-KIEN THUC LIEN QUAN:
-${context || "Khong co context cu the, hay tra loi dua tren kien thuc chung ve fitness."}
-
-QUY TAC:
-- Tra loi bang tieng Viet, than thien va chuyen nghiep
-- Dua vao kien thuc duoc cung cap o tren de tra loi
-- Neu khong biet, hay thanh that va goi y tham khao PT
-- Khong tu van y te chuyen sau, hay goi y gap bac si neu can
-- Cau tra loi ngan gon, de hieu, co the dung emoji phu hop`;
-
-    const response = await ai.models.generateContent({
-        model: "gemini-2.0-flash",
-        contents: [
-            { role: "user", parts: [{ text: systemPrompt }] },
-            {
-                role: "model",
-                parts: [
-                    {
-                        text: "Toi hieu, toi se ho tro ban voi tu cach la AI Personal Trainer cua IronFit Pro.",
-                    },
-                ],
-            },
-            ...conversationHistory,
-            { role: "user", parts: [{ text: message }] },
-        ],
-    });
-
-    const answer = response.text ?? "Xin loi, toi khong the tra loi luc nay.";
+    const provider = getProvider();
+    const answer = await provider.generateReply(message, chatHistory);
 
     await prisma.chatHistory.createMany({
         data: [

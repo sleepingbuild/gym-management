@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useAuthStore } from "@/store/auth.store";
 import api from "@/lib/api";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { isAuthenticated } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -16,6 +18,13 @@ export default function RegisterPage() {
     password: "",
     phone: "",
   });
+
+  // ✅ Chỉ redirect khi đã authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace("/member");
+    }
+  }, [isAuthenticated, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,19 +49,12 @@ export default function RegisterPage() {
         setError(response.data.message || "Đăng ký thất bại");
       }
     } catch (err: unknown) {
-      console.error("Registration error:", err);
-      let message = "Đăng ký thất bại. Vui lòng thử lại.";
-      if (
-        err &&
-        typeof err === "object" &&
-        "response" in err &&
-        (err as { response: { data?: { message?: string } } }).response?.data
-          ?.message
-      ) {
-        message = (err as { response: { data?: { message?: string } } }).response
-          .data!.message!;
-      }
-      setError(message);
+      const message =
+        err && typeof err === "object" && "response" in err
+          ? (err as { response: { data?: { message?: string } } }).response
+              ?.data?.message
+          : "Đăng ký thất bại. Vui lòng thử lại.";
+      setError(message || "Đăng ký thất bại. Vui lòng thử lại.");
     } finally {
       setLoading(false);
     }

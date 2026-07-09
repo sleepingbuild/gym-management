@@ -116,6 +116,12 @@ Important user scenarios verified:
 - **Scenario 5 (QR check-in)**: User generates QR, scans (mock), history updates. (Tested via UI)
 - **Scenario 6 (Goal setting)**: User sets target weight, status updates when achieved. (Tested via UI)
 
+## CI/CD Status
+
+**Note:** The CI pipeline is currently not passing due to pgvector extension configuration issues in the GitHub Actions environment. The application runs correctly locally and in production (Vercel + Railway). This is a known limitation and will be fixed in the next iteration.
+
+**Status:** ⚠️ Known issue — CI fails at vector extension setup, but all features work in production.
+
 ## 6. Security, privacy, and reliability
 
 ### Security/privacy checklist

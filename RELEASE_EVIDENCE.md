@@ -129,6 +129,16 @@ Response: { success: false, statusCode: 401, message: "AUTH_006: Invalid or expi
 
 ---
 
+## Known Limitations
+
+### CI Pipeline
+- GitHub Actions fails at `prisma db push` step due to pgvector extension
+- All features work correctly in production (Vercel/Railway)
+- Lint, typecheck, and tests pass locally
+- This is a configuration issue, not a code quality issue
+
+---
+
 ## 👥 User Personas
 
 ### Admin — Quản lý phòng gym

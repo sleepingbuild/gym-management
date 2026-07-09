@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuthStore } from "@/store/auth.store";
@@ -8,13 +8,20 @@ import api from "@/lib/api";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { setAuth } = useAuthStore();
+  const { setAuth, isAuthenticated } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+
+  // ✅ Chỉ redirect khi đã authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace("/member");
+    }
+  }, [isAuthenticated, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,30 +31,15 @@ export default function LoginPage() {
     try {
       const response = await api.post("/auth/login", formData);
       const { user, tokens } = response.data.data;
-
       setAuth(user, tokens.accessToken, tokens.refreshToken);
-
-      // Redirect based on role
-      if (user.role === "ADMIN") {
-        router.push("/admin");
-      } else if (user.role === "PT") {
-        router.push("/pt");
-      } else {
-        router.push("/member");
-      }
+      // ✅ router.push sẽ được xử lý bởi useEffect trên
     } catch (err: unknown) {
-      let message = "Đăng nhập thất bại";
-      if (
-        err &&
-        typeof err === "object" &&
-        "response" in err &&
-        (err as { response: { data?: { message?: string } } }).response?.data
-          ?.message
-      ) {
-        message = (err as { response: { data?: { message?: string } } }).response
-          .data!.message!;
-      }
-      setError(message);
+      const message =
+        err && typeof err === "object" && "response" in err
+          ? (err as { response: { data?: { message?: string } } }).response
+              ?.data?.message
+          : "Đăng nhập thất bại";
+      setError(message || "Đăng nhập thất bại");
     } finally {
       setLoading(false);
     }

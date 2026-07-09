@@ -16,6 +16,7 @@ interface Membership {
     aiLimit: number;
     price: number;
   };
+  trainer?: { fullName: string } | null;
 }
 
 export default function MemberPage() {
@@ -48,19 +49,7 @@ export default function MemberPage() {
     fetchData();
   }, []);
 
-  if (loading)
-    return (
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          height: "200px",
-        }}
-      >
-        <p style={{ color: "#6c6a64" }}>Đang tải...</p>
-      </div>
-    );
+  if (loading) return <div className="flex justify-center py-12 text-muted">Đang tải...</div>;
 
   const expiryDate = membership
     ? new Date(membership.expiryDate).toLocaleDateString("vi-VN")
@@ -70,88 +59,47 @@ export default function MemberPage() {
       ? Math.round((usage.aiDailyCount / usage.aiDailyLimit) * 100)
       : 0;
 
+  const planDisplay = membership?.plan?.name ?? "Chưa có gói";
+  const trainerName = membership?.trainer?.fullName ?? "Chưa có PT";
+
   return (
     <div>
       {/* Header */}
-      <div style={{ marginBottom: "32px" }}>
-        <h1
-          style={{
-            fontFamily: "Georgia, serif",
-            fontSize: "28px",
-            color: "#141413",
-            fontWeight: 400,
-            letterSpacing: "-0.5px",
-          }}
-        >
+      <div className="mb-8">
+        <h1 className="font-sans text-3xl text-ink font-normal tracking-tight">
           Xin chào, {user?.fullName} 👋
         </h1>
-        <p style={{ color: "#6c6a64", fontSize: "14px", marginTop: "4px" }}>
-          {new Date().toLocaleDateString("vi-VN", {
-            weekday: "long",
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          })}
-        </p>
+        <div className="flex flex-wrap items-baseline gap-2 text-sm text-muted mt-1">
+          <span>
+            {new Date().toLocaleDateString("vi-VN", {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}
+          </span>
+          <span className="text-xs text-muted-soft">•</span>
+          <span>Trainer: {trainerName}</span>
+        </div>
       </div>
 
       {/* Stats Grid */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(3, 1fr)",
-          gap: "16px",
-          marginBottom: "32px",
-        }}
-      >
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         {/* Membership Card */}
-        <div
-          style={{
-            backgroundColor: "#181715",
-            borderRadius: "12px",
-            padding: "24px",
-          }}
-        >
-          <p
-            style={{
-              color: "#a09d96",
-              fontSize: "12px",
-              fontWeight: 500,
-              letterSpacing: "1px",
-              textTransform: "uppercase",
-              marginBottom: "12px",
-            }}
-          >
+        <div className="bg-surface-dark rounded-xl p-6">
+          <p className="text-on-dark-soft text-xs font-medium uppercase tracking-wider mb-3">
             Gói hiện tại
           </p>
-          <p
-            style={{
-              fontFamily: "Georgia, serif",
-              fontSize: "24px",
-              color: "#faf9f5",
-              fontWeight: 400,
-            }}
-          >
-            {membership?.plan.name ?? "Chưa có gói"}
+          <p className="font-sans text-2xl text-on-dark font-normal">
+            {planDisplay}
           </p>
           {membership && (
-            <p style={{ color: "#a09d96", fontSize: "13px", marginTop: "8px" }}>
-              Hết hạn: {expiryDate}
-            </p>
+            <p className="text-on-dark-soft text-sm mt-2">Hết hạn: {expiryDate}</p>
           )}
           {!membership && (
             <a
               href="/member/membership"
-              style={{
-                display: "inline-block",
-                marginTop: "12px",
-                backgroundColor: "#cc785c",
-                color: "white",
-                fontSize: "13px",
-                padding: "6px 14px",
-                borderRadius: "6px",
-                textDecoration: "none",
-              }}
+              className="inline-block mt-3 bg-primary text-white text-sm px-4 py-1.5 rounded-md no-underline hover:bg-primary-active transition-colors"
             >
               Mua gói
             </a>
@@ -159,167 +107,62 @@ export default function MemberPage() {
         </div>
 
         {/* Daily AI Usage */}
-        <div
-          style={{
-            backgroundColor: "#efe9de",
-            borderRadius: "12px",
-            padding: "24px",
-          }}
-        >
-          <p
-            style={{
-              color: "#6c6a64",
-              fontSize: "12px",
-              fontWeight: 500,
-              letterSpacing: "1px",
-              textTransform: "uppercase",
-              marginBottom: "12px",
-            }}
-          >
+        <div className="bg-surface-card rounded-xl p-6">
+          <p className="text-muted text-xs font-medium uppercase tracking-wider mb-3">
             AI hôm nay
           </p>
-          <p
-            style={{
-              fontFamily: "Georgia, serif",
-              fontSize: "24px",
-              color: "#141413",
-              fontWeight: 400,
-            }}
-          >
+          <p className="font-sans text-2xl text-ink font-normal">
             {usage?.aiDailyCount ?? 0}
-            <span style={{ fontSize: "16px", color: "#6c6a64" }}>
+            <span className="text-base text-muted">
               /{usage?.aiDailyLimit === -1 ? "∞" : (usage?.aiDailyLimit ?? 0)}
             </span>
           </p>
-          {/* Progress bar */}
           {usage?.aiDailyLimit !== -1 && (
-            <div
-              style={{
-                marginTop: "12px",
-                backgroundColor: "#e8e0d2",
-                borderRadius: "9999px",
-                height: "4px",
-              }}
-            >
+            <div className="mt-3 bg-hairline rounded-full h-1 w-full">
               <div
-                style={{
-                  backgroundColor: "#cc785c",
-                  borderRadius: "9999px",
-                  height: "4px",
-                  width: `${Math.min(dailyPercent, 100)}%`,
-                  transition: "width 0.3s",
-                }}
+                className="bg-primary rounded-full h-1 transition-all duration-300"
+                style={{ width: `${Math.min(dailyPercent, 100)}%` }}
               />
             </div>
           )}
         </div>
 
         {/* Monthly AI Usage */}
-        <div
-          style={{
-            backgroundColor: "#f5f0e8",
-            borderRadius: "12px",
-            padding: "24px",
-          }}
-        >
-          <p
-            style={{
-              color: "#6c6a64",
-              fontSize: "12px",
-              fontWeight: 500,
-              letterSpacing: "1px",
-              textTransform: "uppercase",
-              marginBottom: "12px",
-            }}
-          >
+        <div className="bg-surface-soft rounded-xl p-6">
+          <p className="text-muted text-xs font-medium uppercase tracking-wider mb-3">
             AI tháng này
           </p>
-          <p
-            style={{
-              fontFamily: "Georgia, serif",
-              fontSize: "24px",
-              color: "#141413",
-              fontWeight: 400,
-            }}
-          >
+          <p className="font-sans text-2xl text-ink font-normal">
             {usage?.aiUsageCount ?? 0}
-            <span style={{ fontSize: "16px", color: "#6c6a64" }}>
+            <span className="text-base text-muted">
               /{usage?.aiLimit === -1 ? "∞" : (usage?.aiLimit ?? 0)}
             </span>
           </p>
-          <p style={{ color: "#6c6a64", fontSize: "13px", marginTop: "8px" }}>
-            Gói {usage?.plan ?? "None"}
+          <p className="text-muted text-sm mt-2">
+            {usage?.plan && usage.plan !== "None" ? `Gói ${usage.plan}` : "Chưa có gói"}
           </p>
         </div>
       </div>
 
       {/* Quick Actions */}
-      <div style={{ marginBottom: "32px" }}>
-        <h2
-          style={{
-            fontFamily: "Georgia, serif",
-            fontSize: "20px",
-            color: "#141413",
-            fontWeight: 400,
-            marginBottom: "16px",
-          }}
-        >
+      <div>
+        <h2 className="font-sans text-xl text-ink font-normal mb-4">
           Truy cập nhanh
         </h2>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(2, 1fr)",
-            gap: "12px",
-          }}
-        >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <a
             href="/member/ai-chat"
-            style={{
-              backgroundColor: "#cc785c",
-              borderRadius: "12px",
-              padding: "20px",
-              textDecoration: "none",
-              display: "block",
-            }}
+            className="bg-primary text-white rounded-xl p-5 no-underline block hover:bg-primary-active transition-colors"
           >
-            <p
-              style={{
-                color: "white",
-                fontSize: "16px",
-                fontWeight: 500,
-                marginBottom: "4px",
-              }}
-            >
-              🤖 AI Trainer
-            </p>
-            <p style={{ color: "rgba(255,255,255,0.75)", fontSize: "13px" }}>
-              Hỏi AI về tập luyện & dinh dưỡng
-            </p>
+            <p className="text-base font-medium mb-1">🤖 AI Trainer</p>
+            <p className="text-white/75 text-sm">Hỏi AI về tập luyện & dinh dưỡng</p>
           </a>
           <a
             href="/member/membership"
-            style={{
-              backgroundColor: "#efe9de",
-              borderRadius: "12px",
-              padding: "20px",
-              textDecoration: "none",
-              display: "block",
-            }}
+            className="bg-surface-card rounded-xl p-5 no-underline block hover:bg-surface-cream-strong transition-colors"
           >
-            <p
-              style={{
-                color: "#141413",
-                fontSize: "16px",
-                fontWeight: 500,
-                marginBottom: "4px",
-              }}
-            >
-              💳 Gói thành viên
-            </p>
-            <p style={{ color: "#6c6a64", fontSize: "13px" }}>
-              Xem và nâng cấp gói của bạn
-            </p>
+            <p className="text-ink text-base font-medium mb-1">💳 Gói thành viên</p>
+            <p className="text-muted text-sm">Xem và nâng cấp gói của bạn</p>
           </a>
         </div>
       </div>

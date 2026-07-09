@@ -1,8 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { useAuthStore } from "@/store/auth.store";
+import Link from "next/link";
+import {
+  HomeIcon,
+  UsersIcon,
+  CreditCardIcon,
+  ChatBubbleLeftRightIcon,
+  Squares2X2Icon,
+  ArrowRightOnRectangleIcon,
+  SparklesIcon,
+} from "@heroicons/react/24/outline";
 
 export default function DashboardLayout({
   children,
@@ -10,6 +20,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { isAuthenticated, user } = useAuthStore();
   const [hydrated, setHydrated] = useState(false);
 
@@ -27,152 +38,90 @@ export default function DashboardLayout({
   if (!isAuthenticated) return null;
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        backgroundColor: "#faf9f5",
-        display: "flex",
-      }}
-    >
+    <div className="min-h-screen bg-canvas flex">
       {/* Sidebar */}
-      <aside
-        style={{
-          width: "240px",
-          backgroundColor: "#181715",
-          padding: "24px 0",
-          display: "flex",
-          flexDirection: "column",
-          position: "fixed",
-          top: 0,
-          left: 0,
-          bottom: 0,
-        }}
-      >
+      <aside className="w-60 bg-surface-dark flex flex-col fixed top-0 left-0 bottom-0">
         {/* Logo */}
-        <div style={{ padding: "0 24px 32px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <div
-              style={{
-                width: "32px",
-                height: "32px",
-                backgroundColor: "#cc785c",
-                borderRadius: "8px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M12 2L4 7v10l8 5 8-5V7L12 2z"
-                  fill="white"
-                  fillOpacity="0.9"
-                />
-              </svg>
+        <div className="px-6 pt-6 pb-8">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+              <SparklesIcon className="w-4 h-4 text-on-primary" />
             </div>
-            <span
-              style={{
-                fontFamily: "Georgia, serif",
-                fontSize: "16px",
-                color: "#faf9f5",
-                fontWeight: 400,
-              }}
-            >
+            <span className="font-display text-base text-on-dark font-normal tracking-wide">
               IronFit Pro
             </span>
           </div>
         </div>
 
         {/* User info */}
-        <div
-          style={{ padding: "0 24px 24px", borderBottom: "1px solid #252320" }}
-        >
-          <div
-            style={{
-              width: "36px",
-              height: "36px",
-              backgroundColor: "#cc785c",
-              borderRadius: "9999px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              marginBottom: "8px",
-            }}
-          >
-            <span style={{ color: "white", fontSize: "14px", fontWeight: 500 }}>
+        <div className="px-6 pb-6 border-b border-surface-dark-elevated">
+          <div className="w-9 h-9 bg-primary rounded-full flex items-center justify-center mb-2">
+            <span className="text-on-primary text-sm font-medium">
               {user?.fullName?.charAt(0).toUpperCase()}
             </span>
           </div>
-          <p style={{ color: "#faf9f5", fontSize: "13px", fontWeight: 500 }}>
-            {user?.fullName}
-          </p>
-          <p style={{ color: "#a09d96", fontSize: "12px", marginTop: "2px" }}>
-            {user?.role}
-          </p>
+          <p className="text-on-dark text-sm font-medium">{user?.fullName}</p>
+          <p className="text-on-dark-soft text-xs mt-0.5">{user?.role}</p>
         </div>
 
         {/* Nav links */}
-        <nav style={{ flex: 1, padding: "16px 12px" }}>
-          <NavLinks role={user?.role} />
+        <nav className="flex-1 px-3 py-4 overflow-y-auto">
+          <NavLinks role={user?.role} pathname={pathname} />
         </nav>
 
         {/* Logout */}
-        <div style={{ padding: "16px 12px" }}>
+        <div className="px-3 py-4 border-t border-surface-dark-elevated">
           <LogoutButton />
         </div>
       </aside>
 
       {/* Main content */}
-      <main style={{ marginLeft: "240px", flex: 1, padding: "32px" }}>
-        {children}
-      </main>
+      <main className="ml-60 flex-1 p-8">{children}</main>
     </div>
   );
 }
 
-function NavLinks({ role }: { role?: string }) {
-  const links =
-    role === "ADMIN"
-      ? [
-          { href: "/admin", label: "Tổng quan", icon: "◻" },
-          { href: "/admin/users", label: "Người dùng", icon: "◻" },
-          { href: "/admin/memberships", label: "Gói thành viên", icon: "◻" },
-        ]
-      : [
-          { href: "/member", label: "Tổng quan", icon: "◻" },
-          { href: "/member/ai-chat", label: "AI Trainer", icon: "◻" },
-          { href: "/member/membership", label: "Gói của tôi", icon: "◻" },
-        ];
+function NavLinks({ role, pathname }: { role?: string; pathname: string }) {
+  const isActive = (href: string) =>
+    pathname === href || pathname.startsWith(href + "/");
+
+  const adminLinks = [
+    { href: "/admin", label: "Tổng quan", icon: Squares2X2Icon },
+    { href: "/admin/users", label: "Người dùng", icon: UsersIcon },
+    { href: "/admin/memberships", label: "Gói thành viên", icon: CreditCardIcon },
+  ];
+
+  const memberLinks = [
+    { href: "/member", label: "Tổng quan", icon: HomeIcon },
+    { href: "/member/ai-chat", label: "AI Trainer", icon: ChatBubbleLeftRightIcon },
+    { href: "/member/membership", label: "Gói của tôi", icon: CreditCardIcon },
+  ];
+
+  const links = role === "ADMIN" ? adminLinks : memberLinks;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-      {links.map((link) => (
-        <a
-          key={link.href}
-          href={link.href}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "10px",
-            padding: "8px 12px",
-            borderRadius: "8px",
-            color: "#a09d96",
-            fontSize: "14px",
-            textDecoration: "none",
-            transition: "background 0.15s",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "#252320";
-            e.currentTarget.style.color = "#faf9f5";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "transparent";
-            e.currentTarget.style.color = "#a09d96";
-          }}
-        >
-          {link.label}
-        </a>
-      ))}
+    <div className="flex flex-col gap-1">
+      {links.map((link) => {
+        const Icon = link.icon;
+        const active = isActive(link.href);
+        return (
+          <Link
+            key={link.href}
+            href={link.href}
+            className={`
+              flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors
+              ${
+                active
+                  ? "bg-surface-dark-elevated text-on-dark"
+                  : "text-on-dark-soft hover:bg-surface-dark-elevated hover:text-on-dark"
+              }
+            `}
+          >
+            <Icon className="w-5 h-5" />
+            {link.label}
+          </Link>
+        );
+      })}
     </div>
   );
 }
@@ -187,26 +136,12 @@ function LogoutButton() {
         logout();
         router.push("/login");
       }}
-      style={{
-        width: "100%",
-        padding: "8px 12px",
-        backgroundColor: "transparent",
-        border: "none",
-        borderRadius: "8px",
-        color: "#a09d96",
-        fontSize: "14px",
-        cursor: "pointer",
-        textAlign: "left",
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.backgroundColor = "#252320";
-        e.currentTarget.style.color = "#c64545";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.backgroundColor = "transparent";
-        e.currentTarget.style.color = "#a09d96";
-      }}
+      className="
+        w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm text-on-dark-soft
+        hover:bg-surface-dark-elevated hover:text-error transition-colors
+      "
     >
+      <ArrowRightOnRectangleIcon className="w-5 h-5" />
       Đăng xuất
     </button>
   );

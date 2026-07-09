@@ -1,0 +1,14 @@
+# Trained model artifacts (too large for git)
+gymbot-output/
+gymbot-merged/
+gymbot-gguf/
+llama.cpp/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Dataset (neu chua data nhay cam, bo comment dong duoi)
+# faq_merged_final.json
