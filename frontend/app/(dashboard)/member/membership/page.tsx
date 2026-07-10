@@ -36,12 +36,13 @@ export default function MembershipPage() {
   const handleBuy = async (planId: string) => {
     setBuying(planId);
     try {
-      const result = await membershipService.buyMembership(planId);
+      await membershipService.buyMembership(planId);
       alert('✅ Đăng ký thành công!');
       await fetchData();
       // Redirect đến trang payment nếu có
       router.push('/member/dashboard');
-    } catch (error: any) {
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
       const message = error.response?.data?.message || 'Đăng ký thất bại. Vui lòng thử lại.';
       alert(`❌ ${message}`);
     } finally {
