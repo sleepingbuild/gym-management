@@ -24,7 +24,16 @@
 
 ### Product vision
 
-IronFit Pro is a comprehensive gym management platform that helps gym owners manage memberships, payments, and member progress, while providing members with AI-powered fitness coaching, QR check-in, and goal tracking.
+Following the product vision framework (Sommerville — *what, who, why*), full statement documented in [README.md § Product Vision](./README.md#-product-vision):
+
+- **What is the product to be developed?**
+  IronFit Pro — a comprehensive gym management platform combining membership management, AI-powered fitness coaching (RAG-based), and local payment integration (VNPay/MoMo), helping gym owners manage memberships, payments, and member progress, while providing members with AI-powered coaching, QR check-in, and goal tracking.
+
+- **Who are the target customers and users?**
+  Small-to-medium gym owners/managers in Vietnam who need affordable digital management tools; gym members who want instant AI-powered fitness/nutrition advice without waiting for a PT; personal trainers (planned v0.3.0) who need to manage assigned students.
+
+- **Why should customers buy this product?**
+  Lower operating cost (AI chatbot reduces reliance on human consultation staff, available 24/7 in Vietnamese); reduced vendor lock-in (dual AI provider — cloud Gemini or self-trained Qwen running locally — gives flexibility between cost, latency, and data privacy); local payment support (VNPay/MoMo, unlike many platforms that only support international cards); fast, low-cost cloud-native deployment (Vercel + Railway + Neon) suitable for small gyms without dedicated infrastructure.
 
 ### Target users / stakeholders
 

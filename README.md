@@ -15,6 +15,23 @@ A full-stack gym management platform with membership management, AI-powered fitn
 📖 **API Docs:** https://gym-management-production-44b5.up.railway.app/api/docs
 
 ---
+## 🎯 Product Vision
+
+**What is the product to be developed?**
+IronFit Pro là nền tảng quản lý phòng gym toàn diện, tích hợp AI Personal Trainer (RAG-powered), quản lý gói thành viên, và thanh toán online — giúp phòng gym vận hành số hóa và hội viên tự chăm sóc sức khỏe hiệu quả hơn.
+
+**Who are the target customers and users?**
+- **Chủ/quản lý phòng gym vừa và nhỏ** tại Việt Nam — cần công cụ quản lý hội viên, doanh thu mà không phải xây hệ thống riêng tốn kém.
+- **Hội viên phòng gym** — muốn tự tra cứu gói tập, nhận tư vấn luyện tập/dinh dưỡng ngay lập tức mà không cần chờ PT, và thanh toán tiện lợi qua VNPay/MoMo.
+- **Personal Trainer** *(roadmap v0.3.0)* — cần công cụ quản lý lịch dạy và học viên được giao.
+
+**Why should customers buy this product?**
+- **Tiết kiệm chi phí vận hành**: thay thế nhân sự trực tổng đài tư vấn cơ bản bằng AI chatbot RAG, phản hồi 24/7 bằng tiếng Việt.
+- **Không phụ thuộc hoàn toàn vào bên thứ ba**: hỗ trợ cả AI cloud (Gemini) và AI tự huấn luyện (Qwen fine-tuned) chạy local — linh hoạt giữa chi phí, độ trễ, và tính riêng tư dữ liệu.
+- **Thanh toán nội địa**: tích hợp sẵn VNPay và MoMo, phù hợp thị trường Việt Nam thay vì chỉ hỗ trợ thẻ quốc tế.
+- **Triển khai nhanh, chi phí thấp**: kiến trúc cloud-native (Vercel + Railway + Neon) giúp phòng gym nhỏ triển khai mà không cần đầu tư hạ tầng riêng.
+
+---
 
 ## 👥 User Personas
 
