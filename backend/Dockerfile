@@ -23,8 +23,7 @@ COPY . .
 RUN npx prisma generate
 
 # Build TypeScript
-RUN npm run build || true
-
+RUN npm run build 
 # Expose port
 EXPOSE 5000
 
