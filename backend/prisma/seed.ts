@@ -28,7 +28,7 @@ async function main() {
         create: {
             id: "plan_premium",
             name: "Premium",
-            price: 9.99,
+            price: 199000,
             duration: 30,
             aiLimit: 100,
             aiDailyLimit: 10,
@@ -44,7 +44,7 @@ async function main() {
         create: {
             id: "plan_elite",
             name: "Elite",
-            price: 29.99,
+            price: 599000,
             duration: 30,
             aiLimit: -1, // -1 = Unlimited
             aiDailyLimit: -1,

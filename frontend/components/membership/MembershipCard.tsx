@@ -23,58 +23,53 @@ export function MembershipCard({ plan, isCurrent, onBuy, loading }: MembershipCa
     <Card className={`relative p-6 transition-all hover:shadow-lg ${isCurrent ? 'border-2 border-primary' : ''}`}>
       {isCurrent && (
         <div className="absolute -top-2 -right-2 bg-primary text-on-primary text-xs font-bold px-3 py-1 rounded-full">
-          Đang sử dụng
+          Đang dùng
         </div>
       )}
 
-      <div className="text-center">
-        <h3 className="text-title-lg font-display text-ink">{plan.name}</h3>
-        <p className="text-body-sm text-muted mt-1">{plan.description}</p>
-      </div>
-
-      <div className="text-center my-4">
-        <span className="text-display-lg font-display text-ink">{formatPrice(plan.price)}</span>
-        {plan.price > 0 && <span className="text-body-sm text-muted"> / tháng</span>}
-      </div>
-
-      <div className="space-y-2 text-body-sm text-body">
-        <div className="flex justify-between">
-          <span>AI tin nhắn mỗi ngày</span>
-          <span className="font-medium">{plan.aiDailyLimit === -1 ? '♾️ Không giới hạn' : `${plan.aiDailyLimit} tin`}</span>
-        </div>
-        <div className="flex justify-between">
-          <span>AI tin nhắn mỗi tháng</span>
-          <span className="font-medium">{plan.aiLimit === -1 ? '♾️ Không giới hạn' : `${plan.aiLimit} tin`}</span>
-        </div>
-        <div className="flex justify-between">
-          <span>Thời hạn</span>
-          <span className="font-medium">{plan.duration} ngày</span>
+      <div className="text-center mb-6">
+        <h3 className="font-display text-2xl text-ink mb-2">{plan.name}</h3>
+        <p className="text-muted text-sm mb-4">{plan.description}</p>
+        <div className="font-display text-3xl text-ink">
+          {isFree ? (
+            formatPrice(plan.price)
+          ) : (
+            <>
+              {formatPrice(plan.price)}
+              <span className="text-base text-muted font-body"> / tháng</span>
+            </>
+          )}
         </div>
       </div>
 
-      <div className="mt-6">
-        {isCurrent ? (
-          <Button variant="secondary" disabled className="w-full">
-            ✅ Đã kích hoạt
-          </Button>
-        ) : isFree ? (
-          <Button
-            className="w-full"
-            onClick={() => onBuy?.(plan.id)}
-            disabled={loading}
-          >
-            {loading ? 'Đang xử lý...' : 'Đăng ký ngay'}
-          </Button>
-        ) : (
-          <Button
-            className="w-full"
-            onClick={() => onBuy?.(plan.id)}
-            disabled={loading}
-          >
-            {loading ? 'Đang xử lý...' : `Mua gói ${plan.name}`}
-          </Button>
-        )}
+      <div className="space-y-3 mb-6 text-sm">
+        <div className="flex justify-between">
+          <span className="text-muted">AI tin nhắn mỗi ngày</span>
+          <span className="font-medium text-ink">
+            {plan.aiDailyLimit === -1 ? '♾️ Không giới hạn' : `${plan.aiDailyLimit} tin`}
+          </span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-muted">AI tin nhắn mỗi tháng</span>
+          <span className="font-medium text-ink">
+            {plan.aiLimit === -1 ? '♾️ Không giới hạn' : `${plan.aiLimit} tin`}
+          </span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-muted">Thời hạn</span>
+          <span className="font-medium text-ink">{plan.duration} ngày</span>
+        </div>
       </div>
+
+      {isCurrent ? (
+        <Button className="w-full" disabled>
+          Đã kích hoạt
+        </Button>
+      ) : (
+        <Button className="w-full" onClick={() => onBuy?.(plan.id)} disabled={loading}>
+          {loading ? 'Đang xử lý...' : isFree ? 'Đăng ký ngay' : `Mua gói ${plan.name}`}
+        </Button>
+      )}
     </Card>
   );
 }
