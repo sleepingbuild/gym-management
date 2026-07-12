@@ -29,9 +29,23 @@ app.use(
 );
 
 // CORS Configuration
+const allowedOrigins = [
+    process.env.FRONTEND_URL || "http://localhost:3000",
+    "http://localhost:3000",
+    /\.vercel\.app$/, // cho phep tat ca preview/production domain cua Vercel
+];
+
 app.use(
     cors({
-        origin: process.env.FRONTEND_URL || "http://localhost:3000",
+        origin: (origin, callback) => {
+            if (!origin) return callback(null, true); // cho phep request khong co origin (Postman, curl...)
+            const isAllowed = allowedOrigins.some((allowed) =>
+                allowed instanceof RegExp
+                    ? allowed.test(origin)
+                    : allowed === origin,
+            );
+            callback(null, isAllowed);
+        },
         credentials: true,
         methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
         allowedHeaders: ["Content-Type", "Authorization"],
