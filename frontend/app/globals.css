@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,41 +6,43 @@
 
 @layer base {
   :root {
-    /* Brand Colors */
-    --primary: #cc785c;
-    --primary-active: #a9583e;
-    --primary-disabled: #e6dfd8;
-    
-    /* Surfaces */
-    --canvas: #faf9f5;
-    --surface-card: #efe9de;
-    --surface-soft: #f5f0e8;
-    --surface-dark: #181715;
-    --surface-dark-elevated: #252320;
-    --surface-dark-soft: #1f1e1b;
-    
-    /* Text */
-    --ink: #141413;
-    --body: #3d3d3a;
-    --body-strong: #252523;
-    --muted: #6c6a64;
-    --muted-soft: #8e8b82;
-    --on-dark: #faf9f5;
-    --on-dark-soft: #a09d96;
-    --on-primary: #ffffff;
-    
-    /* Semantic */
-    --success: #5db872;
-    --warning: #d4a017;
-    --error: #c64545;
-    --accent-teal: #5db8a6;
-    --accent-amber: #e8a55a;
-  }
+    /* Brand */
+    --primary: #FF6B00;
+    --primary-active: #e65f00;
+    --primary-disabled: #3a2a1f;
 
+    /* Surfaces */
+    --canvas: #0f1117;
+    --surface-card: #1a1d27;
+    --surface-soft: #161822;
+    --surface-dark: #0a0b10;
+    --surface-dark-elevated: #20232f;
+    --surface-dark-soft: #12151e;
+
+    /* Text */
+    --ink: #e2e8f0;
+    --body: #a8afbd;
+    --body-strong: #e2e8f0;
+    --muted: #64748b;
+    --muted-soft: #4b5566;
+    --on-dark: #e2e8f0;
+    --on-dark-soft: #64748b;
+    --on-primary: #ffffff;
+
+    /* Borders */
+    --hairline: #2a2d3a;
+
+    /* Semantic */
+    --success: #22c55e;
+    --warning: #eab308;
+    --error: #ef4444;
+    --accent-teal: #7c3aed;
+    --accent-amber: #FF8C38;
+  }
 
   body {
     background-color: var(--canvas);
-    color: var(--body);
+    color: var(--ink);
     font-family: 'Inter', -apple-system, sans-serif;
   }
 }
@@ -48,39 +50,46 @@
 @layer components {
   /* Button Primary */
   .btn-primary {
-    background-color: var(--primary);
+    background: linear-gradient(135deg, var(--primary), var(--accent-amber));
     color: var(--on-primary);
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 600;
     padding: 12px 20px;
     border-radius: 8px;
-    transition: background-color 0.2s;
+    box-shadow: 0 4px 16px rgba(255, 107, 0, 0.25);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
   }
   .btn-primary:hover {
-    background-color: var(--primary-active);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 24px rgba(255, 107, 0, 0.35);
   }
   .btn-primary:disabled {
-    background-color: var(--primary-disabled);
+    background: var(--primary-disabled);
+    color: var(--muted);
+    box-shadow: none;
     cursor: not-allowed;
+    transform: none;
   }
 
   /* Card Styles */
   .card {
     background-color: var(--surface-card);
-    border-radius: 12px;
+    border: 1px solid var(--hairline);
+    border-radius: 14px;
     padding: 32px;
   }
 
   .card-dark {
     background-color: var(--surface-dark);
     color: var(--on-dark);
-    border-radius: 12px;
+    border: 1px solid var(--hairline);
+    border-radius: 14px;
     padding: 32px;
   }
 
   /* Badge */
   .badge {
-    background-color: var(--surface-card);
+    background-color: var(--surface-dark-elevated);
     color: var(--ink);
     font-size: 13px;
     font-weight: 500;
@@ -89,11 +98,11 @@
   }
 
   .badge-coral {
-    background-color: var(--primary);
+    background: linear-gradient(135deg, var(--primary), var(--accent-amber));
     color: var(--on-primary);
     font-size: 12px;
-    font-weight: 500;
-    letter-spacing: 1.5px;
+    font-weight: 600;
+    letter-spacing: 1px;
     padding: 4px 12px;
     border-radius: 9999px;
     text-transform: uppercase;

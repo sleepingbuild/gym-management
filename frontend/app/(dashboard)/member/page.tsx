@@ -66,7 +66,7 @@ export default function MemberPage() {
     <div>
       {/* Header */}
       <div className="mb-8">
-        <h1 className="font-sans text-3xl text-ink font-normal tracking-tight">
+        <h1 className="font-display text-display-sm text-ink tracking-tight">
           Xin chào, {user?.fullName} 👋
         </h1>
         <div className="flex flex-wrap items-baseline gap-2 text-sm text-muted mt-1">
@@ -86,11 +86,11 @@ export default function MemberPage() {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         {/* Membership Card */}
-        <div className="bg-surface-dark rounded-xl p-6">
+        <div className="bg-surface-dark border border-hairline rounded-xl p-6 transition-all duration-150 hover:border-primary/40">
           <p className="text-on-dark-soft text-xs font-medium uppercase tracking-wider mb-3">
             Gói hiện tại
           </p>
-          <p className="font-sans text-2xl text-on-dark font-normal">
+          <p className="font-display text-display-sm text-on-dark">
             {planDisplay}
           </p>
           {membership && (
@@ -107,13 +107,13 @@ export default function MemberPage() {
         </div>
 
         {/* Daily AI Usage */}
-        <div className="bg-surface-card rounded-xl p-6">
+        <div className="bg-surface-card border border-hairline rounded-xl p-6 transition-all duration-150 hover:border-primary/40">
           <p className="text-muted text-xs font-medium uppercase tracking-wider mb-3">
             AI hôm nay
           </p>
-          <p className="font-sans text-2xl text-ink font-normal">
+          <p className="font-display text-display-sm text-ink">
             {usage?.aiDailyCount ?? 0}
-            <span className="text-base text-muted">
+            <span className="text-base text-muted font-body">
               /{usage?.aiDailyLimit === -1 ? "∞" : (usage?.aiDailyLimit ?? 0)}
             </span>
           </p>
@@ -128,13 +128,13 @@ export default function MemberPage() {
         </div>
 
         {/* Monthly AI Usage */}
-        <div className="bg-surface-soft rounded-xl p-6">
+        <div className="bg-surface-card border border-hairline rounded-xl p-6 transition-all duration-150 hover:border-primary/40">
           <p className="text-muted text-xs font-medium uppercase tracking-wider mb-3">
             AI tháng này
           </p>
-          <p className="font-sans text-2xl text-ink font-normal">
+          <p className="font-display text-display-sm text-ink">
             {usage?.aiUsageCount ?? 0}
-            <span className="text-base text-muted">
+            <span className="text-base text-muted font-body">
               /{usage?.aiLimit === -1 ? "∞" : (usage?.aiLimit ?? 0)}
             </span>
           </p>
@@ -146,7 +146,7 @@ export default function MemberPage() {
 
       {/* Quick Actions */}
       <div>
-        <h2 className="font-sans text-xl text-ink font-normal mb-4">
+        <h2 className="font-display text-title-lg text-ink mb-4">
           Truy cập nhanh
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -159,7 +159,7 @@ export default function MemberPage() {
           </a>
           <a
             href="/member/membership"
-            className="bg-surface-card rounded-xl p-5 no-underline block hover:bg-surface-cream-strong transition-colors"
+            className="bg-surface-card border border-hairline rounded-xl p-5 no-underline block hover:border-primary/40 transition-colors"
           >
             <p className="text-ink text-base font-medium mb-1">💳 Gói thành viên</p>
             <p className="text-muted text-sm">Xem và nâng cấp gói của bạn</p>

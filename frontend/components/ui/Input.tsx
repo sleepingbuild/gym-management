@@ -13,8 +13,9 @@ export function Input({ label, error, className = '', ...props }: InputProps) {
       )}
       <input
         className={`
-          w-full px-3.5 py-2.5 bg-canvas text-ink 
+          w-full px-3.5 py-2.5 bg-surface-dark-soft text-ink 
           border border-hairline rounded-md 
+          placeholder:text-muted
           focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary
           text-body-md
           ${error ? 'border-error focus:ring-error/20' : ''}
