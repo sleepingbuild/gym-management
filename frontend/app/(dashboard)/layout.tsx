@@ -12,6 +12,8 @@ import {
   Squares2X2Icon,
   ArrowRightOnRectangleIcon,
   SparklesIcon,
+  QrCodeIcon,
+  ChartBarIcon,
 } from "@heroicons/react/24/outline";
 
 export default function DashboardLayout({
@@ -95,6 +97,8 @@ function NavLinks({ role, pathname }: { role?: string; pathname: string }) {
     { href: "/member", label: "Tổng quan", icon: HomeIcon },
     { href: "/member/ai-chat", label: "AI Trainer", icon: ChatBubbleLeftRightIcon },
     { href: "/member/membership", label: "Gói của tôi", icon: CreditCardIcon },
+    { href: "/member/check-in", label: "Check-in", icon: QrCodeIcon },
+    { href: "/member/progress", label: "Tiến trình", icon: ChartBarIcon },
   ];
 
   const links = role === "ADMIN" ? adminLinks : memberLinks;
