@@ -13,13 +13,11 @@ interface PTStudent {
 }
 
 export default function PTDashboardPage() {
-  // Remove unused 'user' variable
   const [students, setStudents] = useState<PTStudent[]>([]);
   const [loading, setLoading] = useState(true);
 
   // TODO: Gọi API GET /pt/students khi backend có
   useEffect(() => {
-    // Mock data tạm thời
     setStudents([
       {
         id: "1",
@@ -130,7 +128,7 @@ export default function PTDashboardPage() {
                         className={`px-2 py-1 rounded text-xs ${
                           student.membership === "Premium"
                             ? "bg-primary/10 text-primary"
-                            : "bg-surface-soft text-muted"
+                            : "bg-surface-dark-elevated text-muted"
                         }`}
                       >
                         {student.membership}
@@ -150,7 +148,6 @@ export default function PTDashboardPage() {
         )}
       </Card>
 
-      {/* Lưu ý: PT Dashboard đang dùng mock data */}
       <p className="text-body-sm text-muted text-center">
         ⚠️ PT Dashboard đang sử dụng dữ liệu mẫu. Backend API đang được phát
         triển.
