@@ -30,7 +30,7 @@ export function ProgressChart({ data, loading }: ProgressChartProps) {
   if (!data || data.labels.length === 0) {
     return (
       <Card className="h-80 flex items-center justify-center">
-        <p className="text-body text-muted">
+        <p className="text-muted text-center">
           Chưa có dữ liệu để hiển thị biểu đồ
         </p>
       </Card>

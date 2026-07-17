@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import api from "@/lib/api";
 import { UsersIcon, UserGroupIcon, BoltIcon } from "@heroicons/react/24/outline";
+import { RevenueChart } from "@/components/admin/RevenueChart";
+import { PackageDistributionChart } from "@/components/admin/PackageDistributionChart";
 
 interface Stats {
   totalUsers: number;
@@ -95,6 +97,12 @@ export default function AdminPage() {
             </p>
           </div>
         ))}
+      </div>
+
+      {/* Charts */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
+        <RevenueChart />
+        <PackageDistributionChart />
       </div>
 
       {/* Quick Links */}
