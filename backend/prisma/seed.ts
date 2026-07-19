@@ -14,10 +14,9 @@ async function main() {
             name: "Basic",
             price: 0,
             duration: 30,
-            aiLimit: 10,
-            aiDailyLimit: 1,
-            description:
-                "Gói miễn phí — 10 tin nhắn AI/tháng, tối đa 1 tin/ngày",
+            aiLimit: -1,
+            aiDailyLimit: 10,
+            description: "Gói miễn phí — tối đa 10 tin/ngày",
             isActive: true,
         },
     });
@@ -30,10 +29,9 @@ async function main() {
             name: "Premium",
             price: 199000,
             duration: 30,
-            aiLimit: 100,
-            aiDailyLimit: 10,
-            description:
-                "Gói tiêu chuẩn — 100 tin nhắn AI/tháng, tối đa 10 tin/ngày",
+            aiLimit: -1,
+            aiDailyLimit: 100,
+            description: "Gói tiêu chuẩn — tối đa 100 tin/ngày",
             isActive: true,
         },
     });
