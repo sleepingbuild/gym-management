@@ -27,7 +27,6 @@ export default function AIChatPage() {
   const [usage, setUsage] = useState<Usage | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to bottom
   const scrollToEnd = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
@@ -36,7 +35,6 @@ export default function AIChatPage() {
     scrollToEnd();
   }, [messages, loading, scrollToEnd]);
 
-  // Load usage stats
   useEffect(() => {
     const fetchUsage = async () => {
       try {
@@ -48,7 +46,6 @@ export default function AIChatPage() {
     };
     fetchUsage();
 
-    // Welcome message
     setMessages([
       {
         id: "welcome",
@@ -89,7 +86,6 @@ export default function AIChatPage() {
 
       setMessages((prev) => [...prev, aiMessage]);
 
-      // Update usage
       if (res.data.data.usage) {
         setUsage((prev) =>
           prev
@@ -134,83 +130,35 @@ export default function AIChatPage() {
       : 0;
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        height: "calc(100vh - 96px)",
-      }}
-    >
+    <div className="flex flex-col h-[calc(100vh-96px)]">
       {/* Header */}
-      <div
-        style={{
-          marginBottom: "20px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-        }}
-      >
+      <div className="mb-5 flex justify-between items-start gap-4">
         <div>
-          <h1
-            style={{
-              fontFamily: "Georgia, serif",
-              fontSize: "28px",
-              color: "#141413",
-              fontWeight: 400,
-              letterSpacing: "-0.5px",
-            }}
-          >
+          <h1 className="font-display text-display-sm text-ink">
             AI Personal Trainer
           </h1>
-          <p style={{ color: "#6c6a64", fontSize: "14px", marginTop: "4px" }}>
+          <p className="text-muted text-body-sm mt-1">
             Hỏi về tập luyện, dinh dưỡng và sức khỏe
           </p>
         </div>
 
         {/* Usage badge */}
         {usage && (
-          <div
-            style={{
-              backgroundColor: "#efe9de",
-              borderRadius: "10px",
-              padding: "12px 16px",
-              textAlign: "right",
-              minWidth: "160px",
-            }}
-          >
-            <p
-              style={{
-                fontSize: "11px",
-                color: "#6c6a64",
-                fontWeight: 500,
-                textTransform: "uppercase",
-                letterSpacing: "0.5px",
-                marginBottom: "6px",
-              }}
-            >
+          <div className="bg-surface-card border border-hairline rounded-lg px-4 py-3 text-right min-w-[160px]">
+            <p className="text-caption-uppercase text-muted mb-1.5">
               Gói {usage.plan}
             </p>
-            <p style={{ fontSize: "14px", color: "#141413", fontWeight: 500 }}>
+            <p className="text-body-sm text-ink font-medium">
               {usage.aiDailyCount}/{isUnlimited ? "∞" : usage.aiDailyLimit} hôm
               nay
             </p>
             {!isUnlimited && (
-              <div
-                style={{
-                  marginTop: "6px",
-                  backgroundColor: "#e8e0d2",
-                  borderRadius: "9999px",
-                  height: "3px",
-                }}
-              >
+              <div className="mt-1.5 bg-hairline rounded-full h-[3px]">
                 <div
-                  style={{
-                    backgroundColor: dailyPercent >= 90 ? "#c64545" : "#cc785c",
-                    borderRadius: "9999px",
-                    height: "3px",
-                    width: `${dailyPercent}%`,
-                    transition: "width 0.3s",
-                  }}
+                  className={`rounded-full h-[3px] transition-all duration-300 ${
+                    dailyPercent >= 90 ? "bg-error" : "bg-primary"
+                  }`}
+                  style={{ width: `${dailyPercent}%` }}
                 />
               </div>
             )}
@@ -219,97 +167,35 @@ export default function AIChatPage() {
       </div>
 
       {/* Chat container */}
-      <div
-        style={{
-          flex: 1,
-          backgroundColor: "white",
-          border: "1px solid #e6dfd8",
-          borderRadius: "16px",
-          display: "flex",
-          flexDirection: "column",
-          overflow: "hidden",
-        }}
-      >
+      <div className="flex-1 bg-surface-card border border-hairline rounded-xl flex flex-col overflow-hidden">
         {/* Messages */}
-        <div
-          style={{
-            flex: 1,
-            overflowY: "auto",
-            padding: "24px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "16px",
-          }}
-        >
+        <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-4">
           {messages.map((msg) => (
             <div
               key={msg.id}
-              style={{
-                display: "flex",
-                justifyContent: msg.role === "user" ? "flex-end" : "flex-start",
-                alignItems: "flex-end",
-                gap: "8px",
-              }}
+              className={`flex items-end gap-2 ${
+                msg.role === "user" ? "justify-end" : "justify-start"
+              }`}
             >
-              {/* AI Avatar */}
               {msg.role === "assistant" && (
-                <div
-                  style={{
-                    width: "32px",
-                    height: "32px",
-                    backgroundColor: "#181715",
-                    borderRadius: "9999px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
-                  }}
-                >
-                  <span style={{ fontSize: "14px" }}>🤖</span>
+                <div className="w-8 h-8 bg-gradient-to-br from-primary to-accent-amber rounded-full flex items-center justify-center flex-shrink-0">
+                  <span className="text-sm">🤖</span>
                 </div>
               )}
 
-              {/* Bubble */}
               <div
-                style={{
-                  maxWidth: "70%",
-                  padding: "12px 16px",
-                  borderRadius:
-                    msg.role === "user"
-                      ? "18px 18px 4px 18px"
-                      : "18px 18px 18px 4px",
-                  backgroundColor: msg.role === "user" ? "#cc785c" : "#f5f0e8",
-                  color: msg.role === "user" ? "white" : "#141413",
-                  fontSize: "14px",
-                  lineHeight: "1.6",
-                  whiteSpace: "pre-wrap",
-                  wordBreak: "break-word",
-                }}
+                className={`max-w-[70%] px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap break-words ${
+                  msg.role === "user"
+                    ? "bg-primary text-white rounded-[18px_18px_4px_18px]"
+                    : "bg-surface-dark-elevated text-ink rounded-[18px_18px_18px_4px]"
+                }`}
               >
                 {msg.content}
               </div>
 
-              {/* User Avatar */}
               {msg.role === "user" && (
-                <div
-                  style={{
-                    width: "32px",
-                    height: "32px",
-                    backgroundColor: "#cc785c",
-                    borderRadius: "9999px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
-                  }}
-                >
-                  <span
-                    style={{
-                      color: "white",
-                      fontSize: "13px",
-                      fontWeight: 600,
-                    }}
-                  >
+                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
+                  <span className="text-white text-[13px] font-semibold">
                     U
                   </span>
                 </div>
@@ -317,35 +203,12 @@ export default function AIChatPage() {
             </div>
           ))}
 
-          {/* Typing indicator */}
           {loading && (
-            <div
-              style={{ display: "flex", alignItems: "flex-end", gap: "8px" }}
-            >
-              <div
-                style={{
-                  width: "32px",
-                  height: "32px",
-                  backgroundColor: "#181715",
-                  borderRadius: "9999px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
-                }}
-              >
-                <span style={{ fontSize: "14px" }}>🤖</span>
+            <div className="flex items-end gap-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-primary to-accent-amber rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-sm">🤖</span>
               </div>
-              <div
-                style={{
-                  padding: "12px 16px",
-                  backgroundColor: "#f5f0e8",
-                  borderRadius: "18px 18px 18px 4px",
-                  display: "flex",
-                  gap: "4px",
-                  alignItems: "center",
-                }}
-              >
+              <div className="px-4 py-3 bg-surface-dark-elevated rounded-[18px_18px_18px_4px] flex gap-1 items-center">
                 <style>{`
                   @keyframes bounce {
                     0%, 60%, 100% { transform: translateY(0); }
@@ -355,11 +218,8 @@ export default function AIChatPage() {
                 {[0, 1, 2].map((i) => (
                   <div
                     key={i}
+                    className="w-[7px] h-[7px] bg-muted rounded-full"
                     style={{
-                      width: "7px",
-                      height: "7px",
-                      backgroundColor: "#a09d96",
-                      borderRadius: "9999px",
                       animation: `bounce 1.2s ease-in-out ${i * 0.2}s infinite`,
                     }}
                   />
@@ -368,59 +228,27 @@ export default function AIChatPage() {
             </div>
           )}
 
-          {/* Auto-scroll anchor */}
           <div ref={messagesEndRef} />
         </div>
 
         {/* Input area */}
-        <div
-          style={{
-            padding: "16px 24px",
-            borderTop: "1px solid #e6dfd8",
-            display: "flex",
-            gap: "12px",
-            alignItems: "flex-end",
-            backgroundColor: "#faf9f5",
-          }}
-        >
+        <div className="px-6 py-4 border-t border-hairline flex gap-3 items-end bg-surface-soft">
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Nhập câu hỏi... (Enter để gửi, Shift+Enter xuống dòng)"
             rows={1}
-            style={{
-              flex: 1,
-              padding: "10px 14px",
-              backgroundColor: "white",
-              border: "1px solid #e6dfd8",
-              borderRadius: "12px",
-              fontSize: "14px",
-              color: "#141413",
-              outline: "none",
-              resize: "none",
-              fontFamily: "Inter, sans-serif",
-              lineHeight: "1.5",
-              maxHeight: "120px",
-              overflowY: "auto",
-            }}
+            className="flex-1 px-3.5 py-2.5 bg-surface-dark-soft border border-hairline rounded-xl text-sm text-ink outline-none resize-none placeholder:text-muted max-h-[120px] overflow-y-auto focus:border-primary transition-colors"
           />
           <button
             onClick={sendMessage}
             disabled={loading || !input.trim()}
-            style={{
-              width: "42px",
-              height: "42px",
-              backgroundColor: loading || !input.trim() ? "#e6dfd8" : "#cc785c",
-              border: "none",
-              borderRadius: "12px",
-              cursor: loading || !input.trim() ? "not-allowed" : "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
-              transition: "background-color 0.15s",
-            }}
+            className={`w-[42px] h-[42px] rounded-xl flex items-center justify-center flex-shrink-0 transition-colors duration-150 ${
+              loading || !input.trim()
+                ? "bg-hairline cursor-not-allowed"
+                : "bg-primary hover:bg-primary-active cursor-pointer"
+            }`}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
               <path

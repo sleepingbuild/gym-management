@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from "react";
 import api from "@/lib/api";
+import { UsersIcon, UserGroupIcon, BoltIcon } from "@heroicons/react/24/outline";
+import { RevenueChart } from "@/components/admin/RevenueChart";
+import { PackageDistributionChart } from "@/components/admin/PackageDistributionChart";
 
 interface Stats {
   totalUsers: number;
@@ -28,36 +31,43 @@ export default function AdminPage() {
     fetchStats();
   }, []);
 
-  if (loading)
+  if (loading) {
     return (
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          height: "200px",
-        }}
-      >
-        <p style={{ color: "#6c6a64" }}>Đang tải...</p>
+      <div className="flex items-center justify-center h-52">
+        <p className="text-muted">Đang tải...</p>
       </div>
     );
+  }
+
+  const kpis = [
+    {
+      label: "Tổng người dùng",
+      value: stats?.totalUsers ?? 0,
+      icon: UsersIcon,
+      tone: "text-primary bg-primary/10",
+    },
+    {
+      label: "Thành viên",
+      value: stats?.totalMembers ?? 0,
+      icon: UserGroupIcon,
+      tone: "text-accent-teal bg-accent-teal/10",
+    },
+    {
+      label: "Đang hoạt động",
+      value: stats?.activeMembers ?? 0,
+      icon: BoltIcon,
+      tone: "text-success bg-success/10",
+    },
+  ];
 
   return (
     <div>
       {/* Header */}
-      <div style={{ marginBottom: "32px" }}>
-        <h1
-          style={{
-            fontFamily: "Georgia, serif",
-            fontSize: "28px",
-            color: "#141413",
-            fontWeight: 400,
-            letterSpacing: "-0.5px",
-          }}
-        >
+      <div className="mb-8">
+        <h1 className="font-display text-display-md text-ink">
           Admin Dashboard
         </h1>
-        <p style={{ color: "#6c6a64", fontSize: "14px", marginTop: "4px" }}>
+        <p className="text-muted text-body-sm mt-1 capitalize">
           {new Date().toLocaleDateString("vi-VN", {
             weekday: "long",
             year: "numeric",
@@ -68,173 +78,56 @@ export default function AdminPage() {
       </div>
 
       {/* Stats Grid */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(3, 1fr)",
-          gap: "16px",
-          marginBottom: "32px",
-        }}
-      >
-        <div
-          style={{
-            backgroundColor: "#181715",
-            borderRadius: "12px",
-            padding: "24px",
-          }}
-        >
-          <p
-            style={{
-              color: "#a09d96",
-              fontSize: "12px",
-              fontWeight: 500,
-              letterSpacing: "1px",
-              textTransform: "uppercase",
-              marginBottom: "12px",
-            }}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+        {kpis.map((kpi) => (
+          <div
+            key={kpi.label}
+            className="bg-surface-card border border-hairline rounded-lg p-6 transition-all duration-150 hover:border-primary hover:-translate-y-0.5"
           >
-            Tổng người dùng
-          </p>
-          <p
-            style={{
-              fontFamily: "Georgia, serif",
-              fontSize: "36px",
-              color: "#faf9f5",
-              fontWeight: 400,
-            }}
-          >
-            {stats?.totalUsers ?? 0}
-          </p>
-        </div>
+            <div
+              className={`w-11 h-11 rounded-md flex items-center justify-center mb-4 ${kpi.tone}`}
+            >
+              <kpi.icon className="w-5 h-5" />
+            </div>
+            <p className="text-caption-uppercase text-muted mb-1">
+              {kpi.label}
+            </p>
+            <p className="font-display text-display-sm text-ink">
+              {kpi.value}
+            </p>
+          </div>
+        ))}
+      </div>
 
-        <div
-          style={{
-            backgroundColor: "#efe9de",
-            borderRadius: "12px",
-            padding: "24px",
-          }}
-        >
-          <p
-            style={{
-              color: "#6c6a64",
-              fontSize: "12px",
-              fontWeight: 500,
-              letterSpacing: "1px",
-              textTransform: "uppercase",
-              marginBottom: "12px",
-            }}
-          >
-            Thành viên
-          </p>
-          <p
-            style={{
-              fontFamily: "Georgia, serif",
-              fontSize: "36px",
-              color: "#141413",
-              fontWeight: 400,
-            }}
-          >
-            {stats?.totalMembers ?? 0}
-          </p>
-        </div>
-
-        <div
-          style={{
-            backgroundColor: "#cc785c",
-            borderRadius: "12px",
-            padding: "24px",
-          }}
-        >
-          <p
-            style={{
-              color: "rgba(255,255,255,0.75)",
-              fontSize: "12px",
-              fontWeight: 500,
-              letterSpacing: "1px",
-              textTransform: "uppercase",
-              marginBottom: "12px",
-            }}
-          >
-            Đang hoạt động
-          </p>
-          <p
-            style={{
-              fontFamily: "Georgia, serif",
-              fontSize: "36px",
-              color: "white",
-              fontWeight: 400,
-            }}
-          >
-            {stats?.activeMembers ?? 0}
-          </p>
-        </div>
+      {/* Charts */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
+        <RevenueChart />
+        <PackageDistributionChart />
       </div>
 
       {/* Quick Links */}
       <div>
-        <h2
-          style={{
-            fontFamily: "Georgia, serif",
-            fontSize: "20px",
-            color: "#141413",
-            fontWeight: 400,
-            marginBottom: "16px",
-          }}
-        >
-          Quản lý
-        </h2>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(2, 1fr)",
-            gap: "12px",
-          }}
-        >
+        <h2 className="font-display text-title-lg text-ink mb-4">Quản lý</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <a
             href="/admin/users"
-            style={{
-              backgroundColor: "#efe9de",
-              borderRadius: "12px",
-              padding: "20px",
-              textDecoration: "none",
-              display: "block",
-            }}
+            className="group bg-surface-card border border-hairline rounded-lg p-5 block no-underline transition-all duration-150 hover:border-primary hover:-translate-y-0.5"
           >
-            <p
-              style={{
-                color: "#141413",
-                fontSize: "16px",
-                fontWeight: 500,
-                marginBottom: "4px",
-              }}
-            >
+            <p className="text-ink text-title-sm mb-1 group-hover:text-primary transition-colors">
               👥 Người dùng
             </p>
-            <p style={{ color: "#6c6a64", fontSize: "13px" }}>
+            <p className="text-muted text-body-sm">
               Quản lý tài khoản thành viên
             </p>
           </a>
           <a
             href="/admin/memberships"
-            style={{
-              backgroundColor: "#efe9de",
-              borderRadius: "12px",
-              padding: "20px",
-              textDecoration: "none",
-              display: "block",
-            }}
+            className="group bg-surface-card border border-hairline rounded-lg p-5 block no-underline transition-all duration-150 hover:border-primary hover:-translate-y-0.5"
           >
-            <p
-              style={{
-                color: "#141413",
-                fontSize: "16px",
-                fontWeight: 500,
-                marginBottom: "4px",
-              }}
-            >
+            <p className="text-ink text-title-sm mb-1 group-hover:text-primary transition-colors">
               💳 Gói thành viên
             </p>
-            <p style={{ color: "#6c6a64", fontSize: "13px" }}>
+            <p className="text-muted text-body-sm">
               Xem các gói đang hoạt động
             </p>
           </a>

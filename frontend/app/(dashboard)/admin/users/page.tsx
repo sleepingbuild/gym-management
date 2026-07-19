@@ -75,70 +75,42 @@ export default function AdminUsersPage() {
     return matchSearch && matchPlan;
   });
 
+  const roleBadgeClass = (role: string) =>
+    role === "ADMIN"
+      ? "bg-primary text-white"
+      : role === "PT"
+        ? "bg-accent-teal/15 text-accent-teal"
+        : "bg-surface-dark-elevated text-muted";
+
   return (
     <div>
       {/* Header */}
-      <div style={{ marginBottom: "32px" }}>
-        <h1
-          style={{
-            fontFamily: "Georgia, serif",
-            fontSize: "28px",
-            color: "#141413",
-            fontWeight: 400,
-            letterSpacing: "-0.5px",
-          }}
-        >
-          Người dùng
-        </h1>
-        <p style={{ color: "#6c6a64", fontSize: "14px", marginTop: "4px" }}>
+      <div className="mb-8">
+        <h1 className="font-display text-display-md text-ink">Người dùng</h1>
+        <p className="text-muted text-body-sm mt-1">
           Quản lý tất cả tài khoản trong hệ thống
         </p>
       </div>
 
       {/* Toolbar */}
-      <div
-        style={{
-          display: "flex",
-          gap: "12px",
-          marginBottom: "24px",
-          flexWrap: "wrap",
-        }}
-      >
-        {/* Search */}
+      <div className="flex gap-3 mb-6 flex-wrap">
         <input
           type="text"
           placeholder="Tìm kiếm theo tên hoặc email..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          style={{
-            width: "280px",
-            height: "40px",
-            padding: "0 14px",
-            backgroundColor: "#faf9f5",
-            border: "1px solid #e6dfd8",
-            borderRadius: "8px",
-            fontSize: "14px",
-            color: "#141413",
-            outline: "none",
-          }}
+          className="w-[280px] h-10 px-3.5 bg-surface-dark-soft border border-hairline rounded-lg text-sm text-ink outline-none placeholder:text-muted focus:border-primary transition-colors"
         />
 
-        {/* Filter by plan */}
         {["ALL", "NONE", "BASIC", "PREMIUM", "ELITE"].map((plan) => (
           <button
             key={plan}
             onClick={() => setFilterPlan(plan)}
-            style={{
-              height: "40px",
-              padding: "0 16px",
-              backgroundColor: filterPlan === plan ? "#181715" : "#f5f0e8",
-              color: filterPlan === plan ? "#faf9f5" : "#6c6a64",
-              border: "none",
-              borderRadius: "8px",
-              fontSize: "13px",
-              fontWeight: 500,
-              cursor: "pointer",
-            }}
+            className={`h-10 px-4 rounded-lg text-[13px] font-medium transition-colors ${
+              filterPlan === plan
+                ? "bg-primary text-white"
+                : "bg-surface-card text-muted hover:text-ink"
+            }`}
           >
             {plan === "ALL" ? "Tất cả" : plan === "NONE" ? "Chưa có gói" : plan}
           </button>
@@ -146,24 +118,9 @@ export default function AdminUsersPage() {
       </div>
 
       {/* Table */}
-      <div
-        style={{
-          backgroundColor: "white",
-          border: "1px solid #e6dfd8",
-          borderRadius: "12px",
-          overflow: "hidden",
-        }}
-      >
-        {/* Header */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "2fr 2fr 1fr 1fr 1fr 1fr auto",
-            padding: "12px 20px",
-            backgroundColor: "#f5f0e8",
-            borderBottom: "1px solid #e6dfd8",
-          }}
-        >
+      <div className="bg-surface-card border border-hairline rounded-lg overflow-hidden">
+        {/* Header row */}
+        <div className="grid grid-cols-[2fr_2fr_1fr_1fr_1fr_1fr_auto] px-5 py-3 bg-surface-dark-elevated border-b border-hairline">
           {[
             "Họ tên",
             "Email",
@@ -175,13 +132,7 @@ export default function AdminUsersPage() {
           ].map((h) => (
             <span
               key={h}
-              style={{
-                fontSize: "12px",
-                fontWeight: 500,
-                color: "#6c6a64",
-                textTransform: "uppercase",
-                letterSpacing: "0.5px",
-              }}
+              className="text-[12px] font-semibold text-muted uppercase tracking-wide"
             >
               {h}
             </span>
@@ -190,92 +141,44 @@ export default function AdminUsersPage() {
 
         {/* Body */}
         {loading ? (
-          <div
-            style={{ padding: "40px", textAlign: "center", color: "#6c6a64" }}
-          >
-            Đang tải...
-          </div>
+          <div className="p-10 text-center text-muted">Đang tải...</div>
         ) : filtered.length === 0 ? (
-          <div
-            style={{ padding: "40px", textAlign: "center", color: "#6c6a64" }}
-          >
+          <div className="p-10 text-center text-muted">
             Không tìm thấy người dùng
           </div>
         ) : (
           filtered.map((user, index) => (
             <div
               key={user.id}
-              style={{
-                display: "grid",
-                gridTemplateColumns: "2fr 2fr 1fr 1fr 1fr 1fr auto",
-                padding: "14px 20px",
-                borderBottom:
-                  index < filtered.length - 1 ? "1px solid #f5f0e8" : "none",
-                alignItems: "center",
-                opacity: user.isActive ? 1 : 0.5,
-              }}
+              className={`grid grid-cols-[2fr_2fr_1fr_1fr_1fr_1fr_auto] px-5 py-3.5 items-center ${
+                index < filtered.length - 1 ? "border-b border-hairline" : ""
+              } ${user.isActive ? "" : "opacity-50"}`}
             >
               {/* Name */}
-              <div
-                style={{ display: "flex", alignItems: "center", gap: "10px" }}
-              >
-                <div
-                  style={{
-                    width: "32px",
-                    height: "32px",
-                    backgroundColor: "#cc785c",
-                    borderRadius: "9999px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
-                  }}
-                >
-                  <span
-                    style={{
-                      color: "white",
-                      fontSize: "13px",
-                      fontWeight: 500,
-                    }}
-                  >
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
+                  <span className="text-white text-[13px] font-medium">
                     {user.fullName.charAt(0).toUpperCase()}
                   </span>
                 </div>
-                <span
-                  style={{
-                    fontSize: "14px",
-                    color: "#141413",
-                    fontWeight: 500,
-                  }}
-                >
+                <span className="text-sm text-ink font-medium">
                   {user.fullName}
                 </span>
               </div>
 
               {/* Email */}
-              <span style={{ fontSize: "14px", color: "#6c6a64" }}>
-                {user.email}
-              </span>
+              <span className="text-sm text-muted">{user.email}</span>
 
               {/* Phone */}
-              <span style={{ fontSize: "14px", color: "#6c6a64" }}>
-                {user.phone ?? "—"}
-              </span>
+              <span className="text-sm text-muted">{user.phone ?? "—"}</span>
 
               {/* Role */}
               {editRoleId === user.id ? (
-                <div
-                  style={{ display: "flex", gap: "4px", alignItems: "center" }}
-                >
+                <div className="flex gap-1 items-center">
                   <select
                     value={editRoleValue}
                     onChange={(e) => setEditRoleValue(e.target.value)}
-                    style={{
-                      fontSize: "12px",
-                      padding: "2px 6px",
-                      borderRadius: "6px",
-                      border: "1px solid #e6dfd8",
-                    }}
+                    className="text-xs px-1.5 py-0.5 rounded-md border border-hairline bg-surface-dark-soft text-ink"
                   >
                     <option value="MEMBER">MEMBER</option>
                     <option value="PT">PT</option>
@@ -283,54 +186,20 @@ export default function AdminUsersPage() {
                   </select>
                   <button
                     onClick={() => handleUpdateRole(user.id)}
-                    style={{
-                      fontSize: "11px",
-                      padding: "2px 8px",
-                      backgroundColor: "#cc785c",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "4px",
-                      cursor: "pointer",
-                    }}
+                    className="text-[11px] px-2 py-0.5 bg-primary text-white rounded"
                   >
                     ✓
                   </button>
                   <button
                     onClick={() => setEditRoleId(null)}
-                    style={{
-                      fontSize: "11px",
-                      padding: "2px 8px",
-                      backgroundColor: "#f5f0e8",
-                      color: "#6c6a64",
-                      border: "none",
-                      borderRadius: "4px",
-                      cursor: "pointer",
-                    }}
+                    className="text-[11px] px-2 py-0.5 bg-surface-dark-elevated text-muted rounded"
                   >
                     ✕
                   </button>
                 </div>
               ) : (
                 <span
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    padding: "3px 10px",
-                    backgroundColor:
-                      user.role === "ADMIN"
-                        ? "#181715"
-                        : user.role === "PT"
-                          ? "#5db8a6"
-                          : "#efe9de",
-                    color:
-                      user.role === "ADMIN" || user.role === "PT"
-                        ? "#faf9f5"
-                        : "#141413",
-                    borderRadius: "9999px",
-                    fontSize: "12px",
-                    fontWeight: 500,
-                    width: "fit-content",
-                  }}
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium w-fit ${roleBadgeClass(user.role)}`}
                 >
                   {user.role}
                 </span>
@@ -338,68 +207,42 @@ export default function AdminUsersPage() {
 
               {/* Plan */}
               <span
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  padding: "3px 10px",
-                  backgroundColor: user.userMembership ? "#cc785c" : "#f5f0e8",
-                  color: user.userMembership ? "white" : "#6c6a64",
-                  borderRadius: "9999px",
-                  fontSize: "12px",
-                  fontWeight: 500,
-                  width: "fit-content",
-                }}
+                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium w-fit ${
+                  user.userMembership
+                    ? "bg-primary text-white"
+                    : "bg-surface-dark-elevated text-muted"
+                }`}
               >
                 {user.userMembership?.plan.name ?? "Chưa có"}
               </span>
 
               {/* Status */}
               <span
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  padding: "3px 10px",
-                  backgroundColor: user.isActive ? "#5db872" : "#c64545",
-                  color: "white",
-                  borderRadius: "9999px",
-                  fontSize: "12px",
-                  fontWeight: 500,
-                  width: "fit-content",
-                }}
+                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium w-fit text-white ${
+                  user.isActive ? "bg-success" : "bg-error"
+                }`}
               >
                 {user.isActive ? "Hoạt động" : "Đã khóa"}
               </span>
 
               {/* Actions */}
-              <div style={{ display: "flex", gap: "6px" }}>
+              <div className="flex gap-1.5">
                 <button
                   onClick={() => {
                     setEditRoleId(user.id);
                     setEditRoleValue(user.role);
                   }}
-                  style={{
-                    padding: "5px 10px",
-                    fontSize: "12px",
-                    backgroundColor: "#f5f0e8",
-                    color: "#141413",
-                    border: "none",
-                    borderRadius: "6px",
-                    cursor: "pointer",
-                  }}
+                  className="px-2.5 py-1 text-xs bg-surface-dark-elevated text-ink rounded-md hover:bg-hairline transition-colors"
                 >
                   Sửa
                 </button>
                 <button
                   onClick={() => handleToggleActive(user.id)}
-                  style={{
-                    padding: "5px 10px",
-                    fontSize: "12px",
-                    backgroundColor: user.isActive ? "#c64545" : "#5db872",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "6px",
-                    cursor: "pointer",
-                  }}
+                  className={`px-2.5 py-1 text-xs text-white rounded-md transition-colors ${
+                    user.isActive
+                      ? "bg-error hover:bg-error/80"
+                      : "bg-success hover:bg-success/80"
+                  }`}
                 >
                   {user.isActive ? "Khóa" : "Mở"}
                 </button>
@@ -409,7 +252,7 @@ export default function AdminUsersPage() {
         )}
       </div>
 
-      <p style={{ color: "#6c6a64", fontSize: "13px", marginTop: "12px" }}>
+      <p className="text-muted text-[13px] mt-3">
         {filtered.length} người dùng
       </p>
     </div>

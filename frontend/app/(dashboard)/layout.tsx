@@ -12,6 +12,8 @@ import {
   Squares2X2Icon,
   ArrowRightOnRectangleIcon,
   SparklesIcon,
+  QrCodeIcon,
+  ChartBarIcon,
 } from "@heroicons/react/24/outline";
 
 export default function DashboardLayout({
@@ -40,23 +42,23 @@ export default function DashboardLayout({
   return (
     <div className="min-h-screen bg-canvas flex">
       {/* Sidebar */}
-      <aside className="w-60 bg-surface-dark flex flex-col fixed top-0 left-0 bottom-0">
+      <aside className="w-60 bg-surface-dark border-r border-hairline flex flex-col fixed top-0 left-0 bottom-0">
         {/* Logo */}
         <div className="px-6 pt-6 pb-8">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-primary to-accent-amber rounded-lg flex items-center justify-center shadow-glow">
               <SparklesIcon className="w-4 h-4 text-on-primary" />
             </div>
-            <span className="font-display text-base text-on-dark font-normal tracking-wide">
+            <span className="font-display text-title-sm text-on-dark">
               IronFit Pro
             </span>
           </div>
         </div>
 
         {/* User info */}
-        <div className="px-6 pb-6 border-b border-surface-dark-elevated">
-          <div className="w-9 h-9 bg-primary rounded-full flex items-center justify-center mb-2">
-            <span className="text-on-primary text-sm font-medium">
+        <div className="px-6 pb-6 border-b border-hairline">
+          <div className="w-9 h-9 bg-gradient-to-br from-primary to-accent-amber rounded-full flex items-center justify-center mb-2">
+            <span className="text-on-primary text-sm font-semibold">
               {user?.fullName?.charAt(0).toUpperCase()}
             </span>
           </div>
@@ -70,7 +72,7 @@ export default function DashboardLayout({
         </nav>
 
         {/* Logout */}
-        <div className="px-3 py-4 border-t border-surface-dark-elevated">
+        <div className="px-3 py-4 border-t border-hairline">
           <LogoutButton />
         </div>
       </aside>
@@ -95,6 +97,8 @@ function NavLinks({ role, pathname }: { role?: string; pathname: string }) {
     { href: "/member", label: "Tổng quan", icon: HomeIcon },
     { href: "/member/ai-chat", label: "AI Trainer", icon: ChatBubbleLeftRightIcon },
     { href: "/member/membership", label: "Gói của tôi", icon: CreditCardIcon },
+    { href: "/member/check-in", label: "Check-in", icon: QrCodeIcon },
+    { href: "/member/progress", label: "Tiến trình", icon: ChartBarIcon },
   ];
 
   const links = role === "ADMIN" ? adminLinks : memberLinks;
@@ -109,11 +113,11 @@ function NavLinks({ role, pathname }: { role?: string; pathname: string }) {
             key={link.href}
             href={link.href}
             className={`
-              flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors
+              flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors border-l-2
               ${
                 active
-                  ? "bg-surface-dark-elevated text-on-dark"
-                  : "text-on-dark-soft hover:bg-surface-dark-elevated hover:text-on-dark"
+                  ? "bg-surface-dark-elevated text-primary border-primary"
+                  : "text-on-dark-soft border-transparent hover:bg-surface-dark-elevated hover:text-on-dark"
               }
             `}
           >

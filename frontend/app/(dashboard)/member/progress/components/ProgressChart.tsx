@@ -30,7 +30,7 @@ export function ProgressChart({ data, loading }: ProgressChartProps) {
   if (!data || data.labels.length === 0) {
     return (
       <Card className="h-80 flex items-center justify-center">
-        <p className="text-body text-muted">
+        <p className="text-muted text-center">
           Chưa có dữ liệu để hiển thị biểu đồ
         </p>
       </Card>
@@ -53,56 +53,59 @@ export function ProgressChart({ data, loading }: ProgressChartProps) {
       <div className="h-80">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e6dfd8" />
+            <CartesianGrid strokeDasharray="3 3" stroke="#2a2d3a" />
             <XAxis
               dataKey="date"
-              stroke="#6c6a64"
+              stroke="#64748b"
               fontSize={12}
               tickFormatter={(value) => {
                 const d = new Date(value);
                 return `${d.getDate()}/${d.getMonth() + 1}`;
               }}
             />
-            <YAxis stroke="#6c6a64" fontSize={12} />
+            <YAxis stroke="#64748b" fontSize={12} />
             <Tooltip
               contentStyle={{
-                backgroundColor: "#faf9f5",
-                border: "1px solid #e6dfd8",
+                backgroundColor: "#1a1d27",
+                border: "1px solid #2a2d3a",
                 borderRadius: "8px",
+                color: "#e2e8f0",
               }}
+              labelStyle={{ color: "#e2e8f0" }}
+              itemStyle={{ color: "#e2e8f0" }}
             />
-            <Legend />
+            <Legend wrapperStyle={{ color: "#a8afbd" }} />
             <Line
               type="monotone"
               dataKey="weight"
-              stroke="#cc785c"
+              stroke="#FF6B00"
               name="Cân nặng (kg)"
               strokeWidth={2}
-              dot={{ fill: "#cc785c" }}
+              dot={{ fill: "#FF6B00" }}
             />
             <Line
               type="monotone"
               dataKey="bmi"
-              stroke="#5db8a6"
+              stroke="#7c3aed"
               name="BMI"
               strokeWidth={2}
-              dot={{ fill: "#5db8a6" }}
+              dot={{ fill: "#7c3aed" }}
             />
             <Line
               type="monotone"
               dataKey="bodyFat"
-              stroke="#e8a55a"
+              stroke="#FF8C38"
               name="Mỡ cơ thể (%)"
               strokeWidth={2}
-              dot={{ fill: "#e8a55a" }}
+              dot={{ fill: "#FF8C38" }}
             />
             <Line
               type="monotone"
               dataKey="muscleMass"
-              stroke="#5db872"
+              stroke="#22c55e"
               name="Cơ (kg)"
               strokeWidth={2}
-              dot={{ fill: "#5db872" }}
+              dot={{ fill: "#22c55e" }}
             />
           </LineChart>
         </ResponsiveContainer>
