@@ -9,6 +9,7 @@ import bodyProgressRoutes from "./bodyProgress.routes";
 import attendanceRoutes from "./attendance.routes";
 import bodyGoalRoutes from "./bodyGoal.routes";
 import ptRoutes from "./pt.routes";
+import bookingRoutes from "./booking.routes";
 
 const router = Router();
 
@@ -22,5 +23,6 @@ router.use("/body-progress", bodyProgressRoutes);
 router.use("/attendance", attendanceRoutes);
 router.use("/body-goal", bodyGoalRoutes);
 router.use("/pt", ptRoutes);
+router.use("/bookings", bookingRoutes);
 
 export default router;

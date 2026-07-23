@@ -164,6 +164,13 @@ export default function MemberPage() {
             <p className="text-ink text-base font-medium mb-1">💳 Gói thành viên</p>
             <p className="text-muted text-sm">Xem và nâng cấp gói của bạn</p>
           </a>
+          <a
+            href="/member/booking"
+            className="bg-surface-card border border-hairline rounded-xl p-5 no-underline block hover:border-primary/40 transition-colors"
+          >
+            <p className="text-ink text-base font-medium mb-1">📅 Đặt lịch huấn luyện</p>
+            <p className="text-muted text-sm">Đặt lịch với huấn luyện viên chuyên nghiệp</p>
+          </a>
         </div>
       </div>
     </div>
