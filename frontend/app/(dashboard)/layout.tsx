@@ -15,6 +15,7 @@ import {
   QrCodeIcon,
   ChartBarIcon,
   UserGroupIcon,
+  CalendarIcon,
 } from "@heroicons/react/24/outline";
 
 export default function DashboardLayout({
@@ -93,6 +94,7 @@ function NavLinks({ role, pathname }: { role?: string; pathname: string }) {
     { href: "/admin/users", label: "Người dùng", icon: UsersIcon },
     { href: "/admin/memberships", label: "Gói thành viên", icon: CreditCardIcon },
     { href: "/admin/trainers", label: "Huấn luyện viên", icon: UserGroupIcon },
+    { href: "/admin/bookings", label: "Đặt lịch", icon: CalendarIcon },
   ];
 
   const memberLinks = [
