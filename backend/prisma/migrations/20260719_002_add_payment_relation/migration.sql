@@ -1,4 +1,4 @@
-﻿-- CreateSchema
+-- CreateSchema
 CREATE SCHEMA IF NOT EXISTS "public";
 
 -- CreateExtension
@@ -184,9 +184,6 @@ CREATE TABLE "BodyProgress" (
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
-CREATE INDEX "User_email_idx" ON "User"("email");
-
--- CreateIndex
 CREATE INDEX "User_role_idx" ON "User"("role");
 
 -- CreateIndex
@@ -211,16 +208,10 @@ CREATE INDEX "Attendance_checkInTime_idx" ON "Attendance"("checkInTime");
 CREATE UNIQUE INDEX "BodyGoal_userId_key" ON "BodyGoal"("userId");
 
 -- CreateIndex
-CREATE INDEX "BodyGoal_userId_idx" ON "BodyGoal"("userId");
-
--- CreateIndex
 CREATE INDEX "BodyGoal_status_idx" ON "BodyGoal"("status");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "UserMembership_userId_key" ON "UserMembership"("userId");
-
--- CreateIndex
-CREATE INDEX "UserMembership_userId_idx" ON "UserMembership"("userId");
 
 -- CreateIndex
 CREATE INDEX "UserMembership_status_idx" ON "UserMembership"("status");
@@ -268,9 +259,6 @@ CREATE INDEX "Payment_createdAt_idx" ON "Payment"("createdAt");
 CREATE INDEX "Payment_userId_status_idx" ON "Payment"("userId", "status");
 
 -- CreateIndex
-CREATE INDEX "Payment_transactionId_idx" ON "Payment"("transactionId");
-
--- CreateIndex
 CREATE INDEX "Notification_userId_idx" ON "Notification"("userId");
 
 -- CreateIndex
@@ -308,6 +296,9 @@ ALTER TABLE "ChatHistory" ADD CONSTRAINT "ChatHistory_userId_fkey" FOREIGN KEY (
 
 -- AddForeignKey
 ALTER TABLE "Payment" ADD CONSTRAINT "Payment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Payment" ADD CONSTRAINT "Payment_membershipPlanId_fkey" FOREIGN KEY ("membershipPlanId") REFERENCES "MembershipPlan"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Notification" ADD CONSTRAINT "Notification_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

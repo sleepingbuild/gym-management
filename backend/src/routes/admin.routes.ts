@@ -19,10 +19,6 @@ router.use(authorize("ADMIN"));
  *     responses:
  *       200:
  *         description: Danh sách users
- *       401:
- *         description: Chưa đăng nhập
- *       403:
- *         description: Không có quyền admin
  */
 router.get("/users", adminController.getUsers);
 
@@ -37,10 +33,6 @@ router.get("/users", adminController.getUsers);
  *     responses:
  *       200:
  *         description: Thống kê
- *       401:
- *         description: Chưa đăng nhập
- *       403:
- *         description: Không có quyền admin
  */
 router.get("/stats", adminController.getStats);
 
@@ -61,12 +53,6 @@ router.get("/stats", adminController.getStats);
  *     responses:
  *       200:
  *         description: Cập nhật thành công
- *       400:
- *         description: Không thể khóa chính mình
- *       401:
- *         description: Chưa đăng nhập
- *       403:
- *         description: Không có quyền admin
  */
 router.patch("/users/:id/toggle-active", adminController.toggleUserActive);
 
@@ -99,13 +85,140 @@ router.patch("/users/:id/toggle-active", adminController.toggleUserActive);
  *     responses:
  *       200:
  *         description: Cập nhật thành công
- *       400:
- *         description: Role không hợp lệ
- *       401:
- *         description: Chưa đăng nhập
- *       403:
- *         description: Không có quyền admin
  */
 router.patch("/users/:id/role", adminController.updateUserRole);
+
+/**
+ * @swagger
+ * /admin/revenue:
+ *   get:
+ *     summary: Doanh thu 6 tháng gần nhất (chỉ tính Payment status = SUCCESS)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Danh sách doanh thu theo tháng
+ */
+router.get("/revenue", adminController.getRevenue);
+
+/**
+ * @swagger
+ * /admin/memberships/distribution:
+ *   get:
+ *     summary: Số lượng thành viên đang ACTIVE, gộp theo từng gói tập
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Phân bố gói tập
+ */
+router.get("/memberships/distribution", adminController.getMembershipDistribution);
+
+/**
+ * @swagger
+ * /admin/memberships:
+ *   get:
+ *     summary: Lấy tất cả gói tập (kể cả đã khóa) để quản lý
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Danh sách gói tập
+ *   post:
+ *     summary: Tạo gói tập mới
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [name, price, duration, aiLimit, aiDailyLimit]
+ *             properties:
+ *               name: { type: string }
+ *               price: { type: number }
+ *               duration: { type: integer, description: "Số ngày" }
+ *               aiLimit: { type: integer, description: "-1 = không giới hạn" }
+ *               aiDailyLimit: { type: integer, description: "-1 = không giới hạn" }
+ *               description: { type: string }
+ *     responses:
+ *       201:
+ *         description: Tạo thành công
+ *       400:
+ *         description: Dữ liệu không hợp lệ
+ */
+router.get("/memberships", adminController.getAllMembershipPlans);
+router.post("/memberships", adminController.createMembershipPlan);
+
+/**
+ * @swagger
+ * /admin/memberships/{id}:
+ *   put:
+ *     summary: Cập nhật gói tập
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Cập nhật thành công
+ *       404:
+ *         description: Không tìm thấy gói tập
+ */
+router.put("/memberships/:id", adminController.updateMembershipPlan);
+
+/**
+ * @swagger
+ * /admin/memberships/{id}/toggle-active:
+ *   patch:
+ *     summary: Khóa/Mở khóa gói tập
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Cập nhật thành công
+ */
+router.patch("/memberships/:id/toggle-active", adminController.toggleMembershipPlanActive);
+
+/**
+ * @swagger
+ * /admin/memberships/{id}:
+ *   delete:
+ *     summary: Xóa gói tập (chặn nếu đang có thành viên dùng)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Xóa thành công
+ *       400:
+ *         description: Gói đang được sử dụng, không thể xóa
+ *       404:
+ *         description: Không tìm thấy gói tập
+ */
+router.delete("/memberships/:id", adminController.deleteMembershipPlan);
 
 export default router;

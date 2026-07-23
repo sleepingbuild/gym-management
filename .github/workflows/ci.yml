@@ -72,9 +72,13 @@ jobs:
           NODE_ENV: test
         run: |
           cd backend
+          # Reset database truoc (xoa sach schema public)
           npx prisma db push --force-reset --skip-generate --accept-data-loss || true
+          # Tao vector extension SAU khi reset
           echo "CREATE EXTENSION IF NOT EXISTS vector;" | npx prisma db execute --stdin --url "$DATABASE_URL"
+          # Push schema lai (khong reset nua, vi extension da co)
           npx prisma db push --accept-data-loss
+          # Chay test
           npm test
 
   frontend-lint-build:

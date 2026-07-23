@@ -4,8 +4,10 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+  extensions        = [vector]
 }
 
 enum Role {
@@ -37,17 +39,21 @@ model User {
   isDeleted Boolean @default(false)
 
   userMembership UserMembership?
+  trainerProfile TrainerProfile?
+  bodyGoal       BodyGoal?
+
   chatHistory    ChatHistory[]
   paymentHistory Payment[]
   notifications  Notification[]
   bodyProgress   BodyProgress[]      
-  attendances    Attendance[]        // ✅ GIỮ
-  bodyGoal       BodyGoal?           // ✅ GIỮ
+  attendances    Attendance[] 
+  memberBookings  Booking[] @relation("MemberBookings")
+  trainerBookings Booking[] @relation("TrainerBookings")       
+           
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([email])
   @@index([role])
   @@index([isActive])
   @@index([createdAt])
@@ -91,7 +97,6 @@ model BodyGoal {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([userId])
   @@index([status])
 }
 
@@ -106,6 +111,7 @@ model MembershipPlan {
   isActive     Boolean @default(true)
 
   userMemberships UserMembership[]
+  payments Payment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -129,7 +135,6 @@ model UserMembership {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([userId])
   @@index([status])
   @@index([expiryDate])
   @@index([userId, status])  // Composite index
@@ -193,6 +198,7 @@ model Payment {
   metadata         Json?
 
   user User @relation(fields: [userId], references: [id])
+  membershipPlan MembershipPlan @relation(fields: [membershipPlanId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -201,7 +207,6 @@ model Payment {
   @@index([status])
   @@index([createdAt])
   @@index([userId, status])
-  @@index([transactionId])
 }
 
 enum NotificationType {
@@ -251,4 +256,48 @@ model BodyProgress {
   @@index([userId])
   @@index([recordedAt])
   @@index([userId, recordedAt])
+}
+
+model TrainerProfile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  specialties String
+  bio         String?  @db.Text
+  status      String   @default("ACTIVE")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+model Booking {
+  id        String        @id @default(cuid())
+  memberId  String
+  trainerId String
+  date      DateTime
+  timeSlot  String
+  age       Int?
+  notes     String?       @db.Text
+  status    BookingStatus @default(PENDING)
+
+  member  User @relation("MemberBookings", fields: [memberId], references: [id])
+  trainer User @relation("TrainerBookings", fields: [trainerId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([memberId])
+  @@index([trainerId])
+  @@index([date])
+  @@index([status])
 }

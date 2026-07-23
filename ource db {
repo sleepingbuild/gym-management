@@ -1,0 +1,132 @@
+[1mdiff --git a/backend/prisma/schema.prisma b/backend/prisma/schema.prisma[m
+[1mindex 63c4ee3..7e24339 100644[m
+[1m--- a/backend/prisma/schema.prisma[m
+[1m+++ b/backend/prisma/schema.prisma[m
+[36m@@ -4,8 +4,10 @@[m [mgenerator client {[m
+ }[m
+ [m
+ datasource db {[m
+[31m-  provider = "postgresql"[m
+[31m-  url      = env("DATABASE_URL")[m
+[32m+[m[32m  provider          = "postgresql"[m
+[32m+[m[32m  url               = env("DATABASE_URL")[m
+[32m+[m[32m  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")[m
+[32m+[m[32m  extensions        = [vector][m
+ }[m
+ [m
+ enum Role {[m
+[36m@@ -37,17 +39,21 @@[m [mmodel User {[m
+   isDeleted Boolean @default(false)[m
+ [m
+   userMembership UserMembership?[m
+[32m+[m[32m  trainerProfile TrainerProfile?[m
+[32m+[m[32m  bodyGoal       BodyGoal?[m
+[32m+[m
+   chatHistory    ChatHistory[][m
+   paymentHistory Payment[][m
+   notifications  Notification[][m
+   bodyProgress   BodyProgress[]      [m
+[31m-  attendances    Attendance[]        // ✅ GIỮ[m
+[31m-  bodyGoal       BodyGoal?           // ✅ GIỮ[m
+[32m+[m[32m  attendances    Attendance[][m[41m [m
+[32m+[m[32m  memberBookings  Booking[] @relation("MemberBookings")[m
+[32m+[m[32m  trainerBookings Booking[] @relation("TrainerBookings")[m[41m       [m
+[32m+[m[41m           [m
+ [m
+   createdAt DateTime @default(now())[m
+   updatedAt DateTime @updatedAt[m
+ [m
+[31m-  @@index([email])[m
+   @@index([role])[m
+   @@index([isActive])[m
+   @@index([createdAt])[m
+[36m@@ -91,7 +97,6 @@[m [mmodel BodyGoal {[m
+   createdAt DateTime @default(now())[m
+   updatedAt DateTime @updatedAt[m
+ [m
+[31m-  @@index([userId])[m
+   @@index([status])[m
+ }[m
+ [m
+[36m@@ -106,6 +111,7 @@[m [mmodel MembershipPlan {[m
+   isActive     Boolean @default(true)[m
+ [m
+   userMemberships UserMembership[][m
+[32m+[m[32m  payments Payment[][m
+ [m
+   createdAt DateTime @default(now())[m
+   updatedAt DateTime @updatedAt[m
+[36m@@ -129,7 +135,6 @@[m [mmodel UserMembership {[m
+   createdAt DateTime @default(now())[m
+   updatedAt DateTime @updatedAt[m
+ [m
+[31m-  @@index([userId])[m
+   @@index([status])[m
+   @@index([expiryDate])[m
+   @@index([userId, status])  // Composite index[m
+[36m@@ -193,6 +198,7 @@[m [mmodel Payment {[m
+   metadata         Json?[m
+ [m
+   user User @relation(fields: [userId], references: [id])[m
+[32m+[m[32m  membershipPlan MembershipPlan @relation(fields: [membershipPlanId], references: [id])[m
+ [m
+   createdAt DateTime @default(now())[m
+   updatedAt DateTime @updatedAt[m
+[36m@@ -201,7 +207,6 @@[m [mmodel Payment {[m
+   @@index([status])[m
+   @@index([createdAt])[m
+   @@index([userId, status])[m
+[31m-  @@index([transactionId])[m
+ }[m
+ [m
+ enum NotificationType {[m
+[36m@@ -251,4 +256,48 @@[m [mmodel BodyProgress {[m
+   @@index([userId])[m
+   @@index([recordedAt])[m
+   @@index([userId, recordedAt])[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mmodel TrainerProfile {[m
+[32m+[m[32m  id          String   @id @default(cuid())[m
+[32m+[m[32m  userId      String   @unique[m
+[32m+[m[32m  specialties String[m
+[32m+[m[32m  bio         String?  @db.Text[m
+[32m+[m[32m  status      String   @default("ACTIVE")[m
+[32m+[m
+[32m+[m[32m  user User @relation(fields: [userId], references: [id], onDelete: Cascade)[m
+[32m+[m
+[32m+[m[32m  createdAt DateTime @default(now())[m
+[32m+[m[32m  updatedAt DateTime @updatedAt[m
+[32m+[m
+[32m+[m[32m  @@index([status])[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32menum BookingStatus {[m
+[32m+[m[32m  PENDING[m
+[32m+[m[32m  CONFIRMED[m
+[32m+[m[32m  CANCELLED[m
+[32m+[m[32m  COMPLETED[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mmodel Booking {[m
+[32m+[m[32m  id        String        @id @default(cuid())[m
+[32m+[m[32m  memberId  String[m
+[32m+[m[32m  trainerId String[m
+[32m+[m[32m  date      DateTime[m
+[32m+[m[32m  timeSlot  String[m
+[32m+[m[32m  age       Int?[m
+[32m+[m[32m  notes     String?       @db.Text[m
+[32m+[m[32m  status    BookingStatus @default(PENDING)[m
+[32m+[m
+[32m+[m[32m  member  User @relation("MemberBookings", fields: [memberId], references: [id])[m
+[32m+[m[32m  trainer User @relation("TrainerBookings", fields: [trainerId], references: [id])[m
+[32m+[m
+[32m+[m[32m  createdAt DateTime @default(now())[m
+[32m+[m[32m  updatedAt DateTime @updatedAt[m
+[32m+[m
+[32m+[m[32m  @@index([memberId])[m
+[32m+[m[32m  @@index([trainerId])[m
+[32m+[m[32m  @@index([date])[m
+[32m+[m[32m  @@index([status])[m
+ }[m
+\ No newline at end of file[m

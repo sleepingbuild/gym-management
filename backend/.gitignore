@@ -16,3 +16,6 @@ dist/
 *.js.map
 node_modules/
 .env
+
+!.env.example
+prisma/migrations_old_backup/
