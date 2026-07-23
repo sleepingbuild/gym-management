@@ -8,6 +8,7 @@ import notificationRoutes from "./notification.routes";
 import bodyProgressRoutes from "./bodyProgress.routes";
 import attendanceRoutes from "./attendance.routes";
 import bodyGoalRoutes from "./bodyGoal.routes";
+import ptRoutes from "./pt.routes";
 
 const router = Router();
 
@@ -20,5 +21,6 @@ router.use("/notifications", notificationRoutes);
 router.use("/body-progress", bodyProgressRoutes);
 router.use("/attendance", attendanceRoutes);
 router.use("/body-goal", bodyGoalRoutes);
+router.use("/pt", ptRoutes);
 
 export default router;

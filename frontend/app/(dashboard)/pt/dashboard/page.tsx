@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/Card";
+import api from "@/lib/api";
 
 interface PTStudent {
   id: string;
@@ -9,38 +10,42 @@ interface PTStudent {
   email: string;
   phone: string;
   membership: string;
-  lastCheckIn: string | null;
+  lastBookingDate: string | null;
+}
+
+interface PTStats {
+  totalStudents: number;
+  todayBookings: number;
+  pendingBookings: number;
 }
 
 export default function PTDashboardPage() {
   const [students, setStudents] = useState<PTStudent[]>([]);
+  const [stats, setStats] = useState<PTStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // TODO: Gọi API GET /pt/students khi backend có
   useEffect(() => {
-    setStudents([
-      {
-        id: "1",
-        fullName: "Nguyễn Văn A",
-        email: "a@example.com",
-        phone: "0123456789",
-        membership: "Premium",
-        lastCheckIn: "2026-07-04T10:30:00Z",
-      },
-      {
-        id: "2",
-        fullName: "Trần Thị B",
-        email: "b@example.com",
-        phone: "0987654321",
-        membership: "Basic",
-        lastCheckIn: null,
-      },
-    ]);
-    setLoading(false);
+    const fetchData = async () => {
+      try {
+        const [studentsRes, statsRes] = await Promise.all([
+          api.get("/pt/students"),
+          api.get("/pt/stats"),
+        ]);
+        setStudents(studentsRes.data.data.students);
+        setStats(statsRes.data.data);
+      } catch (err) {
+        console.error(err);
+        setError("Không thể tải dữ liệu. Vui lòng thử lại.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
   }, []);
 
   const formatDate = (date: string | null) => {
-    if (!date) return "Chưa check-in";
+    if (!date) return "Chưa có lịch";
     const d = new Date(date);
     return d.toLocaleString("vi-VN", {
       day: "2-digit",
@@ -61,28 +66,30 @@ export default function PTDashboardPage() {
         </p>
       </div>
 
+      {error && (
+        <div className="bg-error/10 text-error border border-error/30 rounded-lg p-4 text-sm">
+          {error}
+        </div>
+      )}
+
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         <Card>
           <p className="text-caption uppercase text-muted">Tổng học viên</p>
           <p className="text-display-sm font-display text-ink">
-            {students.length}
+            {loading ? "..." : (stats?.totalStudents ?? 0)}
           </p>
         </Card>
         <Card>
-          <p className="text-caption uppercase text-muted">Check-in hôm nay</p>
-          <p className="text-display-sm font-display text-ink">0</p>
-        </Card>
-        <Card>
-          <p className="text-caption uppercase text-muted">Premium</p>
+          <p className="text-caption uppercase text-muted">Lịch hẹn hôm nay</p>
           <p className="text-display-sm font-display text-ink">
-            {students.filter((s) => s.membership === "Premium").length}
+            {loading ? "..." : (stats?.todayBookings ?? 0)}
           </p>
         </Card>
         <Card>
-          <p className="text-caption uppercase text-muted">Basic</p>
+          <p className="text-caption uppercase text-muted">Chờ xác nhận</p>
           <p className="text-display-sm font-display text-ink">
-            {students.filter((s) => s.membership === "Basic").length}
+            {loading ? "..." : (stats?.pendingBookings ?? 0)}
           </p>
         </Card>
       </div>
@@ -111,10 +118,7 @@ export default function PTDashboardPage() {
                   </th>
                   <th className="text-left py-2 text-muted font-medium">Gói</th>
                   <th className="text-left py-2 text-muted font-medium">
-                    Check-in gần nhất
-                  </th>
-                  <th className="text-left py-2 text-muted font-medium">
-                    Thao tác
+                    Lịch hẹn gần nhất
                   </th>
                 </tr>
               </thead>
@@ -134,11 +138,8 @@ export default function PTDashboardPage() {
                         {student.membership}
                       </span>
                     </td>
-                    <td className="py-2">{formatDate(student.lastCheckIn)}</td>
                     <td className="py-2">
-                      <button className="text-primary hover:underline text-sm">
-                        Xem tiến trình
-                      </button>
+                      {formatDate(student.lastBookingDate)}
                     </td>
                   </tr>
                 ))}
@@ -147,11 +148,6 @@ export default function PTDashboardPage() {
           </div>
         )}
       </Card>
-
-      <p className="text-body-sm text-muted text-center">
-        ⚠️ PT Dashboard đang sử dụng dữ liệu mẫu. Backend API đang được phát
-        triển.
-      </p>
     </div>
   );
 }
