@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import bcrypt from "bcrypt";
 import { prisma } from "../config/prisma";
 import { AppError } from "../utils/errors";
 import { Role } from "@prisma/client";
@@ -134,7 +135,11 @@ const getRevenue = async (
     try {
         const MONTHS_BACK = 6;
         const now = new Date();
-        const start = new Date(now.getFullYear(), now.getMonth() - (MONTHS_BACK - 1), 1);
+        const start = new Date(
+            now.getFullYear(),
+            now.getMonth() - (MONTHS_BACK - 1),
+            1,
+        );
 
         const payments = await prisma.payment.findMany({
             where: {
@@ -158,10 +163,12 @@ const getRevenue = async (
             }
         }
 
-        const revenue = Array.from(monthMap.entries()).map(([month, total]) => ({
-            month,
-            revenue: total,
-        }));
+        const revenue = Array.from(monthMap.entries()).map(
+            ([month, total]) => ({
+                month,
+                revenue: total,
+            }),
+        );
 
         res.status(200).json({
             success: true,
@@ -213,8 +220,6 @@ const getMembershipDistribution = async (
 
 /**
  * GET /admin/memberships
- * Lấy TẤT CẢ gói tập (kể cả đã khóa) để admin quản lý.
- * Khác với GET /memberships/plans (public) chỉ trả gói đang active.
  */
 const getAllMembershipPlans = async (
     req: Request,
@@ -245,7 +250,8 @@ const createMembershipPlan = async (
     next: NextFunction,
 ): Promise<void> => {
     try {
-        const { name, price, duration, aiLimit, aiDailyLimit, description } = req.body;
+        const { name, price, duration, aiLimit, aiDailyLimit, description } =
+            req.body;
 
         if (!name || typeof name !== "string")
             throw new AppError(400, "PLAN_001: Tên gói không hợp lệ");
@@ -255,7 +261,10 @@ const createMembershipPlan = async (
             throw new AppError(400, "PLAN_003: Thời hạn (ngày) không hợp lệ");
         if (!Number.isInteger(aiLimit) || (aiLimit < 0 && aiLimit !== -1))
             throw new AppError(400, "PLAN_004: Giới hạn AI/tháng không hợp lệ");
-        if (!Number.isInteger(aiDailyLimit) || (aiDailyLimit < 0 && aiDailyLimit !== -1))
+        if (
+            !Number.isInteger(aiDailyLimit) ||
+            (aiDailyLimit < 0 && aiDailyLimit !== -1)
+        )
             throw new AppError(400, "PLAN_005: Giới hạn AI/ngày không hợp lệ");
 
         const plan = await prisma.membershipPlan.create({
@@ -290,14 +299,21 @@ const updateMembershipPlan = async (
 ): Promise<void> => {
     try {
         const id = req.params.id as string;
-        const { name, price, duration, aiLimit, aiDailyLimit, description } = req.body;
+        const { name, price, duration, aiLimit, aiDailyLimit, description } =
+            req.body;
 
-        const existing = await prisma.membershipPlan.findUnique({ where: { id } });
-        if (!existing) throw new AppError(404, "PLAN_006: Gói tập không tồn tại");
+        const existing = await prisma.membershipPlan.findUnique({
+            where: { id },
+        });
+        if (!existing)
+            throw new AppError(404, "PLAN_006: Gói tập không tồn tại");
 
         if (price !== undefined && (typeof price !== "number" || price < 0))
             throw new AppError(400, "PLAN_002: Giá gói không hợp lệ");
-        if (duration !== undefined && (!Number.isInteger(duration) || duration <= 0))
+        if (
+            duration !== undefined &&
+            (!Number.isInteger(duration) || duration <= 0)
+        )
             throw new AppError(400, "PLAN_003: Thời hạn (ngày) không hợp lệ");
 
         const plan = await prisma.membershipPlan.update({
@@ -333,8 +349,11 @@ const toggleMembershipPlanActive = async (
 ): Promise<void> => {
     try {
         const id = req.params.id as string;
-        const existing = await prisma.membershipPlan.findUnique({ where: { id } });
-        if (!existing) throw new AppError(404, "PLAN_006: Gói tập không tồn tại");
+        const existing = await prisma.membershipPlan.findUnique({
+            where: { id },
+        });
+        if (!existing)
+            throw new AppError(404, "PLAN_006: Gói tập không tồn tại");
 
         const plan = await prisma.membershipPlan.update({
             where: { id },
@@ -344,7 +363,9 @@ const toggleMembershipPlanActive = async (
         res.status(200).json({
             success: true,
             statusCode: 200,
-            message: plan.isActive ? "Membership plan unlocked" : "Membership plan locked",
+            message: plan.isActive
+                ? "Membership plan unlocked"
+                : "Membership plan locked",
             data: { plan },
         });
     } catch (error) {
@@ -354,7 +375,6 @@ const toggleMembershipPlanActive = async (
 
 /**
  * DELETE /admin/memberships/:id
- * Chặn xóa nếu đang có UserMembership tham chiếu tới gói này.
  */
 const deleteMembershipPlan = async (
     req: Request,
@@ -363,10 +383,15 @@ const deleteMembershipPlan = async (
 ): Promise<void> => {
     try {
         const id = req.params.id as string;
-        const existing = await prisma.membershipPlan.findUnique({ where: { id } });
-        if (!existing) throw new AppError(404, "PLAN_006: Gói tập không tồn tại");
+        const existing = await prisma.membershipPlan.findUnique({
+            where: { id },
+        });
+        if (!existing)
+            throw new AppError(404, "PLAN_006: Gói tập không tồn tại");
 
-        const inUseCount = await prisma.userMembership.count({ where: { planId: id } });
+        const inUseCount = await prisma.userMembership.count({
+            where: { planId: id },
+        });
         if (inUseCount > 0)
             throw new AppError(
                 400,
@@ -386,6 +411,205 @@ const deleteMembershipPlan = async (
     }
 };
 
+const trainerSelect = {
+    id: true,
+    fullName: true,
+    email: true,
+    phone: true,
+    avatar: true,
+    isActive: true,
+    createdAt: true,
+};
+
+/**
+ * GET /admin/trainers
+ */
+const getTrainers = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+): Promise<void> => {
+    try {
+        const trainers = await prisma.trainerProfile.findMany({
+            include: { user: { select: trainerSelect } },
+            orderBy: { createdAt: "desc" },
+        });
+        res.status(200).json({
+            success: true,
+            statusCode: 200,
+            message: "Trainers retrieved",
+            data: { trainers },
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * POST /admin/trainers
+ * Tạo mới 1 tài khoản User (role PT) + TrainerProfile trong cùng 1 transaction.
+ */
+const createTrainer = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+): Promise<void> => {
+    try {
+        const { fullName, email, password, phone, specialties, bio } = req.body;
+
+        if (!fullName || !email || !password || !specialties)
+            throw new AppError(
+                400,
+                "TRAINER_001: Thiếu thông tin bắt buộc (họ tên, email, mật khẩu, chuyên môn)",
+            );
+        if (typeof password !== "string" || password.length < 8)
+            throw new AppError(400, "TRAINER_002: Mật khẩu phải từ 8 ký tự");
+
+        const existingUser = await prisma.user.findUnique({ where: { email } });
+        if (existingUser)
+            throw new AppError(400, "TRAINER_003: Email đã được sử dụng");
+
+        const hashedPassword = await bcrypt.hash(password, 12);
+
+        const trainer = await prisma.$transaction(async (tx) => {
+            const user = await tx.user.create({
+                data: {
+                    fullName,
+                    email,
+                    password: hashedPassword,
+                    phone: phone ?? null,
+                    role: "PT",
+                },
+            });
+
+            return tx.trainerProfile.create({
+                data: {
+                    userId: user.id,
+                    specialties,
+                    bio: bio ?? null,
+                },
+                include: { user: { select: trainerSelect } },
+            });
+        });
+
+        res.status(201).json({
+            success: true,
+            statusCode: 201,
+            message: "Trainer created",
+            data: { trainer },
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * PUT /admin/trainers/:id
+ * :id là TrainerProfile.id (không phải userId).
+ */
+const updateTrainer = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+): Promise<void> => {
+    try {
+        const id = req.params.id as string;
+        const { fullName, phone, specialties, bio, status } = req.body;
+
+        const existing = await prisma.trainerProfile.findUnique({
+            where: { id },
+        });
+        if (!existing)
+            throw new AppError(
+                404,
+                "TRAINER_004: Không tìm thấy huấn luyện viên",
+            );
+
+        const trainer = await prisma.$transaction(async (tx) => {
+            if (fullName !== undefined || phone !== undefined) {
+                await tx.user.update({
+                    where: { id: existing.userId },
+                    data: {
+                        ...(fullName !== undefined && { fullName }),
+                        ...(phone !== undefined && { phone }),
+                    },
+                });
+            }
+
+            return tx.trainerProfile.update({
+                where: { id },
+                data: {
+                    ...(specialties !== undefined && { specialties }),
+                    ...(bio !== undefined && { bio }),
+                    ...(status !== undefined && { status }),
+                },
+                include: { user: { select: trainerSelect } },
+            });
+        });
+
+        res.status(200).json({
+            success: true,
+            statusCode: 200,
+            message: "Trainer updated",
+            data: { trainer },
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * DELETE /admin/trainers/:id
+ * Xóa TrainerProfile + hạ role User về MEMBER (giữ lại tài khoản, không xóa User).
+ * Chặn nếu còn Booking đang PENDING/CONFIRMED gắn với trainer này.
+ */
+const deleteTrainer = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+): Promise<void> => {
+    try {
+        const id = req.params.id as string;
+        const existing = await prisma.trainerProfile.findUnique({
+            where: { id },
+        });
+        if (!existing)
+            throw new AppError(
+                404,
+                "TRAINER_004: Không tìm thấy huấn luyện viên",
+            );
+
+        const pendingBookings = await prisma.booking.count({
+            where: {
+                trainerId: existing.userId,
+                status: { in: ["PENDING", "CONFIRMED"] },
+            },
+        });
+        if (pendingBookings > 0)
+            throw new AppError(
+                400,
+                "TRAINER_005: Huấn luyện viên đang có lịch đặt chưa hoàn thành, không thể xóa",
+            );
+
+        await prisma.$transaction(async (tx) => {
+            await tx.trainerProfile.delete({ where: { id } });
+            await tx.user.update({
+                where: { id: existing.userId },
+                data: { role: "MEMBER" },
+            });
+        });
+
+        res.status(200).json({
+            success: true,
+            statusCode: 200,
+            message: "Trainer deleted",
+            data: { id },
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 export const adminController = {
     getStats,
     getUsers,
@@ -398,4 +622,8 @@ export const adminController = {
     updateMembershipPlan,
     toggleMembershipPlanActive,
     deleteMembershipPlan,
+    getTrainers,
+    createTrainer,
+    updateTrainer,
+    deleteTrainer,
 };
