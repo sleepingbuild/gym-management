@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import bcrypt from "bcrypt";
 import { prisma } from "../config/prisma";
 import { AppError } from "../utils/errors";
-import { Role } from "@prisma/client";
+import { Role, BookingStatus } from "@prisma/client";
 
 const getStats = async (
     req: Request,
@@ -447,7 +447,6 @@ const getTrainers = async (
 
 /**
  * POST /admin/trainers
- * Tạo mới 1 tài khoản User (role PT) + TrainerProfile trong cùng 1 transaction.
  */
 const createTrainer = async (
     req: Request,
@@ -505,7 +504,6 @@ const createTrainer = async (
 
 /**
  * PUT /admin/trainers/:id
- * :id là TrainerProfile.id (không phải userId).
  */
 const updateTrainer = async (
     req: Request,
@@ -560,8 +558,6 @@ const updateTrainer = async (
 
 /**
  * DELETE /admin/trainers/:id
- * Xóa TrainerProfile + hạ role User về MEMBER (giữ lại tài khoản, không xóa User).
- * Chặn nếu còn Booking đang PENDING/CONFIRMED gắn với trainer này.
  */
 const deleteTrainer = async (
     req: Request,
@@ -610,6 +606,118 @@ const deleteTrainer = async (
     }
 };
 
+/**
+ * GET /admin/bookings
+ * Query params tùy chọn: status, trainerId, date (YYYY-MM-DD)
+ */
+const getBookings = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+): Promise<void> => {
+    try {
+        const { status, trainerId, date } = req.query as {
+            status?: string;
+            trainerId?: string;
+            date?: string;
+        };
+
+        const where: {
+            status?: BookingStatus;
+            trainerId?: string;
+            date?: { gte: Date; lt: Date };
+        } = {};
+
+        if (
+            status &&
+            ["PENDING", "CONFIRMED", "CANCELLED", "COMPLETED"].includes(status)
+        ) {
+            where.status = status as BookingStatus;
+        }
+        if (trainerId) where.trainerId = trainerId;
+        if (date) {
+            const start = new Date(date);
+            start.setHours(0, 0, 0, 0);
+            const end = new Date(start);
+            end.setDate(end.getDate() + 1);
+            where.date = { gte: start, lt: end };
+        }
+
+        const bookings = await prisma.booking.findMany({
+            where,
+            include: {
+                member: { select: { id: true, fullName: true, email: true } },
+                trainer: { select: { id: true, fullName: true } },
+            },
+            orderBy: { date: "desc" },
+        });
+
+        res.status(200).json({
+            success: true,
+            statusCode: 200,
+            message: "Bookings retrieved",
+            data: { bookings },
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+const BOOKING_TRANSITIONS: Record<BookingStatus, BookingStatus[]> = {
+    PENDING: ["CONFIRMED", "CANCELLED"],
+    CONFIRMED: ["COMPLETED", "CANCELLED"],
+    COMPLETED: [],
+    CANCELLED: [],
+};
+
+/**
+ * PATCH /admin/bookings/:id/status
+ */
+const updateBookingStatus = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+): Promise<void> => {
+    try {
+        const id = req.params.id as string;
+        const { status } = req.body as { status: string };
+
+        if (
+            !["PENDING", "CONFIRMED", "CANCELLED", "COMPLETED"].includes(status)
+        )
+            throw new AppError(400, "BOOKING_001: Trạng thái không hợp lệ");
+
+        const existing = await prisma.booking.findUnique({ where: { id } });
+        if (!existing)
+            throw new AppError(404, "BOOKING_002: Không tìm thấy lịch đặt");
+
+        const allowedNext = BOOKING_TRANSITIONS[existing.status];
+        if (!allowedNext.includes(status as BookingStatus))
+            throw new AppError(
+                400,
+                `BOOKING_003: Không thể chuyển trạng thái từ ${existing.status} sang ${status}`,
+            );
+
+        const booking = await prisma.booking.update({
+            where: { id },
+            data: { status: status as BookingStatus },
+            include: {
+                member: { select: { id: true, fullName: true, email: true } },
+                trainer: { select: { id: true, fullName: true } },
+            },
+        });
+
+        res.status(200).json({
+            success: true,
+            statusCode: 200,
+            message: "Booking status updated",
+            data: { booking },
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 export const adminController = {
     getStats,
     getUsers,
@@ -626,4 +734,6 @@ export const adminController = {
     createTrainer,
     updateTrainer,
     deleteTrainer,
+    getBookings,
+    updateBookingStatus,
 };

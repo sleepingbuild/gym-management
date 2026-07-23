@@ -70,18 +70,6 @@ router.patch("/users/:id/toggle-active", adminController.toggleUserActive);
  *         required: true
  *         schema:
  *           type: string
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - role
- *             properties:
- *               role:
- *                 type: string
- *                 enum: [ADMIN, MEMBER, PT]
  *     responses:
  *       200:
  *         description: Cập nhật thành công
@@ -92,7 +80,7 @@ router.patch("/users/:id/role", adminController.updateUserRole);
  * @swagger
  * /admin/revenue:
  *   get:
- *     summary: Doanh thu 6 tháng gần nhất (chỉ tính Payment status = SUCCESS)
+ *     summary: Doanh thu 6 tháng gần nhất
  *     tags: [Admin]
  *     security:
  *       - bearerAuth: []
@@ -106,7 +94,7 @@ router.get("/revenue", adminController.getRevenue);
  * @swagger
  * /admin/memberships/distribution:
  *   get:
- *     summary: Số lượng thành viên đang ACTIVE, gộp theo từng gói tập
+ *     summary: Phân bố thành viên theo gói tập
  *     tags: [Admin]
  *     security:
  *       - bearerAuth: []
@@ -123,7 +111,7 @@ router.get(
  * @swagger
  * /admin/memberships:
  *   get:
- *     summary: Lấy tất cả gói tập (kể cả đã khóa) để quản lý
+ *     summary: Lấy tất cả gói tập
  *     tags: [Admin]
  *     security:
  *       - bearerAuth: []
@@ -189,7 +177,7 @@ router.patch(
  * @swagger
  * /admin/memberships/{id}:
  *   delete:
- *     summary: Xóa gói tập (chặn nếu đang có thành viên dùng)
+ *     summary: Xóa gói tập
  *     tags: [Admin]
  *     security:
  *       - bearerAuth: []
@@ -217,29 +205,13 @@ router.delete("/memberships/:id", adminController.deleteMembershipPlan);
  *       200:
  *         description: Danh sách huấn luyện viên
  *   post:
- *     summary: Tạo huấn luyện viên mới (tạo cả tài khoản User role PT)
+ *     summary: Tạo huấn luyện viên mới
  *     tags: [Admin]
  *     security:
  *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [fullName, email, password, specialties]
- *             properties:
- *               fullName: { type: string }
- *               email: { type: string }
- *               password: { type: string }
- *               phone: { type: string }
- *               specialties: { type: string }
- *               bio: { type: string }
  *     responses:
  *       201:
  *         description: Tạo thành công
- *       400:
- *         description: Dữ liệu không hợp lệ hoặc email đã tồn tại
  */
 router.get("/trainers", adminController.getTrainers);
 router.post("/trainers", adminController.createTrainer);
@@ -248,7 +220,7 @@ router.post("/trainers", adminController.createTrainer);
  * @swagger
  * /admin/trainers/{id}:
  *   put:
- *     summary: Cập nhật hồ sơ huấn luyện viên (id là TrainerProfile.id)
+ *     summary: Cập nhật hồ sơ huấn luyện viên
  *     tags: [Admin]
  *     security:
  *       - bearerAuth: []
@@ -261,10 +233,8 @@ router.post("/trainers", adminController.createTrainer);
  *     responses:
  *       200:
  *         description: Cập nhật thành công
- *       404:
- *         description: Không tìm thấy huấn luyện viên
  *   delete:
- *     summary: Xóa hồ sơ huấn luyện viên (id là TrainerProfile.id), hạ role User về MEMBER
+ *     summary: Xóa hồ sơ huấn luyện viên
  *     tags: [Admin]
  *     security:
  *       - bearerAuth: []
@@ -277,12 +247,72 @@ router.post("/trainers", adminController.createTrainer);
  *     responses:
  *       200:
  *         description: Xóa thành công
- *       400:
- *         description: Còn lịch đặt chưa hoàn thành, không thể xóa
- *       404:
- *         description: Không tìm thấy huấn luyện viên
  */
 router.put("/trainers/:id", adminController.updateTrainer);
 router.delete("/trainers/:id", adminController.deleteTrainer);
+
+/**
+ * @swagger
+ * /admin/bookings:
+ *   get:
+ *     summary: Lấy toàn bộ lịch đặt trong hệ thống (lọc tùy chọn)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [PENDING, CONFIRMED, CANCELLED, COMPLETED]
+ *       - in: query
+ *         name: trainerId
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: date
+ *         schema:
+ *           type: string
+ *           format: date
+ *     responses:
+ *       200:
+ *         description: Danh sách lịch đặt
+ */
+router.get("/bookings", adminController.getBookings);
+
+/**
+ * @swagger
+ * /admin/bookings/{id}/status:
+ *   patch:
+ *     summary: Cập nhật trạng thái lịch đặt (xác nhận/hủy/hoàn thành)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [status]
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum: [CONFIRMED, CANCELLED, COMPLETED]
+ *     responses:
+ *       200:
+ *         description: Cập nhật thành công
+ *       400:
+ *         description: Chuyển trạng thái không hợp lệ
+ *       404:
+ *         description: Không tìm thấy lịch đặt
+ */
+router.patch("/bookings/:id/status", adminController.updateBookingStatus);
 
 export default router;
