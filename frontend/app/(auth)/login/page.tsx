@@ -8,7 +8,7 @@ import api from "@/lib/api";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { setAuth, isAuthenticated } = useAuthStore();
+  const { setAuth, isAuthenticated, user } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
@@ -24,9 +24,9 @@ export default function LoginPage() {
       router.replace("/pt/dashboard");
     } else {
       router.replace("/member");
-     }
-     }
-   }, [isAuthenticated, user, router]);
+    }
+  }
+}, [isAuthenticated, user, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
