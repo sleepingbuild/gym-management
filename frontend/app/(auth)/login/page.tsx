@@ -16,12 +16,17 @@ export default function LoginPage() {
     password: "",
   });
 
-  // ✅ Chỉ redirect khi đã authenticated
   useEffect(() => {
-    if (isAuthenticated) {
+  if (isAuthenticated) {
+    if (user?.role === "ADMIN") {
+      router.replace("/admin");
+    } else if (user?.role === "PT") {
+      router.replace("/pt/dashboard");
+    } else {
       router.replace("/member");
-    }
-  }, [isAuthenticated, router]);
+     }
+     }
+   }, [isAuthenticated, user, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
