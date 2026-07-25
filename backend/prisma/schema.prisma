@@ -27,29 +27,36 @@ enum ChatRole {
   assistant
 }
 
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
 model User {
-  id       String  @id @default(cuid())
-  email    String  @unique
-  password String
-  fullName String
-  phone    String?
-  avatar   String?
-  role     Role    @default(MEMBER)
-  isActive Boolean @default(true) 
+  id        String  @id @default(cuid())
+  email     String  @unique
+  password  String
+  fullName  String
+  phone     String?
+  avatar    String?
+  role      Role    @default(MEMBER)
+  isActive  Boolean @default(true)
   isDeleted Boolean @default(false)
 
-  userMembership UserMembership?
-  trainerProfile TrainerProfile?
-  bodyGoal       BodyGoal?
-
-  chatHistory    ChatHistory[]
-  paymentHistory Payment[]
-  notifications  Notification[]
-  bodyProgress   BodyProgress[]      
-  attendances    Attendance[] 
-  memberBookings  Booking[] @relation("MemberBookings")
-  trainerBookings Booking[] @relation("TrainerBookings")       
-           
+  userMembership   UserMembership?
+  trainerProfile   TrainerProfile?
+  chatHistory      ChatHistory[]
+  paymentHistory   Payment[]
+  notifications    Notification[]
+  bodyProgress     BodyProgress[]
+  attendances      Attendance[]
+  bodyGoal         BodyGoal?
+  memberBookings   Booking[]         @relation("MemberBookings")
+  trainerBookings  Booking[]         @relation("TrainerBookings")
+  trainerSchedules TrainerSchedule[]
+  trainerCheckIns  TrainerCheckIn[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -59,17 +66,16 @@ model User {
   @@index([createdAt])
 }
 
-// ✅ GIỮ LẠI Attendance
 model Attendance {
-  id           String   @id @default(cuid())
+  id           String    @id @default(cuid())
   userId       String
-  checkInTime  DateTime @default(now())
+  checkInTime  DateTime  @default(now())
   checkOutTime DateTime?
-  qrCode       String   @unique
+  qrCode       String    @unique
   qrExpiry     DateTime
-  notes        String?  @db.Text
+  notes        String?   @db.Text
 
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -79,24 +85,60 @@ model Attendance {
   @@index([checkInTime])
 }
 
-// ✅ GIỮ LẠI BodyGoal
 model BodyGoal {
-  id             String   @id @default(cuid())
-  userId         String   @unique
-  targetWeight   Float?
-  targetBmi      Float?
-  targetBodyFat  Float?
-  targetMuscle   Float?
-  startDate      DateTime @default(now())
-  targetDate     DateTime
-  status         String   @default("ACTIVE")
-  notes          String?  @db.Text
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  targetWeight  Float?
+  targetBmi     Float?
+  targetBodyFat Float?
+  targetMuscle  Float?
+  startDate     DateTime @default(now())
+  targetDate    DateTime
+  status        String   @default("ACTIVE")
+  notes         String?  @db.Text
 
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([status])
+}
+
+model TrainerProfile {
+  id          String  @id @default(cuid())
+  userId      String  @unique
+  specialties String
+  bio         String? @db.Text
+  status      String  @default("ACTIVE")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+}
+
+model Booking {
+  id        String        @id @default(cuid())
+  memberId  String
+  trainerId String
+  date      DateTime
+  timeSlot  String
+  age       Int?
+  notes     String?       @db.Text
+  status    BookingStatus @default(PENDING)
+
+  member  User @relation("MemberBookings", fields: [memberId], references: [id])
+  trainer User @relation("TrainerBookings", fields: [trainerId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([memberId])
+  @@index([trainerId])
+  @@index([date])
   @@index([status])
 }
 
@@ -111,7 +153,7 @@ model MembershipPlan {
   isActive     Boolean @default(true)
 
   userMemberships UserMembership[]
-  payments Payment[]
+  payments        Payment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -137,7 +179,7 @@ model UserMembership {
 
   @@index([status])
   @@index([expiryDate])
-  @@index([userId, status])  // Composite index
+  @@index([userId, status])
   @@index([planId])
 }
 
@@ -160,12 +202,12 @@ model ChatHistory {
 }
 
 model KnowledgeBase {
-  id        String   @id @default(cuid())
+  id        String                       @id @default(cuid())
   category  String
   title     String
-  content   String   @db.Text
-  embedding Unsupported("vector(3072)")?  
-  
+  content   String                       @db.Text
+  embedding Unsupported("vector(3072)")?
+
   createdAt DateTime @default(now())
 
   @@index([category])
@@ -197,7 +239,7 @@ model Payment {
   description      String?
   metadata         Json?
 
-  user User @relation(fields: [userId], references: [id])
+  user           User           @relation(fields: [userId], references: [id])
   membershipPlan MembershipPlan @relation(fields: [membershipPlanId], references: [id])
 
   createdAt DateTime @default(now())
@@ -219,13 +261,13 @@ enum NotificationType {
 }
 
 model Notification {
-  id        String           @id @default(cuid())
-  userId    String
-  type      NotificationType
-  title     String
-  message   String
-  isRead    Boolean          @default(false)
-  metadata  Json?
+  id       String           @id @default(cuid())
+  userId   String
+  type     NotificationType
+  title    String
+  message  String
+  isRead   Boolean          @default(false)
+  metadata Json?
 
   user User @relation(fields: [userId], references: [id])
 
@@ -240,64 +282,62 @@ model Notification {
 model BodyProgress {
   id         String   @id @default(cuid())
   userId     String
-  weight     Float    // Cân nặng (kg)
-  height     Float?   // Chiều cao (cm) - optional, lấy từ profile
-  bodyFat    Float?   // % mỡ cơ thể
-  muscleMass Float?   // Khối lượng cơ (kg)
-  bmi        Float?   // Chỉ số BMI (tự động tính)
+  weight     Float
+  height     Float?
+  bodyFat    Float?
+  muscleMass Float?
+  bmi        Float?
   notes      String?  @db.Text
   recordedAt DateTime @default(now())
-  
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   @@index([userId])
   @@index([recordedAt])
   @@index([userId, recordedAt])
 }
 
-model TrainerProfile {
-  id          String   @id @default(cuid())
-  userId      String   @unique
-  specialties String
-  bio         String?  @db.Text
-  status      String   @default("ACTIVE")
+enum ScheduleType {
+  RECURRING
+  SPECIFIC_DATE
+}
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+model TrainerSchedule {
+  id           String       @id @default(cuid())
+  trainerId    String
+  type         ScheduleType @default(RECURRING)
+  dayOfWeek    Int? // 0=CN, 1=T2 ... 6=T7 — bắt buộc khi type=RECURRING
+  specificDate DateTime? // bắt buộc khi type=SPECIFIC_DATE
+  startTime    String // "08:00"
+  endTime      String // "12:00"
+  notes        String?      @db.Text
+
+  trainer User @relation(fields: [trainerId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([status])
+  @@index([trainerId])
+  @@index([type])
+  @@index([specificDate])
 }
 
-enum BookingStatus {
-  PENDING
-  CONFIRMED
-  CANCELLED
-  COMPLETED
-}
+model TrainerCheckIn {
+  id          String    @id @default(cuid())
+  trainerId   String
+  date        DateTime // ngày chấm công (dùng để lọc theo ngày ở trang Admin)
+  checkedInAt DateTime?
+  notes       String?   @db.Text
 
-model Booking {
-  id        String        @id @default(cuid())
-  memberId  String
-  trainerId String
-  date      DateTime
-  timeSlot  String
-  age       Int?
-  notes     String?       @db.Text
-  status    BookingStatus @default(PENDING)
-
-  member  User @relation("MemberBookings", fields: [memberId], references: [id])
-  trainer User @relation("TrainerBookings", fields: [trainerId], references: [id])
+  trainer User @relation(fields: [trainerId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([memberId])
+  @@unique([trainerId, date])
   @@index([trainerId])
   @@index([date])
-  @@index([status])
 }

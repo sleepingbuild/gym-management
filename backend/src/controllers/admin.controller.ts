@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import bcrypt from "bcryptjs";
 import { prisma } from "../config/prisma";
 import { AppError } from "../utils/errors";
-import { Role, BookingStatus } from "@prisma/client";
+import { Role, BookingStatus, PaymentStatus, Prisma } from "@prisma/client";
 
 const getStats = async (
     req: Request,
@@ -608,7 +608,6 @@ const deleteTrainer = async (
 
 /**
  * GET /admin/bookings
- * Query params tùy chọn: status, trainerId, date (YYYY-MM-DD)
  */
 const getBookings = async (
     req: Request,
@@ -718,6 +717,85 @@ const updateBookingStatus = async (
     }
 };
 
+/**
+ * GET /admin/payments
+ * Query params tùy chọn: status, fromDate, toDate (YYYY-MM-DD), search (khớp mã GD / nội dung / tên / email)
+ * Trả kèm { stats } tính trên đúng tập kết quả đã lọc.
+ */
+const getPayments = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+): Promise<void> => {
+    try {
+        const { status, fromDate, toDate, search } = req.query as {
+            status?: string;
+            fromDate?: string;
+            toDate?: string;
+            search?: string;
+        };
+
+        const where: Prisma.PaymentWhereInput = {};
+
+        if (
+            status &&
+            ["PENDING", "SUCCESS", "FAILED", "REFUNDED"].includes(status)
+        ) {
+            where.status = status as PaymentStatus;
+        }
+
+        if (fromDate || toDate) {
+            where.createdAt = {};
+            if (fromDate) where.createdAt.gte = new Date(fromDate);
+            if (toDate) {
+                const end = new Date(toDate);
+                end.setHours(23, 59, 59, 999);
+                where.createdAt.lte = end;
+            }
+        }
+
+        if (search) {
+            where.OR = [
+                { transactionId: { contains: search, mode: "insensitive" } },
+                { description: { contains: search, mode: "insensitive" } },
+                {
+                    user: {
+                        fullName: { contains: search, mode: "insensitive" },
+                    },
+                },
+                { user: { email: { contains: search, mode: "insensitive" } } },
+            ];
+        }
+
+        const payments = await prisma.payment.findMany({
+            where,
+            include: {
+                user: { select: { id: true, fullName: true, email: true } },
+                membershipPlan: { select: { id: true, name: true } },
+            },
+            orderBy: { createdAt: "desc" },
+        });
+
+        const stats = {
+            totalAmount: payments
+                .filter((p) => p.status === "SUCCESS")
+                .reduce((sum, p) => sum + p.amount, 0),
+            totalCount: payments.length,
+            successCount: payments.filter((p) => p.status === "SUCCESS").length,
+            pendingCount: payments.filter((p) => p.status === "PENDING").length,
+        };
+
+        res.status(200).json({
+            success: true,
+            statusCode: 200,
+            message: "Payments retrieved",
+            data: { payments, stats },
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 export const adminController = {
     getStats,
     getUsers,
@@ -736,4 +814,5 @@ export const adminController = {
     deleteTrainer,
     getBookings,
     updateBookingStatus,
+    getPayments,
 };

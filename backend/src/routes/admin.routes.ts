@@ -284,7 +284,7 @@ router.get("/bookings", adminController.getBookings);
  * @swagger
  * /admin/bookings/{id}/status:
  *   patch:
- *     summary: Cập nhật trạng thái lịch đặt (xác nhận/hủy/hoàn thành)
+ *     summary: Cập nhật trạng thái lịch đặt
  *     tags: [Admin]
  *     security:
  *       - bearerAuth: []
@@ -294,25 +294,45 @@ router.get("/bookings", adminController.getBookings);
  *         required: true
  *         schema:
  *           type: string
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [status]
- *             properties:
- *               status:
- *                 type: string
- *                 enum: [CONFIRMED, CANCELLED, COMPLETED]
  *     responses:
  *       200:
  *         description: Cập nhật thành công
- *       400:
- *         description: Chuyển trạng thái không hợp lệ
- *       404:
- *         description: Không tìm thấy lịch đặt
  */
 router.patch("/bookings/:id/status", adminController.updateBookingStatus);
+
+/**
+ * @swagger
+ * /admin/payments:
+ *   get:
+ *     summary: Lịch sử thanh toán toàn hệ thống (lọc tùy chọn) + thống kê
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [PENDING, SUCCESS, FAILED, REFUNDED]
+ *       - in: query
+ *         name: fromDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - in: query
+ *         name: toDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Khớp mã giao dịch, nội dung, tên hoặc email người dùng
+ *     responses:
+ *       200:
+ *         description: Danh sách giao dịch + thống kê tổng quan
+ */
+router.get("/payments", adminController.getPayments);
 
 export default router;

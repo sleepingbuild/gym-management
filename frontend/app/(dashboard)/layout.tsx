@@ -15,6 +15,10 @@ import {
   QrCodeIcon,
   ChartBarIcon,
   UserGroupIcon,
+  CalendarIcon,
+  BanknotesIcon,
+  ClockIcon,
+  ClipboardDocumentListIcon,
 } from "@heroicons/react/24/outline";
 
 export default function DashboardLayout({
@@ -93,18 +97,29 @@ function NavLinks({ role, pathname }: { role?: string; pathname: string }) {
     { href: "/admin/users", label: "Người dùng", icon: UsersIcon },
     { href: "/admin/memberships", label: "Gói thành viên", icon: CreditCardIcon },
     { href: "/admin/trainers", label: "Huấn luyện viên", icon: UserGroupIcon },
+    { href: "/admin/bookings", label: "Đặt lịch", icon: CalendarIcon },
+    { href: "/admin/payments", label: "Thanh toán", icon: BanknotesIcon },
+    { href: "/admin/trainer-schedules", label: "Lịch làm việc HLV", icon: ClipboardDocumentListIcon },
+    { href: "/admin/trainer-checkins", label: "Chấm công HLV", icon: ClockIcon },
   ];
 
   const memberLinks = [
-    { href: "/member", label: "Tổng quan", icon: HomeIcon },
-    { href: "/member/ai-chat", label: "AI Trainer", icon: ChatBubbleLeftRightIcon },
-    { href: "/member/membership", label: "Gói của tôi", icon: CreditCardIcon },
-    { href: "/member/check-in", label: "Check-in", icon: QrCodeIcon },
-    { href: "/member/progress", label: "Tiến trình", icon: ChartBarIcon },
-  ];
+  { href: "/member", label: "Tổng quan", icon: HomeIcon },
+  { href: "/member/ai-chat", label: "AI Trainer", icon: ChatBubbleLeftRightIcon },
+  { href: "/member/membership", label: "Gói của tôi", icon: CreditCardIcon },
+  { href: "/member/check-in", label: "Check-in", icon: QrCodeIcon },
+  { href: "/member/progress", label: "Tiến trình", icon: ChartBarIcon },
+ ];
 
-  const links = role === "ADMIN" ? adminLinks : memberLinks;
+ const trainerLinks = [
+  { href: "/pt/dashboard", label: "Bảng điều khiển", icon: Squares2X2Icon },
+  { href: "/trainer/clients", label: "Khách hàng của tôi", icon: UserGroupIcon },
+  { href: "/trainer/schedule", label: "Thời khoá biểu", icon: CalendarIcon },
+  { href: "/trainer/attendance", label: "Chấm công", icon: ClockIcon },
+ ];
 
+const links =
+  role === "ADMIN" ? adminLinks : role === "PT" ? trainerLinks : memberLinks;
   return (
     <div className="flex flex-col gap-1">
       {links.map((link) => {
