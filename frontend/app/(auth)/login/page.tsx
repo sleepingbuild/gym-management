@@ -21,7 +21,7 @@ export default function LoginPage() {
     if (user?.role === "ADMIN") {
       router.replace("/admin");
     } else if (user?.role === "PT") {
-      router.replace("/pt/dashboard");
+      router.replace("/pt");
     } else {
       router.replace("/member");
     }
