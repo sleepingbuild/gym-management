@@ -163,7 +163,7 @@ python -m venv venv && venv\Scripts\activate   # Windows
 pip install -r requirements.txt
 python serve.py   # FastAPI on :5000
 ```
-Set `AI_PROVIDER=qwen` and `QWEN_API_URL=<your-endpoint>` in backend `.env`. See [ai-service/README.md](./ai-service/README.md) for training instructions.
+Set `AI_PROVIDER=qwen` and `QWEN_API_URL=https://selection-gala-hassle.ngrok-free.dev` in backend `.env`. See [ai-service/README.md](./ai-service/README.md) for training instructions.
 
 ---
 

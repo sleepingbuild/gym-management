@@ -112,10 +112,11 @@ function NavLinks({ role, pathname }: { role?: string; pathname: string }) {
  ];
 
  const trainerLinks = [
-  { href: "/pt/dashboard", label: "Bảng điều khiển", icon: Squares2X2Icon },
-  { href: "/trainer/clients", label: "Khách hàng của tôi", icon: UserGroupIcon },
-  { href: "/trainer/schedule", label: "Thời khoá biểu", icon: CalendarIcon },
-  { href: "/trainer/attendance", label: "Chấm công", icon: ClockIcon },
+  { href: "/pt", label: "Bảng điều khiển", icon: Squares2X2Icon },
+  { href: "/pt/clients", label: "Khách hàng của tôi", icon: UserGroupIcon },
+  { href: "/pt/schedule", label: "Thời khoá biểu", icon: CalendarIcon },
+  { href: "/pt/progress", label: "Tiến trình hội viên", icon: ChartBarIcon },
+  { href: "/pt/checkin", label: "Chấm công", icon: ClockIcon },
  ];
 
 const links =
