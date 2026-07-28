@@ -22,6 +22,9 @@ export const ErrorCodes = {
     AUTH_006: "Invalid or expired token",
     AUTH_007: "Refresh token required",
     AUTH_008: "Too many login attempts",
+    AUTH_009: "Email not verified",
+    AUTH_010: "Invalid or expired verification token",
+    AUTH_011: "You must agree to the terms of service",
 
     // Membership Errors
     MEMBERSHIP_001: "Plan ID is required",

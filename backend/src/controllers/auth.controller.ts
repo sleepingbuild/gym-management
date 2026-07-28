@@ -11,12 +11,11 @@ export const authController = {
         try {
             const dto = registerSchema.parse(req.body);
             const result = await authService.register(dto);
-
             res.status(201).json({
                 success: true,
                 statusCode: 201,
-                message: "Registration successful",
-                data: result,
+                message: result.message,
+                data: { email: result.email },
             });
         } catch (err) {
             next(err);
@@ -63,6 +62,28 @@ export const authController = {
                 success: true,
                 statusCode: 200,
                 message: "Logout successful",
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
+
+    async verifyEmail(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { token } = req.query as { token?: string };
+            if (!token) {
+                res.status(400).json({
+                    success: false,
+                    statusCode: 400,
+                    message: "Token is required",
+                });
+                return;
+            }
+            await authService.verifyEmail(token);
+            res.status(200).json({
+                success: true,
+                statusCode: 200,
+                message: "Email verified successfully",
             });
         } catch (err) {
             next(err);

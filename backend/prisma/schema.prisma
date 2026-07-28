@@ -58,6 +58,11 @@ model User {
   trainerSchedules TrainerSchedule[]
   trainerCheckIns  TrainerCheckIn[]
 
+  emailVerified           Boolean   @default(false)
+  emailVerificationToken  String?   @unique
+  emailVerificationExpiry DateTime?
+  agreedToTermsAt         DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

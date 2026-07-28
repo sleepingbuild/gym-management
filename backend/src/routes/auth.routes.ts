@@ -4,7 +4,7 @@ import { authenticate } from "../middlewares/auth.middleware";
 import { authLimiter } from "../middlewares/rateLimit.middleware";
 
 const router = Router();
-
+router.get("/verify-email", authController.verifyEmail);
 /**
  * @swagger
  * /auth/register:

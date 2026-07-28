@@ -16,6 +16,7 @@ export interface RegisterDTO {
     email: string;
     password: string;
     phone?: string;
+    agreedToTerms: boolean;
 }
 
 export interface LoginDTO {

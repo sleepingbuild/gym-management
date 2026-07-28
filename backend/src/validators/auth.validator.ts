@@ -6,6 +6,9 @@ export const registerSchema = z.object({
     email: z.string().email(ErrorCodes.AUTH_001),
     password: z.string().min(8, ErrorCodes.AUTH_002),
     phone: z.string().optional(),
+    agreedToTerms: z.literal(true, {
+        errorMap: () => ({ message: ErrorCodes.AUTH_011 }),
+    }),
 });
 
 export const loginSchema = z.object({
