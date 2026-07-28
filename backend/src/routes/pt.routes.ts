@@ -17,6 +17,12 @@ router.get(
     authorize(Role.PT),
     ptController.getMyBookings,
 );
+router.patch(
+    "/bookings/:id/status",
+    authenticate,
+    authorize(Role.PT),
+    ptController.updateBookingStatus,
+);
 router.get("/stats", authenticate, authorize(Role.PT), ptController.getMyStats);
 
 router.get(

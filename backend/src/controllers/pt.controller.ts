@@ -117,6 +117,91 @@ const getMyBookings = async (
     }
 };
 
+/**
+ * PATCH /pt/bookings/:id/status
+ * PT chỉ được đổi trạng thái booking CỦA CHÍNH MÌNH (trainerId khớp user đăng nhập).
+ * Giới hạn chuyển trạng thái: PENDING -> CONFIRMED/CANCELLED, CONFIRMED -> COMPLETED/CANCELLED.
+ */
+const BOOKING_TRANSITIONS: Record<string, string[]> = {
+    PENDING: ["CONFIRMED", "CANCELLED"],
+    CONFIRMED: ["COMPLETED", "CANCELLED"],
+    COMPLETED: [],
+    CANCELLED: [],
+};
+
+const updateBookingStatus = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+): Promise<void> => {
+    try {
+        const trainerId = req.user!.userId;
+        const id = req.params.id as string;
+        const { status } = req.body as { status: string };
+
+        const validStatuses = ["PENDING", "CONFIRMED", "CANCELLED", "COMPLETED"];
+        if (!validStatuses.includes(status)) {
+            res.status(400).json({
+                success: false,
+                statusCode: 400,
+                message: "Trạng thái không hợp lệ",
+            });
+            return;
+        }
+
+        const booking = await prisma.booking.findUnique({ where: { id } });
+        if (!booking) {
+            res.status(404).json({
+                success: false,
+                statusCode: 404,
+                message: "Không tìm thấy lịch đặt",
+            });
+            return;
+        }
+
+        if (booking.trainerId !== trainerId) {
+            res.status(403).json({
+                success: false,
+                statusCode: 403,
+                message: "Bạn không có quyền thao tác trên lịch đặt này",
+            });
+            return;
+        }
+
+        if (!BOOKING_TRANSITIONS[booking.status].includes(status)) {
+            res.status(400).json({
+                success: false,
+                statusCode: 400,
+                message: `Không thể chuyển trạng thái từ ${booking.status} sang ${status}`,
+            });
+            return;
+        }
+
+        const updated = await prisma.booking.update({
+            where: { id },
+            data: {
+                status: status as
+                    | "PENDING"
+                    | "CONFIRMED"
+                    | "CANCELLED"
+                    | "COMPLETED",
+            },
+            include: {
+                member: { select: { id: true, fullName: true, email: true } },
+            },
+        });
+
+        res.status(200).json({
+            success: true,
+            statusCode: 200,
+            message: "Cập nhật trạng thái thành công",
+            data: { booking: updated },
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 const getMyStats = async (
     req: Request,
     res: Response,
@@ -451,6 +536,7 @@ const getMyDashboard = async (
 export const ptController = {
     getMyStudents,
     getMyBookings,
+    updateBookingStatus,
     getMyStats,
     getCheckinToday,
     getCheckinHistory,
