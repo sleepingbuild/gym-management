@@ -10,6 +10,8 @@ import attendanceRoutes from "./attendance.routes";
 import bodyGoalRoutes from "./bodyGoal.routes";
 import ptRoutes from "./pt.routes";
 import bookingRoutes from "./booking.routes";
+import faceRoutes from "./face.routes";
+import faceAttendanceRoutes from "./faceAttendance.routes";
 
 const router = Router();
 
@@ -24,5 +26,7 @@ router.use("/attendance", attendanceRoutes);
 router.use("/body-goal", bodyGoalRoutes);
 router.use("/pt", ptRoutes);
 router.use("/bookings", bookingRoutes);
+router.use("/face", faceRoutes);
+router.use("/face-attendance", faceAttendanceRoutes);
 
 export default router;

@@ -19,6 +19,8 @@ import {
   BanknotesIcon,
   ClockIcon,
   ClipboardDocumentListIcon,
+  FaceSmileIcon,
+  VideoCameraIcon,
 } from "@heroicons/react/24/outline";
 
 export default function DashboardLayout({
@@ -101,6 +103,8 @@ function NavLinks({ role, pathname }: { role?: string; pathname: string }) {
     { href: "/admin/payments", label: "Thanh toán", icon: BanknotesIcon },
     { href: "/admin/trainer-schedules", label: "Lịch làm việc HLV", icon: ClipboardDocumentListIcon },
     { href: "/admin/trainer-checkins", label: "Chấm công HLV", icon: ClockIcon },
+    { href: "/admin/face-enroll", label: "Đăng ký khuôn mặt", icon: FaceSmileIcon },
+    { href: "/admin/face-kiosk", label: "Kiosk điểm danh", icon: VideoCameraIcon },
   ];
 
   const memberLinks = [
@@ -108,6 +112,7 @@ function NavLinks({ role, pathname }: { role?: string; pathname: string }) {
   { href: "/member/ai-chat", label: "AI Trainer", icon: ChatBubbleLeftRightIcon },
   { href: "/member/membership", label: "Gói của tôi", icon: CreditCardIcon },
   { href: "/member/check-in", label: "Check-in", icon: QrCodeIcon },
+  { href: "/member/face-checkin", label: "Điểm danh khuôn mặt", icon: FaceSmileIcon },
   { href: "/member/progress", label: "Tiến trình", icon: ChartBarIcon },
  ];
 
@@ -117,6 +122,7 @@ function NavLinks({ role, pathname }: { role?: string; pathname: string }) {
   { href: "/pt/schedule", label: "Thời khoá biểu", icon: CalendarIcon },
   { href: "/pt/progress", label: "Tiến trình hội viên", icon: ChartBarIcon },
   { href: "/pt/checkin", label: "Chấm công", icon: ClockIcon },
+  { href: "/pt/face-checkin", label: "Chấm công khuôn mặt", icon: FaceSmileIcon },
  ];
 
 const links =

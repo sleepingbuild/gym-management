@@ -34,6 +34,16 @@ enum BookingStatus {
   COMPLETED
 }
 
+// ✨ MỚI — dùng chung cho Booking.checkInMethod và TrainerCheckIn.method
+// QR: điểm danh bằng QR (member tự tạo & quét)
+// FACE: điểm danh bằng khuôn mặt (face-api.js, xử lý client-side)
+// MANUAL: HLV tự xác nhận (giữ nguyên hành vi cũ, mặc định)
+enum CheckInMethod {
+  MANUAL
+  QR
+  FACE
+}
+
 model User {
   id        String  @id @default(cuid())
   email     String  @unique
@@ -57,6 +67,7 @@ model User {
   trainerBookings  Booking[]         @relation("TrainerBookings")
   trainerSchedules TrainerSchedule[]
   trainerCheckIns  TrainerCheckIn[]
+  faceProfile      FaceProfile? // ✨ MỚI
 
   emailVerified           Boolean   @default(false)
   emailVerificationToken  String?   @unique
@@ -69,6 +80,19 @@ model User {
   @@index([role])
   @@index([isActive])
   @@index([createdAt])
+}
+
+// ✨ MỚI — 1 user có tối đa 1 face profile (descriptor 128 chiều từ face-api.js,
+// nếu đăng ký nhiều ảnh thì server trung bình cộng trước khi lưu)
+model FaceProfile {
+  id         String @id @default(cuid())
+  userId     String @unique
+  descriptor Float[]
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Attendance {
@@ -134,6 +158,10 @@ model Booking {
   age       Int?
   notes     String?       @db.Text
   status    BookingStatus @default(PENDING)
+
+  // ✨ MỚI — điểm danh Member gắn trực tiếp lên Booking (không cần bảng riêng)
+  checkInTime   DateTime?
+  checkInMethod CheckInMethod?
 
   member  User @relation("MemberBookings", fields: [memberId], references: [id])
   trainer User @relation("TrainerBookings", fields: [trainerId], references: [id])
@@ -331,11 +359,12 @@ model TrainerSchedule {
 }
 
 model TrainerCheckIn {
-  id          String    @id @default(cuid())
+  id          String        @id @default(cuid())
   trainerId   String
   date        DateTime // ngày chấm công (dùng để lọc theo ngày ở trang Admin)
   checkedInAt DateTime?
-  notes       String?   @db.Text
+  notes       String?       @db.Text
+  method      CheckInMethod @default(MANUAL) 
 
   trainer User @relation(fields: [trainerId], references: [id], onDelete: Cascade)
 
