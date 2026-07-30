@@ -4,18 +4,15 @@ import { useEffect, useState, useCallback } from "react";
 import api from "@/lib/api";
 
 /**
- * API mong đợi (khớp model TrainerCheckIn thật):
+ * API (khớp model TrainerCheckIn thật):
  * GET  /admin/trainer-checkins?date=YYYY-MM-DD
  *   -> { data: { date, rows: [{
  *        trainerId, trainerName,
- *        id: string | null,          // TrainerCheckIn.id, null nếu chưa có bản ghi ngày đó
- *        checkedInAt: string | null, // ISO, null nếu chưa chấm công
- *        notes: string | null
+ *        id, checkedInAt, notes,
+ *        method: "MANUAL" | "FACE" | null
  *      }] } }
- *   Lưu ý: cần trả về TẤT CẢ huấn luyện viên (kể cả chưa có bản ghi TrainerCheckIn ngày đó),
- *   không chỉ những ai đã có row trong bảng.
- * POST   /admin/trainer-checkins        body: { trainerId, date }  -> tạo bản ghi, checkedInAt = giờ hiện tại
- * DELETE /admin/trainer-checkins/:id                                -> hủy chấm công (xóa bản ghi)
+ * POST   /admin/trainer-checkins        body: { trainerId, date }
+ * DELETE /admin/trainer-checkins/:id
  */
 
 interface CheckInRow {
@@ -24,6 +21,7 @@ interface CheckInRow {
   id: string | null;
   checkedInAt: string | null;
   notes: string | null;
+  method: "MANUAL" | "FACE" | null;
 }
 
 function todayISODate() {
@@ -31,6 +29,12 @@ function todayISODate() {
   const offset = d.getTimezoneOffset();
   const local = new Date(d.getTime() - offset * 60 * 1000);
   return local.toISOString().slice(0, 10);
+}
+
+function methodLabel(method: CheckInRow["method"]) {
+  if (method === "FACE") return "Khuôn mặt";
+  if (method === "MANUAL") return "Thủ công";
+  return "—";
 }
 
 export default function AdminTrainerCheckinsPage() {
@@ -155,8 +159,8 @@ export default function AdminTrainerCheckinsPage() {
           </span>
         </div>
 
-        <div className="grid grid-cols-[2fr_1fr_1fr_1.5fr_auto] px-5 py-3 bg-surface-dark-elevated/60 border-b border-hairline">
-          {["Huấn luyện viên", "Trạng thái", "Giờ chấm công", "Ghi chú", "Thao tác"].map(
+        <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1.5fr_auto] px-5 py-3 bg-surface-dark-elevated/60 border-b border-hairline">
+          {["Huấn luyện viên", "Trạng thái", "Giờ chấm công", "Phương thức", "Ghi chú", "Thao tác"].map(
             (h) => (
               <span
                 key={h}
@@ -178,7 +182,7 @@ export default function AdminTrainerCheckinsPage() {
           rows.map((r, index) => (
             <div
               key={r.trainerId}
-              className={`grid grid-cols-[2fr_1fr_1fr_1.5fr_auto] px-5 py-3.5 items-center ${
+              className={`grid grid-cols-[2fr_1fr_1fr_1fr_1.5fr_auto] px-5 py-3.5 items-center ${
                 index < rows.length - 1 ? "border-b border-hairline" : ""
               }`}
             >
@@ -196,6 +200,13 @@ export default function AdminTrainerCheckinsPage() {
               </span>
               <span className="text-sm text-muted">
                 {r.checkedInAt ? formatTime(r.checkedInAt) : "—"}
+              </span>
+              <span
+                className={`text-sm ${
+                  r.method === "FACE" ? "text-primary" : "text-muted"
+                }`}
+              >
+                {methodLabel(r.method)}
               </span>
               <span className="text-sm text-muted truncate">
                 {r.notes ?? "—"}

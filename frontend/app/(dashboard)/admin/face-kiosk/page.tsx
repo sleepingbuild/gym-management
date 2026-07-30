@@ -13,17 +13,21 @@ import {
 } from "@/services/face.service";
 
 const SCAN_INTERVAL_MS = 1200;
-// Tránh việc cùng 1 người bị gửi check-in liên tục trong lúc đứng trước camera
 const COOLDOWN_MS = 15000;
 
 export default function FaceKioskPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [profiles, setProfiles] = useState<FaceProfileForKiosk[]>([]);
+  const [profileCount, setProfileCount] = useState(0);
   const [ready, setReady] = useState(false);
   const [statusMsg, setStatusMsg] = useState(
     "Đang khởi động camera và tải model...",
   );
   const [lastResult, setLastResult] = useState<string | null>(null);
+
+  // Dùng ref chứ không phải useState cho danh sách profiles — vì scanFrame
+  // (chạy trong setInterval bên trong effect) sẽ đọc closure cũ nếu dùng
+  // state thường, dẫn đến luôn thấy mảng rỗng dù setProfiles đã chạy.
+  const profilesRef = useRef<FaceProfileForKiosk[]>([]);
   const lastCheckedRef = useRef<Map<string, number>>(new Map());
   const busyRef = useRef(false);
 
@@ -39,7 +43,8 @@ export default function FaceKioskPage() {
           faceService.getProfilesForKiosk(),
         ]);
         if (cancelled) return;
-        setProfiles(allProfiles);
+        profilesRef.current = allProfiles;
+        setProfileCount(allProfiles.length);
 
         stream = await navigator.mediaDevices.getUserMedia({ video: true });
         if (cancelled) {
@@ -77,7 +82,7 @@ export default function FaceKioskPage() {
         }
 
         const descriptor = Array.from(detection.descriptor);
-        const result = findBestMatch(descriptor, profiles);
+        const result = findBestMatch(descriptor, profilesRef.current);
 
         if (!result) {
           setStatusMsg("Không nhận diện được — chưa đăng ký khuôn mặt này.");
@@ -115,7 +120,6 @@ export default function FaceKioskPage() {
       if (intervalId) clearInterval(intervalId);
       if (stream) stream.getTracks().forEach((t) => t.stop());
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -147,6 +151,10 @@ export default function FaceKioskPage() {
           <p className="text-sm text-ink">{lastResult}</p>
         </div>
       )}
+
+      <p className="text-body-sm text-muted">
+        Đã tải {profileCount} khuôn mặt để so khớp.
+      </p>
     </div>
   );
 }

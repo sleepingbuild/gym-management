@@ -796,6 +796,139 @@ const getPayments = async (
     }
 };
 
+const getTrainerCheckins = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+): Promise<void> => {
+    try {
+        const dateParam = (req.query.date as string) || new Date().toISOString().slice(0, 10);
+        const date = new Date(dateParam);
+        date.setHours(0, 0, 0, 0);
+ 
+        if (isNaN(date.getTime())) {
+            throw new AppError(400, "ADMIN_TC_001: date không hợp lệ (định dạng YYYY-MM-DD)");
+        }
+ 
+        const trainers = await prisma.trainerProfile.findMany({
+            where: { user: { isActive: true, isDeleted: false } },
+            include: { user: { select: { id: true, fullName: true } } },
+            orderBy: { user: { fullName: "asc" } },
+        });
+ 
+        const checkins = await prisma.trainerCheckIn.findMany({
+            where: {
+                date,
+                trainerId: { in: trainers.map((t) => t.userId) },
+            },
+        });
+ 
+        const checkinByTrainerId = new Map(checkins.map((c) => [c.trainerId, c]));
+ 
+        const rows = trainers.map((t) => {
+            const checkin = checkinByTrainerId.get(t.userId);
+            return {
+                trainerId: t.userId,
+                trainerName: t.user.fullName,
+                id: checkin?.id ?? null,
+                checkedInAt: checkin?.checkedInAt?.toISOString() ?? null,
+                notes: checkin?.notes ?? null,
+                method: checkin?.method ?? null, // ✨ MANUAL | FACE | null (chưa chấm công)
+            };
+        });
+ 
+        res.status(200).json({
+            success: true,
+            statusCode: 200,
+            message: "Trainer check-ins retrieved",
+            data: { date: dateParam, rows },
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+ 
+/**
+ * POST /admin/trainer-checkins
+ * Body: { trainerId: string, date: string (YYYY-MM-DD) }
+ * Admin chấm công thủ công hộ trainer (method = MANUAL).
+ */
+const createTrainerCheckin = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+): Promise<void> => {
+    try {
+        const { trainerId, date: dateParam } = req.body;
+ 
+        if (!trainerId || !dateParam) {
+            throw new AppError(400, "ADMIN_TC_002: Thiếu trainerId hoặc date");
+        }
+ 
+        const trainer = await prisma.trainerProfile.findUnique({ where: { userId: trainerId } });
+        if (!trainer) {
+            throw new AppError(404, "ADMIN_TC_003: Không tìm thấy huấn luyện viên");
+        }
+ 
+        const date = new Date(dateParam);
+        date.setHours(0, 0, 0, 0);
+ 
+        const existing = await prisma.trainerCheckIn.findUnique({
+            where: { trainerId_date: { trainerId, date } },
+        });
+        if (existing) {
+            throw new AppError(409, "ADMIN_TC_004: Trainer đã được chấm công ngày này rồi");
+        }
+ 
+        const record = await prisma.trainerCheckIn.create({
+            data: {
+                trainerId,
+                date,
+                checkedInAt: new Date(),
+                method: "MANUAL",
+            },
+        });
+ 
+        res.status(201).json({
+            success: true,
+            statusCode: 201,
+            message: "Chấm công thành công",
+            data: { checkin: record },
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+ 
+/**
+ * DELETE /admin/trainer-checkins/:id
+ * Hủy (xoá) 1 bản ghi chấm công.
+ */
+const deleteTrainerCheckin = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+): Promise<void> => {
+    try {
+        const id = req.params.id as string;
+ 
+        const existing = await prisma.trainerCheckIn.findUnique({ where: { id } });
+        if (!existing) {
+            throw new AppError(404, "ADMIN_TC_005: Không tìm thấy bản ghi chấm công");
+        }
+ 
+        await prisma.trainerCheckIn.delete({ where: { id } });
+ 
+        res.status(200).json({
+            success: true,
+            statusCode: 200,
+            message: "Đã hủy chấm công",
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+ 
 export const adminController = {
     getStats,
     getUsers,
@@ -815,4 +948,7 @@ export const adminController = {
     getBookings,
     updateBookingStatus,
     getPayments,
+    getTrainerCheckins,
+    createTrainerCheckin,
+    deleteTrainerCheckin,
 };

@@ -334,5 +334,8 @@ router.patch("/bookings/:id/status", adminController.updateBookingStatus);
  *         description: Danh sách giao dịch + thống kê tổng quan
  */
 router.get("/payments", adminController.getPayments);
+router.get("/trainer-checkins", adminController.getTrainerCheckins);
+router.post("/trainer-checkins", adminController.createTrainerCheckin);
+router.delete("/trainer-checkins/:id", adminController.deleteTrainerCheckin);
 
 export default router;
