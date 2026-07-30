@@ -19,8 +19,6 @@ import {
   BanknotesIcon,
   ClockIcon,
   ClipboardDocumentListIcon,
-  FaceSmileIcon,
-  VideoCameraIcon,
 } from "@heroicons/react/24/outline";
 
 export default function DashboardLayout({
@@ -103,30 +101,30 @@ function NavLinks({ role, pathname }: { role?: string; pathname: string }) {
     { href: "/admin/payments", label: "Thanh toán", icon: BanknotesIcon },
     { href: "/admin/trainer-schedules", label: "Lịch làm việc HLV", icon: ClipboardDocumentListIcon },
     { href: "/admin/trainer-checkins", label: "Chấm công HLV", icon: ClockIcon },
-    { href: "/admin/face-enroll", label: "Đăng ký khuôn mặt", icon: FaceSmileIcon },
-    { href: "/admin/face-kiosk", label: "Kiosk điểm danh", icon: VideoCameraIcon },
   ];
 
   const memberLinks = [
-  { href: "/member", label: "Tổng quan", icon: HomeIcon },
-  { href: "/member/ai-chat", label: "AI Trainer", icon: ChatBubbleLeftRightIcon },
-  { href: "/member/membership", label: "Gói của tôi", icon: CreditCardIcon },
-  { href: "/member/check-in", label: "Check-in", icon: QrCodeIcon },
-  { href: "/member/face-checkin", label: "Điểm danh khuôn mặt", icon: FaceSmileIcon },
-  { href: "/member/progress", label: "Tiến trình", icon: ChartBarIcon },
- ];
+    { href: "/member", label: "Tổng quan", icon: HomeIcon },
+    { href: "/member/ai-chat", label: "AI Trainer", icon: ChatBubbleLeftRightIcon },
+    { href: "/member/membership", label: "Gói của tôi", icon: CreditCardIcon },
+    { href: "/member/check-in", label: "Check-in", icon: QrCodeIcon },
+    { href: "/member/progress", label: "Tiến trình", icon: ChartBarIcon },
+    { href: "/member/trainers", label: "Huấn luyện viên", icon: UserGroupIcon },
+    { href: "/member/bookings", label: "Đặt lịch", icon: CalendarIcon },
+    { href: "/member/payments", label: "Thanh toán", icon: BanknotesIcon },
+  ];
 
- const trainerLinks = [
-  { href: "/pt", label: "Bảng điều khiển", icon: Squares2X2Icon },
-  { href: "/pt/clients", label: "Khách hàng của tôi", icon: UserGroupIcon },
-  { href: "/pt/schedule", label: "Thời khoá biểu", icon: CalendarIcon },
-  { href: "/pt/progress", label: "Tiến trình hội viên", icon: ChartBarIcon },
-  { href: "/pt/checkin", label: "Chấm công", icon: ClockIcon },
-  { href: "/pt/face-checkin", label: "Chấm công khuôn mặt", icon: FaceSmileIcon },
- ];
+  const trainerLinks = [
+    { href: "/pt", label: "Bảng điều khiển", icon: Squares2X2Icon },
+    { href: "/pt/clients", label: "Khách hàng của tôi", icon: UserGroupIcon },
+    { href: "/pt/schedule", label: "Thời khoá biểu", icon: CalendarIcon },
+    { href: "/pt/progress", label: "Tiến trình hội viên", icon: ChartBarIcon },
+    { href: "/pt/checkin", label: "Chấm công", icon: ClockIcon },
+  ];
 
-const links =
-  role === "ADMIN" ? adminLinks : role === "PT" ? trainerLinks : memberLinks;
+  const links =
+    role === "ADMIN" ? adminLinks : role === "PT" ? trainerLinks : memberLinks;
+
   return (
     <div className="flex flex-col gap-1">
       {links.map((link) => {
