@@ -1,10 +1,21 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
+import WeekCalendarGrid, { CalendarEvent } from "@/components/schedule/WeekCalendarGrid";
+import WeekNav from "@/components/schedule/WeekNav";
+import {
+  getMondayUTC,
+  todayUTC,
+  buildWeekDates,
+  isSameUTCDate,
+  toISODateUTC,
+  jsDayToGridIndex,
+  gridIndexToJsDay,
+} from "@/lib/calendarDate";
 
 /**
  * API mong đợi (khớp model TrainerSchedule thật):
@@ -72,6 +83,9 @@ export default function AdminTrainerSchedulesPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<FormData>(emptyForm);
   const [saving, setSaving] = useState(false);
+  const [weekStart, setWeekStart] = useState<Date>(() => getMondayUTC(todayUTC()));
+
+  const weekDates = useMemo(() => buildWeekDates(weekStart), [weekStart]);
 
   const fetchTrainers = useCallback(async () => {
     try {
@@ -112,6 +126,10 @@ export default function AdminTrainerSchedulesPage() {
   }, [fetchSchedules]);
 
   const openCreateForm = () => {
+    if (trainers.length === 0) {
+      alert("Chưa có huấn luyện viên nào trong hệ thống. Hãy thêm HLV trước.");
+      return;
+    }
     setEditingId(null);
     setForm({ ...emptyForm, trainerId: trainers[0]?.id ?? "" });
     setShowForm(true);
@@ -127,6 +145,28 @@ export default function AdminTrainerSchedulesPage() {
       startTime: s.startTime,
       endTime: s.endTime,
       notes: s.notes ?? "",
+    });
+    setShowForm(true);
+  };
+
+  // Bấm vào 1 ô trống trên lưới -> mở form tạo, điền sẵn ngày cụ thể + giờ đã bấm
+  const openCreateFormFromSlot = (dayIndex: number, hour: number) => {
+    if (trainers.length === 0) {
+      alert("Chưa có huấn luyện viên nào trong hệ thống. Hãy thêm HLV trước.");
+      return;
+    }
+    const clickedDate = weekDates[dayIndex];
+    const startTime = `${String(hour).padStart(2, "0")}:00`;
+    const endTime = `${String(Math.min(hour + 1, 23)).padStart(2, "0")}:00`;
+    setEditingId(null);
+    setForm({
+      trainerId: filterTrainerId !== "ALL" ? filterTrainerId : (trainers[0]?.id ?? ""),
+      type: "SPECIFIC_DATE",
+      dayOfWeek: gridIndexToJsDay(dayIndex),
+      specificDate: toISODateUTC(clickedDate),
+      startTime,
+      endTime,
+      notes: "",
     });
     setShowForm(true);
   };
@@ -199,53 +239,73 @@ export default function AdminTrainerSchedulesPage() {
     }
   };
 
-  const formatSpecificDate = (iso: string) =>
-    new Date(iso).toLocaleDateString("vi-VN", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
+  // Màu theo từng HLV để phân biệt khi xem "Tất cả huấn luyện viên"
+  const TRAINER_COLORS = [
+    "bg-accent-orange/90 text-white",
+    "bg-accent-teal/90 text-white",
+    "bg-accent-amber/90 text-white",
+    "bg-purple-500/90 text-white",
+    "bg-blue-500/90 text-white",
+    "bg-pink-500/90 text-white",
+  ];
+  const colorForTrainer = (trainerId: string) => {
+    const idx = trainers.findIndex((t) => t.id === trainerId);
+    return TRAINER_COLORS[(idx < 0 ? 0 : idx) % TRAINER_COLORS.length];
+  };
+
+  // Ca RECURRING lặp lại mỗi tuần (theo dayOfWeek), ca SPECIFIC_DATE chỉ hiện
+  // đúng tuần chứa ngày đó.
+  const calendarEvents: CalendarEvent[] = useMemo(() => {
+    const events: CalendarEvent[] = [];
+    schedules.forEach((s) => {
+      if (s.type === "RECURRING" && s.dayOfWeek !== null) {
+        events.push({
+          id: s.id,
+          dayIndex: jsDayToGridIndex(s.dayOfWeek),
+          startTime: s.startTime,
+          endTime: s.endTime,
+          title: s.trainer.fullName,
+          subtitle: s.notes ?? "Hàng tuần",
+          colorClass: colorForTrainer(s.trainerId),
+          onClick: () => openEditForm(s),
+        });
+      } else if (s.type === "SPECIFIC_DATE" && s.specificDate) {
+        const sd = new Date(s.specificDate);
+        const dayIndex = weekDates.findIndex((d) => isSameUTCDate(d, sd));
+        if (dayIndex === -1) return; // ca này không thuộc tuần đang xem
+        events.push({
+          id: s.id,
+          dayIndex,
+          startTime: s.startTime,
+          endTime: s.endTime,
+          title: s.trainer.fullName,
+          subtitle: s.notes ?? "Ngày cụ thể",
+          colorClass: colorForTrainer(s.trainerId),
+          onClick: () => openEditForm(s),
+        });
+      }
     });
-
-  const scheduleTimeLabel = (s: Schedule) =>
-    s.type === "RECURRING"
-      ? DAY_LABELS[s.dayOfWeek ?? 0]
-      : `Ngày ${formatSpecificDate(s.specificDate as string)}`;
-
-  // Nhóm theo huấn luyện viên
-  const grouped = schedules.reduce<Record<string, Schedule[]>>((acc, s) => {
-    const key = s.trainer.fullName;
-    if (!acc[key]) acc[key] = [];
-    acc[key].push(s);
-    return acc;
-  }, {});
-  Object.values(grouped).forEach((list) =>
-    list.sort((a, b) => {
-      if (a.type !== b.type) return a.type === "RECURRING" ? -1 : 1;
-      if (a.type === "RECURRING") return (a.dayOfWeek ?? 0) - (b.dayOfWeek ?? 0);
-      return (
-        new Date(a.specificDate as string).getTime() -
-        new Date(b.specificDate as string).getTime()
-      );
-    }),
-  );
+    return events;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [schedules, weekDates, trainers]);
 
   return (
     <div>
       {/* Header */}
-      <div className="flex justify-between items-start mb-8 flex-wrap gap-4">
+      <div className="flex justify-between items-start mb-6 flex-wrap gap-4">
         <div>
           <h1 className="font-display text-display-md text-ink">
             Lịch làm việc huấn luyện viên
           </h1>
           <p className="text-muted text-body-sm mt-1">
-            Quản lý ca làm việc theo từng huấn luyện viên
+            Quản lý ca làm việc theo từng huấn luyện viên — bấm vào ô trống để thêm ca mới
           </p>
         </div>
         <Button onClick={openCreateForm}>+ Thêm lịch làm việc</Button>
       </div>
 
       {/* Filter */}
-      <div className="bg-surface-card border border-hairline rounded-lg p-4 mb-6">
+      <div className="bg-surface-card border border-hairline rounded-lg p-4 mb-4">
         <label className="text-body-sm text-muted block mb-2">
           Lọc theo huấn luyện viên
         </label>
@@ -372,74 +432,41 @@ export default function AdminTrainerSchedulesPage() {
               <Button type="button" variant="secondary" onClick={closeForm}>
                 Hủy
               </Button>
+              {editingId && (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="text-error"
+                  onClick={() => {
+                    handleDelete(editingId);
+                    closeForm();
+                  }}
+                >
+                  Xóa ca này
+                </Button>
+              )}
             </div>
           </form>
         </Card>
       )}
 
-      {/* List */}
+      {/* Lịch tuần */}
+      <div className="mb-4">
+        <WeekNav weekStart={weekStart} onChange={setWeekStart} />
+      </div>
+
       {loading ? (
         <p className="text-muted text-center py-10">Đang tải...</p>
-      ) : schedules.length === 0 ? (
+      ) : trainers.length === 0 ? (
         <Card className="text-center py-12">
-          <p className="text-muted mb-4">Chưa có lịch làm việc nào.</p>
-          <Button onClick={openCreateForm}>+ Thêm lịch làm việc đầu tiên</Button>
+          <p className="text-muted mb-4">Chưa có huấn luyện viên nào trong hệ thống.</p>
         </Card>
       ) : (
-        <div className="space-y-5">
-          {Object.entries(grouped).map(([trainerName, list]) => (
-            <Card key={trainerName}>
-              <h3 className="text-title-sm font-display text-ink mb-3">
-                {trainerName}
-              </h3>
-              <div className="space-y-2">
-                {list.map((s) => (
-                  <div
-                    key={s.id}
-                    className="flex items-center justify-between gap-3 bg-surface-dark-elevated rounded-md px-4 py-2.5 flex-wrap"
-                  >
-                    <div className="flex items-center gap-3 flex-wrap">
-                      <span
-                        className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                          s.type === "RECURRING"
-                            ? "bg-accent-teal/15 text-accent-teal"
-                            : "bg-accent-amber/15 text-accent-amber"
-                        }`}
-                      >
-                        {s.type === "RECURRING" ? "Hàng tuần" : "Ngày cụ thể"}
-                      </span>
-                      <span className="text-sm text-ink font-medium">
-                        {scheduleTimeLabel(s)}
-                      </span>
-                      <span className="text-sm text-muted">
-                        {s.startTime} – {s.endTime}
-                      </span>
-                      {s.notes && (
-                        <span className="text-body-sm text-muted-soft">
-                          {s.notes}
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => openEditForm(s)}
-                        className="px-2.5 py-1 text-xs bg-surface-dark text-ink rounded-md hover:bg-hairline transition-colors"
-                      >
-                        Sửa
-                      </button>
-                      <button
-                        onClick={() => handleDelete(s.id)}
-                        className="px-2.5 py-1 text-xs text-error hover:bg-error/10 rounded-md transition-colors"
-                      >
-                        Xóa
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          ))}
-        </div>
+        <WeekCalendarGrid
+          days={weekDates}
+          events={calendarEvents}
+          onSlotClick={openCreateFormFromSlot}
+        />
       )}
     </div>
   );

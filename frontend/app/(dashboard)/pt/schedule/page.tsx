@@ -1,7 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import api from "@/lib/api";
+import WeekCalendarGrid, { CalendarEvent } from "@/components/schedule/WeekCalendarGrid";
+import WeekNav from "@/components/schedule/WeekNav";
+import { getMondayUTC, todayUTC, buildWeekDates, isSameUTCDate } from "@/lib/calendarDate";
 
 /**
  * API mong đợi:
@@ -30,7 +33,14 @@ const STATUS_LABEL: Record<Booking["status"], string> = {
   COMPLETED: "Hoàn thành",
 };
 
-const STATUS_CLASS: Record<Booking["status"], string> = {
+const STATUS_COLOR_CLASS: Record<Booking["status"], string> = {
+  PENDING: "bg-warning/90 text-white",
+  CONFIRMED: "bg-accent-teal/90 text-white",
+  CANCELLED: "bg-error/60 text-white line-through decoration-white/60",
+  COMPLETED: "bg-success/90 text-white",
+};
+
+const STATUS_BADGE_CLASS: Record<Booking["status"], string> = {
   PENDING: "bg-warning text-white",
   CONFIRMED: "bg-accent-teal text-white",
   CANCELLED: "bg-error text-white",
@@ -40,8 +50,11 @@ const STATUS_CLASS: Record<Booking["status"], string> = {
 export default function PTSchedulePage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [actingId, setActingId] = useState<string | null>(null);
+  const [weekStart, setWeekStart] = useState<Date>(() => getMondayUTC(todayUTC()));
+
+  const weekDates = useMemo(() => buildWeekDates(weekStart), [weekStart]);
 
   const fetchBookings = async () => {
     try {
@@ -78,10 +91,32 @@ export default function PTSchedulePage() {
       year: "numeric",
     });
 
+  const calendarEvents: CalendarEvent[] = useMemo(() => {
+    const events: CalendarEvent[] = [];
+    bookings.forEach((b) => {
+      const bDate = new Date(b.date);
+      const dayIndex = weekDates.findIndex((d) => isSameUTCDate(d, bDate));
+      if (dayIndex === -1) return; // không thuộc tuần đang xem
+      events.push({
+        id: b.id,
+        dayIndex,
+        startTime: b.timeSlot.split("-")[0],
+        endTime: b.timeSlot.split("-")[1],
+        title: b.member.fullName,
+        subtitle: STATUS_LABEL[b.status],
+        colorClass: STATUS_COLOR_CLASS[b.status],
+        onClick: () => setSelectedId(b.id),
+      });
+    });
+    return events;
+  }, [bookings, weekDates]);
+
+  const selectedBooking = bookings.find((b) => b.id === selectedId) ?? null;
+
   return (
     <div>
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-6">
         <h1 className="font-display text-display-md text-ink">
           Thời khoá biểu
         </h1>
@@ -90,113 +125,93 @@ export default function PTSchedulePage() {
         </p>
       </div>
 
-      {/* Table */}
-      <div className="bg-surface-card border border-hairline rounded-lg overflow-hidden">
-        <div className="grid grid-cols-[1fr_1fr_1.5fr_1fr_auto] px-5 py-3 bg-surface-dark-elevated border-b border-hairline">
-          {["Ngày", "Giờ", "Học viên", "Trạng thái", "Thao tác"].map((h) => (
-            <span
-              key={h}
-              className="text-[12px] font-semibold text-muted uppercase tracking-wide"
-            >
-              {h}
-            </span>
-          ))}
-        </div>
-
-        {loading ? (
-          <div className="p-10 text-center text-muted">Đang tải...</div>
-        ) : bookings.length === 0 ? (
-          <div className="p-10 text-center text-muted">
-            Chưa có buổi tập nào
-          </div>
-        ) : (
-          bookings.map((b, index) => (
-            <div key={b.id}>
-              <div
-                className={`grid grid-cols-[1fr_1fr_1.5fr_1fr_auto] px-5 py-3.5 items-center ${
-                  index < bookings.length - 1 && expandedId !== b.id
-                    ? "border-b border-hairline"
-                    : ""
-                }`}
-              >
-                <span className="text-sm text-muted">{formatDate(b.date)}</span>
-                <span className="text-sm text-muted">{b.timeSlot}</span>
-                <span className="text-sm text-ink font-medium">
-                  {b.member.fullName}
-                </span>
-                <span
-                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium w-fit ${STATUS_CLASS[b.status]}`}
-                >
-                  {STATUS_LABEL[b.status]}
-                </span>
-                <button
-                  onClick={() => setExpandedId(expandedId === b.id ? null : b.id)}
-                  className="px-2.5 py-1 text-xs bg-surface-dark-elevated text-ink rounded-md hover:bg-hairline transition-colors w-fit"
-                >
-                  {expandedId === b.id ? "Ẩn" : "Chi tiết"}
-                </button>
-              </div>
-
-              {expandedId === b.id && (
-                <div
-                  className={`px-5 pb-4 pt-1 bg-surface-dark-elevated/40 ${
-                    index < bookings.length - 1 ? "border-b border-hairline" : ""
-                  }`}
-                >
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-body-sm mb-3">
-                    <p className="text-muted">
-                      Email: <span className="text-ink">{b.member.email}</span>
-                    </p>
-                    <p className="text-muted">
-                      Tuổi: <span className="text-ink">{b.age ?? "—"}</span>
-                    </p>
-                    <p className="text-muted">
-                      Ghi chú: <span className="text-ink">{b.notes ?? "—"}</span>
-                    </p>
-                  </div>
-
-                  {b.status === "PENDING" && (
-                    <div className="flex gap-2">
-                      <button
-                        disabled={actingId === b.id}
-                        onClick={() => handleUpdateStatus(b.id, "CONFIRMED")}
-                        className="px-2.5 py-1 text-xs bg-success/10 text-success hover:bg-success/20 rounded-md transition-colors disabled:opacity-50"
-                      >
-                        Xác nhận
-                      </button>
-                      <button
-                        disabled={actingId === b.id}
-                        onClick={() => handleUpdateStatus(b.id, "CANCELLED")}
-                        className="px-2.5 py-1 text-xs bg-error/10 text-error hover:bg-error/20 rounded-md transition-colors disabled:opacity-50"
-                      >
-                        Hủy
-                      </button>
-                    </div>
-                  )}
-                  {b.status === "CONFIRMED" && (
-                    <div className="flex gap-2">
-                      <button
-                        disabled={actingId === b.id}
-                        onClick={() => handleUpdateStatus(b.id, "COMPLETED")}
-                        className="px-2.5 py-1 text-xs bg-success/10 text-success hover:bg-success/20 rounded-md transition-colors disabled:opacity-50"
-                      >
-                        Hoàn thành
-                      </button>
-                      <button
-                        disabled={actingId === b.id}
-                        onClick={() => handleUpdateStatus(b.id, "CANCELLED")}
-                        className="px-2.5 py-1 text-xs bg-error/10 text-error hover:bg-error/20 rounded-md transition-colors disabled:opacity-50"
-                      >
-                        Hủy
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          ))
-        )}
+      <div className="mb-4">
+        <WeekNav weekStart={weekStart} onChange={setWeekStart} />
       </div>
+
+      {loading ? (
+        <div className="p-10 text-center text-muted">Đang tải...</div>
+      ) : (
+        <WeekCalendarGrid days={weekDates} events={calendarEvents} />
+      )}
+
+      {/* Chi tiết buổi tập được chọn */}
+      {selectedBooking && (
+        <div className="mt-6 bg-surface-card border border-hairline rounded-lg p-5">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div>
+              <div className="flex items-center gap-2 mb-1.5">
+                <h3 className="text-title-sm font-display text-ink">
+                  {selectedBooking.member.fullName}
+                </h3>
+                <span
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${STATUS_BADGE_CLASS[selectedBooking.status]}`}
+                >
+                  {STATUS_LABEL[selectedBooking.status]}
+                </span>
+              </div>
+              <p className="text-body-sm text-muted">
+                {formatDate(selectedBooking.date)} · {selectedBooking.timeSlot}
+              </p>
+            </div>
+            <button
+              onClick={() => setSelectedId(null)}
+              className="text-muted text-body-sm hover:text-ink"
+            >
+              Đóng ✕
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-body-sm my-4">
+            <p className="text-muted">
+              Email: <span className="text-ink">{selectedBooking.member.email}</span>
+            </p>
+            <p className="text-muted">
+              Tuổi: <span className="text-ink">{selectedBooking.age ?? "—"}</span>
+            </p>
+            <p className="text-muted">
+              Ghi chú: <span className="text-ink">{selectedBooking.notes ?? "—"}</span>
+            </p>
+          </div>
+
+          {selectedBooking.status === "PENDING" && (
+            <div className="flex gap-2">
+              <button
+                disabled={actingId === selectedBooking.id}
+                onClick={() => handleUpdateStatus(selectedBooking.id, "CONFIRMED")}
+                className="px-3 py-1.5 text-sm bg-success/10 text-success hover:bg-success/20 rounded-md transition-colors disabled:opacity-50"
+              >
+                Xác nhận
+              </button>
+              <button
+                disabled={actingId === selectedBooking.id}
+                onClick={() => handleUpdateStatus(selectedBooking.id, "CANCELLED")}
+                className="px-3 py-1.5 text-sm bg-error/10 text-error hover:bg-error/20 rounded-md transition-colors disabled:opacity-50"
+              >
+                Hủy
+              </button>
+            </div>
+          )}
+          {selectedBooking.status === "CONFIRMED" && (
+            <div className="flex gap-2">
+              <button
+                disabled={actingId === selectedBooking.id}
+                onClick={() => handleUpdateStatus(selectedBooking.id, "COMPLETED")}
+                className="px-3 py-1.5 text-sm bg-success/10 text-success hover:bg-success/20 rounded-md transition-colors disabled:opacity-50"
+              >
+                Hoàn thành
+              </button>
+              <button
+                disabled={actingId === selectedBooking.id}
+                onClick={() => handleUpdateStatus(selectedBooking.id, "CANCELLED")}
+                className="px-3 py-1.5 text-sm bg-error/10 text-error hover:bg-error/20 rounded-md transition-colors disabled:opacity-50"
+              >
+                Hủy
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
