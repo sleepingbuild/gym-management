@@ -79,7 +79,7 @@ export default function WeekCalendarGrid({
     () => Array.from({ length: endHour - startHour }, (_, i) => startHour + i),
     [startHour, endHour],
   );
-  const today = todayUTC();
+  const today = useMemo(() => todayUTC(), []);
 
   const placedByDay = useMemo(() => {
     const map: Record<number, PlacedEvent[]> = {};

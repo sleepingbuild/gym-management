@@ -41,7 +41,7 @@ function MemberBookingPageInner() {
   const [loadingSlots, setLoadingSlots] = useState(false);
 
   const weekDates = useMemo(() => buildWeekDates(weekStart), [weekStart]);
-  const today = todayUTC();
+  const today = useMemo(() => todayUTC(), []);
   const disabledDayIndexes = useMemo(
     () => weekDates.map((d, i) => (d.getTime() < today.getTime() ? i : -1)).filter((i) => i !== -1),
     [weekDates, today],

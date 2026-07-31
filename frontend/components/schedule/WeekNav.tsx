@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { formatWeekRangeLabel, getMondayUTC, addDaysUTC, todayUTC } from "@/lib/calendarDate";
 
 interface WeekNavProps {
@@ -8,7 +9,8 @@ interface WeekNavProps {
 }
 
 export default function WeekNav({ weekStart, onChange }: WeekNavProps) {
-  const isCurrentWeek = weekStart.getTime() === getMondayUTC(todayUTC()).getTime();
+  const currentWeekStart = useMemo(() => getMondayUTC(todayUTC()), []);
+  const isCurrentWeek = weekStart.getTime() === currentWeekStart.getTime();
 
   return (
     <div className="flex items-center gap-3 flex-wrap justify-between">

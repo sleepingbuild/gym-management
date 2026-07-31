@@ -253,6 +253,74 @@ router.delete("/trainers/:id", adminController.deleteTrainer);
 
 /**
  * @swagger
+ * /admin/trainer-schedules:
+ *   get:
+ *     summary: Lấy lịch làm việc huấn luyện viên (lọc theo trainerId tùy chọn)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: trainerId
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Danh sách ca làm việc
+ *   post:
+ *     summary: Tạo ca làm việc mới cho huấn luyện viên
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       201:
+ *         description: Tạo thành công
+ */
+router.get("/trainer-schedules", adminController.getTrainerSchedules);
+router.post("/trainer-schedules", adminController.createTrainerSchedule);
+
+
+/**
+ * @swagger
+ * /admin/trainer-schedules/{id}:
+ *   put:
+ *     summary: Cập nhật ca làm việc
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Cập nhật thành công
+ *   delete:
+ *     summary: Xóa ca làm việc
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Xóa thành công
+ */
+router.put("/trainer-schedules/:id", adminController.updateTrainerSchedule);
+router.delete(
+    "/trainer-schedules/:id",
+    adminController.deleteTrainerSchedule,
+);
+
+
+/**
+ * @swagger
  * /admin/bookings:
  *   get:
  *     summary: Lấy toàn bộ lịch đặt trong hệ thống (lọc tùy chọn)

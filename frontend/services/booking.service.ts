@@ -26,10 +26,28 @@ export interface Booking {
   };
 }
 
+export interface AvailableSlot {
+  timeSlot: string;
+  available: boolean;
+  withinWorkingHours: boolean;
+}
+
+export interface AvailableSlotsResult {
+  slots: AvailableSlot[];
+  hasSchedule: boolean;
+}
+
 export const bookingService = {
   async getAvailableTrainers(): Promise<Trainer[]> {
     const response = await api.get('/bookings/trainers');
     return response.data.data.trainers;
+  },
+
+  async getAvailableSlots(trainerId: string, date: string): Promise<AvailableSlotsResult> {
+    const response = await api.get(`/bookings/trainers/${trainerId}/available-slots`, {
+      params: { date },
+    });
+    return response.data.data;
   },
 
   async createBooking(data: {

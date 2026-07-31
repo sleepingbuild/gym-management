@@ -2,7 +2,13 @@ import { Request, Response, NextFunction } from "express";
 import bcrypt from "bcryptjs";
 import { prisma } from "../config/prisma";
 import { AppError } from "../utils/errors";
-import { Role, BookingStatus, PaymentStatus, Prisma } from "@prisma/client";
+import {
+    Role,
+    BookingStatus,
+    PaymentStatus,
+    Prisma,
+    ScheduleType,
+} from "@prisma/client";
 
 const getStats = async (
     req: Request,
@@ -607,6 +613,317 @@ const deleteTrainer = async (
 };
 
 /**
+ * Kiểm tra định dạng "HH:mm" và startTime < endTime.
+ * So sánh chuỗi "HH:mm" hoạt động đúng vì luôn 2 chữ số zero-padded.
+ */
+const validateScheduleTimeRange = (startTime?: string, endTime?: string) => {
+    const timeRegex = /^([01]\d|2[0-3]):[0-5]\d$/;
+    if (
+        !startTime ||
+        !endTime ||
+        !timeRegex.test(startTime) ||
+        !timeRegex.test(endTime)
+    )
+        throw new AppError(
+            400,
+            "SCHEDULE_001: Giờ không hợp lệ (định dạng HH:mm)",
+        );
+    if (startTime >= endTime)
+        throw new AppError(
+            400,
+            "SCHEDULE_002: Giờ bắt đầu phải trước giờ kết thúc",
+        );
+};
+
+const trainerScheduleInclude = {
+    trainer: { select: { id: true, fullName: true } },
+};
+
+/**
+ * GET /admin/trainer-schedules?trainerId=
+ */
+const getTrainerSchedules = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+): Promise<void> => {
+    try {
+        const { trainerId } = req.query as { trainerId?: string };
+
+        const where: Prisma.TrainerScheduleWhereInput = {};
+        if (trainerId) where.trainerId = trainerId;
+
+        const schedules = await prisma.trainerSchedule.findMany({
+            where,
+            include: trainerScheduleInclude,
+            orderBy: [
+                { trainerId: "asc" },
+                { type: "asc" },
+                { dayOfWeek: "asc" },
+                { specificDate: "asc" },
+            ],
+        });
+
+        res.status(200).json({
+            success: true,
+            statusCode: 200,
+            message: "Trainer schedules retrieved",
+            data: { schedules },
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * POST /admin/trainer-schedules
+ * body: { trainerId, type, dayOfWeek?, specificDate?, startTime, endTime, notes? }
+ */
+const createTrainerSchedule = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+): Promise<void> => {
+    try {
+        const {
+            trainerId,
+            type,
+            dayOfWeek,
+            specificDate,
+            startTime,
+            endTime,
+            notes,
+        } = req.body as {
+            trainerId?: string;
+            type?: ScheduleType;
+            dayOfWeek?: number;
+            specificDate?: string;
+            startTime?: string;
+            endTime?: string;
+            notes?: string | null;
+        };
+
+        if (!trainerId)
+            throw new AppError(400, "SCHEDULE_003: Thiếu huấn luyện viên");
+        if (type !== "RECURRING" && type !== "SPECIFIC_DATE")
+            throw new AppError(400, "SCHEDULE_004: Loại lịch không hợp lệ");
+
+        const trainerProfile = await prisma.trainerProfile.findUnique({
+            where: { userId: trainerId },
+        });
+        if (!trainerProfile)
+            throw new AppError(
+                404,
+                "SCHEDULE_005: Không tìm thấy huấn luyện viên",
+            );
+
+        validateScheduleTimeRange(startTime, endTime);
+
+        let dayOfWeekValue: number | null = null;
+        let specificDateValue: Date | null = null;
+
+        if (type === "RECURRING") {
+            if (
+                dayOfWeek === undefined ||
+                dayOfWeek === null ||
+                dayOfWeek < 0 ||
+                dayOfWeek > 6
+            )
+                throw new AppError(
+                    400,
+                    "SCHEDULE_006: Thứ trong tuần không hợp lệ (0-6)",
+                );
+            dayOfWeekValue = dayOfWeek;
+        } else {
+            if (!specificDate)
+                throw new AppError(400, "SCHEDULE_007: Thiếu ngày cụ thể");
+            specificDateValue = new Date(specificDate);
+            if (isNaN(specificDateValue.getTime()))
+                throw new AppError(400, "SCHEDULE_008: Ngày không hợp lệ");
+        }
+
+        // Kiểm tra trùng giờ với ca đã có cùng trainer + cùng "áp dụng" (cùng thứ hoặc cùng ngày cụ thể)
+        const candidates = await prisma.trainerSchedule.findMany({
+            where: {
+                trainerId,
+                type,
+                ...(type === "RECURRING"
+                    ? { dayOfWeek: dayOfWeekValue }
+                    : { specificDate: specificDateValue }),
+            },
+        });
+        const overlap = candidates.find(
+            (s) => startTime! < s.endTime && endTime! > s.startTime,
+        );
+        if (overlap)
+            throw new AppError(
+                409,
+                "SCHEDULE_009: Ca làm việc bị trùng giờ với ca đã có của huấn luyện viên này",
+            );
+
+        const schedule = await prisma.trainerSchedule.create({
+            data: {
+                trainerId,
+                type,
+                dayOfWeek: dayOfWeekValue,
+                specificDate: specificDateValue,
+                startTime: startTime!,
+                endTime: endTime!,
+                notes: notes ?? null,
+            },
+            include: trainerScheduleInclude,
+        });
+
+        res.status(201).json({
+            success: true,
+            statusCode: 201,
+            message: "Trainer schedule created",
+            data: { schedule },
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * PUT /admin/trainer-schedules/:id
+ */
+const updateTrainerSchedule = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+): Promise<void> => {
+    try {
+        const id = req.params.id as string;
+        const {
+            trainerId,
+            type,
+            dayOfWeek,
+            specificDate,
+            startTime,
+            endTime,
+            notes,
+        } = req.body as {
+            trainerId?: string;
+            type?: ScheduleType;
+            dayOfWeek?: number;
+            specificDate?: string;
+            startTime?: string;
+            endTime?: string;
+            notes?: string | null;
+        };
+
+        const existing = await prisma.trainerSchedule.findUnique({
+            where: { id },
+        });
+        if (!existing)
+            throw new AppError(404, "SCHEDULE_010: Không tìm thấy ca làm việc");
+
+        const finalTrainerId = trainerId ?? existing.trainerId;
+        const finalType: ScheduleType = type ?? existing.type;
+        validateScheduleTimeRange(
+            startTime ?? existing.startTime,
+            endTime ?? existing.endTime,
+        );
+        const finalStartTime = startTime ?? existing.startTime;
+        const finalEndTime = endTime ?? existing.endTime;
+
+        let dayOfWeekValue: number | null = existing.dayOfWeek;
+        let specificDateValue: Date | null = existing.specificDate;
+
+        if (finalType === "RECURRING") {
+            const dow = dayOfWeek ?? existing.dayOfWeek;
+            if (dow === undefined || dow === null || dow < 0 || dow > 6)
+                throw new AppError(
+                    400,
+                    "SCHEDULE_006: Thứ trong tuần không hợp lệ (0-6)",
+                );
+            dayOfWeekValue = dow;
+            specificDateValue = null;
+        } else {
+            const sd = specificDate
+                ? new Date(specificDate)
+                : existing.specificDate;
+            if (!sd || isNaN(sd.getTime()))
+                throw new AppError(400, "SCHEDULE_008: Ngày không hợp lệ");
+            specificDateValue = sd;
+            dayOfWeekValue = null;
+        }
+
+        const candidates = await prisma.trainerSchedule.findMany({
+            where: {
+                id: { not: id },
+                trainerId: finalTrainerId,
+                type: finalType,
+                ...(finalType === "RECURRING"
+                    ? { dayOfWeek: dayOfWeekValue }
+                    : { specificDate: specificDateValue }),
+            },
+        });
+        const overlap = candidates.find(
+            (s) => finalStartTime < s.endTime && finalEndTime > s.startTime,
+        );
+        if (overlap)
+            throw new AppError(
+                409,
+                "SCHEDULE_009: Ca làm việc bị trùng giờ với ca đã có của huấn luyện viên này",
+            );
+
+        const schedule = await prisma.trainerSchedule.update({
+            where: { id },
+            data: {
+                trainerId: finalTrainerId,
+                type: finalType,
+                dayOfWeek: dayOfWeekValue,
+                specificDate: specificDateValue,
+                startTime: finalStartTime,
+                endTime: finalEndTime,
+                ...(notes !== undefined && { notes: notes ?? null }),
+            },
+            include: trainerScheduleInclude,
+        });
+
+        res.status(200).json({
+            success: true,
+            statusCode: 200,
+            message: "Trainer schedule updated",
+            data: { schedule },
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * DELETE /admin/trainer-schedules/:id
+ */
+const deleteTrainerSchedule = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+): Promise<void> => {
+    try {
+        const id = req.params.id as string;
+        const existing = await prisma.trainerSchedule.findUnique({
+            where: { id },
+        });
+        if (!existing)
+            throw new AppError(404, "SCHEDULE_010: Không tìm thấy ca làm việc");
+
+        await prisma.trainerSchedule.delete({ where: { id } });
+
+        res.status(200).json({
+            success: true,
+            statusCode: 200,
+            message: "Trainer schedule deleted",
+            data: { id },
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
  * GET /admin/bookings
  */
 const getBookings = async (
@@ -945,6 +1262,10 @@ export const adminController = {
     createTrainer,
     updateTrainer,
     deleteTrainer,
+    getTrainerSchedules,
+    createTrainerSchedule,
+    updateTrainerSchedule,
+    deleteTrainerSchedule,
     getBookings,
     updateBookingStatus,
     getPayments,
