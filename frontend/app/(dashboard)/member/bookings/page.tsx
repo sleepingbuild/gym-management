@@ -1,11 +1,28 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { bookingService, Trainer, Booking, AvailableSlot } from "@/services/booking.service";
+import WeekCalendarGrid, { CalendarEvent } from "@/components/schedule/WeekCalendarGrid";
+import WeekNav from "@/components/schedule/WeekNav";
+import {
+  getMondayUTC,
+  todayUTC,
+  buildWeekDates,
+  toISODateUTC,
+  isSameUTCDate,
+} from "@/lib/calendarDate";
 
-export default function MemberBookingPage() {
+interface SelectedSlot {
+  dayIndex: number;
+  date: Date;
+  timeSlot: string;
+}
+
+function MemberBookingPageInner() {
+  const searchParams = useSearchParams();
   const [trainers, setTrainers] = useState<Trainer[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -14,14 +31,21 @@ export default function MemberBookingPage() {
   const [success, setSuccess] = useState<string | null>(null);
 
   const [selectedTrainer, setSelectedTrainer] = useState("");
-  const [date, setDate] = useState("");
-  const [timeSlot, setTimeSlot] = useState("");
+  const [weekStart, setWeekStart] = useState<Date>(() => getMondayUTC(todayUTC()));
   const [notes, setNotes] = useState("");
+  const [selectedSlot, setSelectedSlot] = useState<SelectedSlot | null>(null);
+  const [clickHint, setClickHint] = useState<string | null>(null);
 
-  // Khung giờ thật của HLV đã chọn, cho đúng ngày đã chọn
-  const [slots, setSlots] = useState<AvailableSlot[]>([]);
+  // slotsByDay[dayIndex] = danh sách khung giờ thật của HLV cho ngày đó
+  const [slotsByDay, setSlotsByDay] = useState<Record<number, AvailableSlot[]>>({});
   const [loadingSlots, setLoadingSlots] = useState(false);
-  const [hasSchedule, setHasSchedule] = useState(true);
+
+  const weekDates = useMemo(() => buildWeekDates(weekStart), [weekStart]);
+  const today = todayUTC();
+  const disabledDayIndexes = useMemo(
+    () => weekDates.map((d, i) => (d.getTime() < today.getTime() ? i : -1)).filter((i) => i !== -1),
+    [weekDates, today],
+  );
 
   const fetchData = async () => {
     try {
@@ -42,31 +66,44 @@ export default function MemberBookingPage() {
     fetchData();
   }, []);
 
-  // Mỗi khi đổi HLV hoặc ngày -> load lại khung giờ thật, bỏ lựa chọn khung giờ cũ
+  // Nếu được điều hướng từ trang "Huấn luyện viên" kèm ?trainerId=..., tự chọn sẵn HLV đó
   useEffect(() => {
-    setTimeSlot("");
-    setSlots([]);
+    if (loading || selectedTrainer) return;
+    const trainerIdFromUrl = searchParams.get("trainerId");
+    if (trainerIdFromUrl && trainers.some((t) => t.user.id === trainerIdFromUrl)) {
+      setSelectedTrainer(trainerIdFromUrl);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, trainers, searchParams]);
 
-    if (!selectedTrainer || !date) {
-      setHasSchedule(true);
+  // Mỗi khi đổi HLV hoặc tuần đang xem -> load lại khung giờ thật cho cả 7 ngày
+  useEffect(() => {
+    setSelectedSlot(null);
+    setClickHint(null);
+
+    if (!selectedTrainer) {
+      setSlotsByDay({});
       return;
     }
 
     let cancelled = false;
     setLoadingSlots(true);
 
-    bookingService
-      .getAvailableSlots(selectedTrainer, date)
-      .then((result) => {
+    Promise.all(
+      weekDates.map((d) => bookingService.getAvailableSlots(selectedTrainer, toISODateUTC(d))),
+    )
+      .then((results) => {
         if (cancelled) return;
-        setSlots(result.slots);
-        setHasSchedule(result.hasSchedule);
+        const map: Record<number, AvailableSlot[]> = {};
+        results.forEach((r, i) => {
+          map[i] = r.slots;
+        });
+        setSlotsByDay(map);
       })
       .catch((err) => {
         if (cancelled) return;
         console.error(err);
-        setSlots([]);
-        setHasSchedule(true);
+        setSlotsByDay({});
       })
       .finally(() => {
         if (!cancelled) setLoadingSlots(false);
@@ -75,31 +112,105 @@ export default function MemberBookingPage() {
     return () => {
       cancelled = true;
     };
-  }, [selectedTrainer, date]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTrainer, weekStart]);
+
+  const calendarEvents: CalendarEvent[] = useMemo(() => {
+    const events: CalendarEvent[] = [];
+    Object.entries(slotsByDay).forEach(([dayIndexStr, slots]) => {
+      const dayIndex = Number(dayIndexStr);
+      if (disabledDayIndexes.includes(dayIndex)) return; // ngày đã qua, không hiện để đặt
+
+      slots.forEach((s) => {
+        if (!s.withinWorkingHours) return; // ngoài giờ làm việc -> không vẽ ô
+        const [startTime, endTime] = s.timeSlot.split("-");
+        const isSelected =
+          selectedSlot?.dayIndex === dayIndex && selectedSlot?.timeSlot === s.timeSlot;
+
+        events.push({
+          id: `${dayIndex}-${s.timeSlot}`,
+          dayIndex,
+          startTime,
+          endTime,
+          title: isSelected ? "Đang chọn" : s.available ? "Còn trống" : "Đã đặt",
+          colorClass: isSelected
+            ? "bg-accent-orange text-white ring-2 ring-white/70"
+            : s.available
+            ? "bg-success/80 text-white"
+            : "bg-error/50 text-white",
+          onClick: s.available
+            ? () => {
+                setClickHint(null);
+                setSelectedSlot({
+                  dayIndex,
+                  date: weekDates[dayIndex],
+                  timeSlot: s.timeSlot,
+                });
+              }
+            : () => {
+                setSelectedSlot(null);
+                setClickHint("Khung giờ này đã có người đặt, vui lòng chọn khung giờ khác.");
+              },
+        });
+      });
+    });
+    return events;
+  }, [slotsByDay, selectedSlot, weekDates, disabledDayIndexes]);
+
+  // Bấm vào 1 ô trên lưới (kể cả ô trống, không chỉ khối màu đã dựng sẵn) ->
+  // tìm đúng khung giờ chuẩn tương ứng và chọn nếu còn trống, hoặc báo lý do nếu không.
+  const handleSlotCellClick = (dayIndex: number, hour: number) => {
+    if (!selectedTrainer) return;
+    const hourLabel = `${String(hour).padStart(2, "0")}:00`;
+    const slot = (slotsByDay[dayIndex] ?? []).find((s) => s.timeSlot.startsWith(hourLabel));
+
+    if (!slot || !slot.withinWorkingHours) {
+      setSelectedSlot(null);
+      setClickHint("Huấn luyện viên không làm việc trong khung giờ này.");
+      return;
+    }
+    if (!slot.available) {
+      setSelectedSlot(null);
+      setClickHint("Khung giờ này đã có người đặt, vui lòng chọn khung giờ khác.");
+      return;
+    }
+    setClickHint(null);
+    setSelectedSlot({ dayIndex, date: weekDates[dayIndex], timeSlot: slot.timeSlot });
+  };
 
   const handleSubmit = async () => {
     setError(null);
     setSuccess(null);
 
-    if (!selectedTrainer || !date || !timeSlot) {
-      setError("Vui lòng chọn đầy đủ huấn luyện viên, ngày và khung giờ.");
+    if (!selectedTrainer || !selectedSlot) {
+      setError("Vui lòng chọn huấn luyện viên và khung giờ trên lịch.");
       return;
     }
+    setClickHint(null);
 
     setSubmitting(true);
     try {
       await bookingService.createBooking({
         trainerId: selectedTrainer,
-        date,
-        timeSlot,
+        date: toISODateUTC(selectedSlot.date),
+        timeSlot: selectedSlot.timeSlot,
         notes: notes || undefined,
       });
       setSuccess("Đặt lịch thành công! Vui lòng chờ huấn luyện viên xác nhận.");
-      setSelectedTrainer("");
-      setDate("");
-      setTimeSlot("");
+      setSelectedSlot(null);
       setNotes("");
       await fetchData();
+      // Tải lại khung giờ tuần hiện tại để phản ánh slot vừa đặt
+      if (selectedTrainer) {
+        const results = await Promise.all(
+          weekDates.map((d) => bookingService.getAvailableSlots(selectedTrainer, toISODateUTC(d))),
+        );
+        const map: Record<number, AvailableSlot[]> = {};
+        results.forEach((r, i) => {
+          map[i] = r.slots;
+        });
+        setSlotsByDay(map);
+      }
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
       setError(error.response?.data?.message || "Đặt lịch thất bại. Vui lòng thử lại.");
@@ -130,12 +241,14 @@ export default function MemberBookingPage() {
     }
   };
 
-  const slotHelperText = () => {
-    if (!selectedTrainer || !date) return "Chọn huấn luyện viên và ngày để xem khung giờ trống";
-    if (loadingSlots) return "Đang tải khung giờ...";
-    if (!hasSchedule) return "Huấn luyện viên chưa có lịch làm việc vào ngày này";
-    if (slots.length > 0 && slots.every((s) => !s.available))
-      return "Tất cả khung giờ trong ngày này đã kín";
+  const calendarHint = () => {
+    if (!selectedTrainer) return "Chọn huấn luyện viên để xem lịch trống trong tuần";
+    if (loadingSlots) return "Đang tải lịch...";
+    const hasAnySlotThisWeek = Object.values(slotsByDay).some((slots) =>
+      slots.some((s) => s.withinWorkingHours),
+    );
+    if (!hasAnySlotThisWeek)
+      return "⚠️ Huấn luyện viên không có ca làm việc nào trong tuần này. Hãy thử tuần khác.";
     return null;
   };
 
@@ -144,7 +257,7 @@ export default function MemberBookingPage() {
       <div>
         <h1 className="text-display-md font-display text-ink">Đặt lịch huấn luyện</h1>
         <p className="text-body text-muted mt-1">
-          Chọn huấn luyện viên và khung giờ phù hợp với bạn
+          Chọn huấn luyện viên, sau đó bấm vào khung giờ còn trống trên lịch
         </p>
       </div>
 
@@ -161,69 +274,83 @@ export default function MemberBookingPage() {
 
       <Card className="p-6">
         <h3 className="text-title-md font-display text-ink mb-4">Đặt lịch mới</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-body-sm text-muted mb-1">Huấn luyện viên</label>
-            <select
-              value={selectedTrainer}
-              onChange={(e) => setSelectedTrainer(e.target.value)}
-              className="w-full border border-hairline rounded-md px-3 py-2 bg-surface-card text-ink"
-            >
-              <option value="">-- Chọn HLV --</option>
-              {trainers.map((t) => (
-                <option key={t.id} value={t.user.id}>
-                  {t.user.fullName} — {t.specialties}
-                </option>
-              ))}
-            </select>
-          </div>
 
-          <div>
-            <label className="block text-body-sm text-muted mb-1">Ngày tập</label>
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              min={new Date().toISOString().split("T")[0]}
-              className="w-full border border-hairline rounded-md px-3 py-2 bg-surface-card text-ink"
-            />
-          </div>
+        <div className="mb-4">
+          <label className="block text-body-sm text-muted mb-1">Huấn luyện viên</label>
+          <select
+            value={selectedTrainer}
+            onChange={(e) => setSelectedTrainer(e.target.value)}
+            className="w-full md:w-96 border border-hairline rounded-md px-3 py-2 bg-surface-card text-ink"
+          >
+            <option value="">-- Chọn HLV --</option>
+            {trainers.map((t) => (
+              <option key={t.id} value={t.user.id}>
+                {t.user.fullName} — {t.specialties}
+              </option>
+            ))}
+          </select>
+        </div>
 
-          <div className="md:col-span-2">
-            <label className="block text-body-sm text-muted mb-1">Khung giờ</label>
-            <select
-              value={timeSlot}
-              onChange={(e) => setTimeSlot(e.target.value)}
-              disabled={!selectedTrainer || !date || loadingSlots || slots.length === 0}
-              className="w-full border border-hairline rounded-md px-3 py-2 bg-surface-card text-ink disabled:opacity-50"
-            >
-              <option value="">-- Chọn khung giờ --</option>
-              {slots.map((s) => (
-                <option key={s.timeSlot} value={s.timeSlot} disabled={!s.available}>
-                  {s.timeSlot}{!s.available ? " (Đã kín)" : ""}
-                </option>
-              ))}
-            </select>
-            {slotHelperText() && (
-              <p className="text-body-sm text-muted mt-1">{slotHelperText()}</p>
-            )}
-          </div>
+        <div className="flex items-center gap-4 text-body-sm mb-2 flex-wrap">
+          <span className="flex items-center gap-1.5">
+            <span className="w-3 h-3 rounded-sm bg-success/80 inline-block" /> Còn trống
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-3 h-3 rounded-sm bg-error/50 inline-block" /> Đã đặt
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-3 h-3 rounded-sm bg-accent-orange inline-block" /> Đang chọn
+          </span>
+        </div>
 
-          <div className="md:col-span-2">
+        <div className="mb-4">
+          <WeekNav weekStart={weekStart} onChange={setWeekStart} />
+        </div>
+
+        {calendarHint() && (
+          <p className="text-body-sm text-warning mb-3 bg-warning/10 border border-warning/30 rounded-md px-3 py-2">
+            {calendarHint()}
+          </p>
+        )}
+        {!calendarHint() && clickHint && (
+          <p className="text-body-sm text-warning mb-3 bg-warning/10 border border-warning/30 rounded-md px-3 py-2">
+            {clickHint}
+          </p>
+        )}
+
+        {selectedTrainer && (
+          <WeekCalendarGrid
+            days={weekDates}
+            events={calendarEvents}
+            disabledDayIndexes={disabledDayIndexes}
+            onSlotClick={handleSlotCellClick}
+          />
+        )}
+
+        {selectedSlot && (
+          <div className="mt-4 bg-surface-dark-elevated border border-hairline rounded-lg p-4">
+            <p className="text-body-sm text-ink font-medium mb-3">
+              Bạn chọn: khung giờ {selectedSlot.timeSlot} — ngày{" "}
+              {toISODateUTC(selectedSlot.date).split("-").reverse().join("/")}
+            </p>
             <label className="block text-body-sm text-muted mb-1">Ghi chú (tùy chọn)</label>
             <input
               type="text"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Mục tiêu buổi tập..."
-              className="w-full border border-hairline rounded-md px-3 py-2 bg-surface-card text-ink"
+              className="w-full border border-hairline rounded-md px-3 py-2 bg-surface-card text-ink mb-3"
             />
+            <div className="flex gap-3">
+              <Button onClick={handleSubmit} disabled={submitting}>
+                {submitting ? "Đang xử lý..." : "Xác nhận đặt lịch"}
+              </Button>
+              <Button variant="secondary" onClick={() => setSelectedSlot(null)}>
+                Hủy chọn
+              </Button>
+            </div>
           </div>
-        </div>
-
-        <Button className="mt-4" onClick={handleSubmit} disabled={submitting || !timeSlot}>
-          {submitting ? "Đang xử lý..." : "Đặt lịch"}
-        </Button>
+        )}
       </Card>
 
       <Card className="p-6">
@@ -269,5 +396,13 @@ export default function MemberBookingPage() {
         )}
       </Card>
     </div>
+  );
+}
+
+export default function MemberBookingPage() {
+  return (
+    <Suspense fallback={<p className="text-body text-muted text-center py-10">Đang tải...</p>}>
+      <MemberBookingPageInner />
+    </Suspense>
   );
 }
