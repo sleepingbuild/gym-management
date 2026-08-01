@@ -1,7 +1,17 @@
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-const FRONTEND_URL = process.env.FRONTEND_URL_FOR_EMAIL || process.env.FRONTEND_URL || "http://localhost:3000";
+const FRONTEND_URL =
+    process.env.FRONTEND_URL_FOR_EMAIL ||
+    process.env.FRONTEND_URL ||
+    "http://localhost:3000";
+
+const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_APP_PASSWORD,
+    },
+});
 
 export const sendVerificationEmail = async (
     email: string,
@@ -10,8 +20,8 @@ export const sendVerificationEmail = async (
 ): Promise<void> => {
     const verifyLink = `${FRONTEND_URL}/verify-email?token=${token}`;
 
-    const { data, error } = await resend.emails.send({
-        from: "IronFit Pro <onboarding@resend.dev>",
+    await transporter.sendMail({
+        from: `"IronFit Pro" <${process.env.GMAIL_USER}>`,
         to: email,
         subject: "Xác nhận tài khoản IronFit Pro",
         html: `
@@ -26,10 +36,5 @@ export const sendVerificationEmail = async (
         `,
     });
 
-    if (error) {
-        console.error("❌ Resend error:", error);
-        throw new Error(`Failed to send verification email: ${error.message}`);
-    }
-
-    console.log("✅ Email sent, Resend id:", data?.id);
+    console.log("✅ Email sent via Gmail SMTP to:", email);
 };
