@@ -45,7 +45,7 @@ const getMyStudents = async (
                     phone: booking.member.phone,
                     membership:
                         booking.member.userMembership?.plan.name ??
-                        "Chưa có gói",
+                        "ChÆ°a cÃ³ gÃ³i",
                     lastBookingDate: booking.date,
                 });
             }
@@ -119,8 +119,8 @@ const getMyBookings = async (
 
 /**
  * PATCH /pt/bookings/:id/status
- * PT chỉ được đổi trạng thái booking CỦA CHÍNH MÌNH (trainerId khớp user đăng nhập).
- * Giới hạn chuyển trạng thái: PENDING -> CONFIRMED/CANCELLED, CONFIRMED -> COMPLETED/CANCELLED.
+ * PT chá»‰ Ä‘Æ°á»£c Ä‘á»•i tráº¡ng thÃ¡i booking Cá»¦A CHÃNH MÃŒNH (trainerId khá»›p user Ä‘Äƒng nháºp).
+ * Giá»›i háº¡n chuyá»ƒn tráº¡ng thÃ¡i: PENDING -> CONFIRMED/CANCELLED, CONFIRMED -> COMPLETED/CANCELLED.
  */
 const BOOKING_TRANSITIONS: Record<string, string[]> = {
     PENDING: ["CONFIRMED", "CANCELLED"],
@@ -139,12 +139,17 @@ const updateBookingStatus = async (
         const id = req.params.id as string;
         const { status } = req.body as { status: string };
 
-        const validStatuses = ["PENDING", "CONFIRMED", "CANCELLED", "COMPLETED"];
+        const validStatuses = [
+            "PENDING",
+            "CONFIRMED",
+            "CANCELLED",
+            "COMPLETED",
+        ];
         if (!validStatuses.includes(status)) {
             res.status(400).json({
                 success: false,
                 statusCode: 400,
-                message: "Trạng thái không hợp lệ",
+                message: "Tráº¡ng thÃ¡i khÃ´ng há»£p lá»‡",
             });
             return;
         }
@@ -154,7 +159,7 @@ const updateBookingStatus = async (
             res.status(404).json({
                 success: false,
                 statusCode: 404,
-                message: "Không tìm thấy lịch đặt",
+                message: "KhÃ´ng tÃ¬m tháº¥y lá»‹ch Ä‘áº·t",
             });
             return;
         }
@@ -163,7 +168,8 @@ const updateBookingStatus = async (
             res.status(403).json({
                 success: false,
                 statusCode: 403,
-                message: "Bạn không có quyền thao tác trên lịch đặt này",
+                message:
+                    "Báº¡n khÃ´ng cÃ³ quyá»n thao tÃ¡c trÃªn lá»‹ch Ä‘áº·t nÃ y",
             });
             return;
         }
@@ -172,7 +178,7 @@ const updateBookingStatus = async (
             res.status(400).json({
                 success: false,
                 statusCode: 400,
-                message: `Không thể chuyển trạng thái từ ${booking.status} sang ${status}`,
+                message: `KhÃ´ng thá»ƒ chuyá»ƒn tráº¡ng thÃ¡i tá»« ${booking.status} sang ${status}`,
             });
             return;
         }
@@ -194,7 +200,7 @@ const updateBookingStatus = async (
         res.status(200).json({
             success: true,
             statusCode: 200,
-            message: "Cập nhật trạng thái thành công",
+            message: "Cáºp nháºt tráº¡ng thÃ¡i thÃ nh cÃ´ng",
             data: { booking: updated },
         });
     } catch (error) {
@@ -251,110 +257,9 @@ const getMyStats = async (
     }
 };
 
-const getCheckinToday = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-): Promise<void> => {
-    try {
-        const trainerId = req.user!.userId;
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        const record = await prisma.trainerCheckIn.findUnique({
-            where: { trainerId_date: { trainerId, date: today } },
-        });
-
-        res.status(200).json({
-            success: true,
-            statusCode: 200,
-            message: "Today status retrieved",
-            data: {
-                checkedIn: !!record,
-                checkedInAt: record?.checkedInAt ?? null,
-                notes: record?.notes ?? null,
-            },
-        });
-    } catch (error) {
-        next(error);
-    }
-};
-
-const getCheckinHistory = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-): Promise<void> => {
-    try {
-        const trainerId = req.user!.userId;
-
-        const records = await prisma.trainerCheckIn.findMany({
-            where: { trainerId },
-            orderBy: { date: "desc" },
-            take: 30,
-        });
-
-        res.status(200).json({
-            success: true,
-            statusCode: 200,
-            message: "History retrieved",
-            data: {
-                history: records.map((r) => ({
-                    id: r.id,
-                    date: r.date,
-                    checkedInAt: r.checkedInAt,
-                    notes: r.notes,
-                })),
-            },
-        });
-    } catch (error) {
-        next(error);
-    }
-};
-
-const createCheckin = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-): Promise<void> => {
-    try {
-        const trainerId = req.user!.userId;
-        const { notes } = req.body as { notes?: string };
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        const existing = await prisma.trainerCheckIn.findUnique({
-            where: { trainerId_date: { trainerId, date: today } },
-        });
-
-        if (existing) {
-            res.status(409).json({
-                success: false,
-                statusCode: 409,
-                message: "Bạn đã chấm công hôm nay rồi",
-            });
-            return;
-        }
-
-        const record = await prisma.trainerCheckIn.create({
-            data: {
-                trainerId,
-                date: today,
-                checkedInAt: new Date(),
-                notes: notes ?? null,
-            },
-        });
-
-        res.status(201).json({
-            success: true,
-            statusCode: 201,
-            message: "Check-in thành công",
-            data: { checkin: record },
-        });
-    } catch (error) {
-        next(error);
-    }
-};
+// Đã bỏ getCheckinToday / getCheckinHistory / createCheckin (chấm công thủ
+// công) — thay bằng POST /api/face-attendance/checkin/self, xem
+// faceAttendance.controller.ts / faceAttendance.service.ts.
 
 const getMyClients = async (
     req: Request,
@@ -431,7 +336,9 @@ const getMyClientsProgress = async (
                 trainerId,
                 status: { in: ["CONFIRMED", "COMPLETED"] },
             },
-            include: { member: { select: { id: true, fullName: true, email: true } } },
+            include: {
+                member: { select: { id: true, fullName: true, email: true } },
+            },
             distinct: ["memberId"],
         });
 
@@ -478,38 +385,42 @@ const getMyDashboard = async (
         const tomorrow = new Date(today);
         tomorrow.setDate(tomorrow.getDate() + 1);
 
-        const [totalStudents, todayBookingsRaw, upcomingBookings, pendingConfirmation] =
-            await Promise.all([
-                prisma.booking.findMany({
-                    where: {
-                        trainerId,
-                        status: { in: ["CONFIRMED", "COMPLETED"] },
-                    },
-                    distinct: ["memberId"],
-                    select: { memberId: true },
-                }),
-                prisma.booking.findMany({
-                    where: {
-                        trainerId,
-                        date: { gte: today, lt: tomorrow },
-                        status: { in: ["CONFIRMED", "COMPLETED"] },
-                    },
-                    include: {
-                        member: { select: { fullName: true } },
-                    },
-                    orderBy: { timeSlot: "asc" },
-                }),
-                prisma.booking.count({
-                    where: {
-                        trainerId,
-                        date: { gt: tomorrow },
-                        status: "CONFIRMED",
-                    },
-                }),
-                prisma.booking.count({
-                    where: { trainerId, status: "PENDING" },
-                }),
-            ]);
+        const [
+            totalStudents,
+            todayBookingsRaw,
+            upcomingBookings,
+            pendingConfirmation,
+        ] = await Promise.all([
+            prisma.booking.findMany({
+                where: {
+                    trainerId,
+                    status: { in: ["CONFIRMED", "COMPLETED"] },
+                },
+                distinct: ["memberId"],
+                select: { memberId: true },
+            }),
+            prisma.booking.findMany({
+                where: {
+                    trainerId,
+                    date: { gte: today, lt: tomorrow },
+                    status: { in: ["CONFIRMED", "COMPLETED"] },
+                },
+                include: {
+                    member: { select: { fullName: true } },
+                },
+                orderBy: { timeSlot: "asc" },
+            }),
+            prisma.booking.count({
+                where: {
+                    trainerId,
+                    date: { gt: tomorrow },
+                    status: "CONFIRMED",
+                },
+            }),
+            prisma.booking.count({
+                where: { trainerId, status: "PENDING" },
+            }),
+        ]);
 
         res.status(200).json({
             success: true,
@@ -538,9 +449,6 @@ export const ptController = {
     getMyBookings,
     updateBookingStatus,
     getMyStats,
-    getCheckinToday,
-    getCheckinHistory,
-    createCheckin,
     getMyClients,
     getMyClientsProgress,
     getMyDashboard,

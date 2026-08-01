@@ -25,24 +25,9 @@ router.patch(
 );
 router.get("/stats", authenticate, authorize(Role.PT), ptController.getMyStats);
 
-router.get(
-    "/checkin/today",
-    authenticate,
-    authorize(Role.PT),
-    ptController.getCheckinToday,
-);
-router.get(
-    "/checkin/history",
-    authenticate,
-    authorize(Role.PT),
-    ptController.getCheckinHistory,
-);
-router.post(
-    "/checkin",
-    authenticate,
-    authorize(Role.PT),
-    ptController.createCheckin,
-);
+// Chấm công thủ công đã bị loại bỏ — chỉ dùng /api/face-attendance/checkin/self
+// (xem faceAttendance.routes.ts). Không còn "/checkin/today", "/checkin/history",
+// "/checkin" ở đây nữa.
 
 router.get(
     "/clients",

@@ -12,7 +12,6 @@ import {
   Squares2X2Icon,
   ArrowRightOnRectangleIcon,
   SparklesIcon,
-  QrCodeIcon,
   ChartBarIcon,
   UserGroupIcon,
   CalendarIcon,
@@ -111,12 +110,12 @@ function NavLinks({ role, pathname }: { role?: string; pathname: string }) {
     { href: "/member", label: "Tổng quan", icon: HomeIcon },
     { href: "/member/ai-chat", label: "AI Trainer", icon: ChatBubbleLeftRightIcon },
     { href: "/member/membership", label: "Gói của tôi", icon: CreditCardIcon },
-    { href: "/member/check-in", label: "Check-in", icon: QrCodeIcon },
-    { href: "/member/progress", label: "Tiến trình", icon: ChartBarIcon },
     { href: "/member/trainers", label: "Huấn luyện viên", icon: UserGroupIcon },
     { href: "/member/bookings", label: "Đặt lịch", icon: CalendarIcon },
     { href: "/member/payments", label: "Thanh toán", icon: BanknotesIcon },
-    { href: "/member/face-checkin", label: "Điểm danh khuôn mặt", icon: FaceSmileIcon },
+    // Đã bỏ QR check-in — chỉ dùng khuôn mặt
+    { href: "/member/face-checkin", label: "Điểm danh", icon: FaceSmileIcon },
+    { href: "/member/progress", label: "Tiến trình", icon: ChartBarIcon },
   ];
 
   const trainerLinks = [
@@ -124,13 +123,12 @@ function NavLinks({ role, pathname }: { role?: string; pathname: string }) {
     { href: "/pt/clients", label: "Khách hàng của tôi", icon: UserGroupIcon },
     { href: "/pt/schedule", label: "Thời khoá biểu", icon: CalendarIcon },
     { href: "/pt/progress", label: "Tiến trình hội viên", icon: ChartBarIcon },
-    { href: "/pt/checkin", label: "Chấm công", icon: ClockIcon },
-    { href: "/pt/face-checkin", label: "Chấm công khuôn mặt", icon: FaceSmileIcon },
+    // Đã bỏ chấm công bằng nút — chỉ dùng khuôn mặt
+    { href: "/pt/face-checkin", label: "Chấm công", icon: FaceSmileIcon },
   ];
 
   const links =
     role === "ADMIN" ? adminLinks : role === "PT" ? trainerLinks : memberLinks;
-
   return (
     <div className="flex flex-col gap-1">
       {links.map((link) => {
