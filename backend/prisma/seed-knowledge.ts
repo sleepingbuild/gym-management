@@ -1,22 +1,23 @@
 import { PrismaClient } from "@prisma/client";
-import { GoogleGenAI } from "@google/genai";
 import { gymKnowledge } from "./knowledge-base";
 import * as dotenv from "dotenv";
 
 dotenv.config();
 
 const prisma = new PrismaClient();
-const ai = new GoogleGenAI({
-    apiKey: process.env.GEMINI_API_KEY!,
-    apiVersion: "v1",
-});
+
+const QWEN_API_URL = process.env.QWEN_API_URL || "http://localhost:5000";
 
 async function embedText(text: string): Promise<number[]> {
-    const result = await ai.models.embedContent({
-        model: "gemini-embedding-001",
-        contents: text,
+    const res = await fetch(`${QWEN_API_URL}/embed`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
     });
-    return result.embeddings![0].values!;
+    if (!res.ok)
+        throw new Error(`Embed server responded with status ${res.status}`);
+    const data = (await res.json()) as { vector: number[] };
+    return data.vector;
 }
 
 async function seedKnowledge() {

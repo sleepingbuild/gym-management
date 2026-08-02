@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import { verifyAccessToken } from "../utils/generateToken";
 import { AppError, ErrorCodes } from "../utils/errors";
-import { TokenPayload } from "../types/auth.types";
 import { Role } from "@prisma/client";
+import { TokenPayload } from "../types/auth.types";
 
 declare module "express-serve-static-core" {
     interface Request {

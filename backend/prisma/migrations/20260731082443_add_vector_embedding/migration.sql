@@ -1,0 +1,1 @@
+ALTER TABLE "KnowledgeBase" ALTER COLUMN "embedding" TYPE vector(384);

@@ -1,18 +1,13 @@
 import { PrismaClient } from "@prisma/client";
 import { v4 as uuidv4 } from "uuid";
 import { AppError } from "../utils/errors";
-import { geminiProvider } from "./providers/gemini.provider";
 import { qwenProvider } from "./providers/qwen.provider";
 import { AIProvider } from "../types/ai-provider.types";
 
 const prisma = new PrismaClient();
 
-// Chon provider dua tren env var AI_PROVIDER (mac dinh: gemini)
-const getProvider = (): AIProvider => {
-    const providerName = (process.env.AI_PROVIDER || "gemini").toLowerCase();
-    if (providerName === "qwen") return qwenProvider;
-    return geminiProvider;
-};
+// Chon provider dua tren env var AI_PROVIDER (mac dinh: qwen)
+const getProvider = (): AIProvider => qwenProvider;
 
 async function checkAndUpdateUsage(userId: string): Promise<void> {
     const membership = await prisma.userMembership.findFirst({
@@ -64,6 +59,35 @@ async function checkAndUpdateUsage(userId: string): Promise<void> {
     });
 }
 
+async function getOrCreateSession(
+    userId: string,
+    sessionId: string | undefined,
+    firstMessage: string,
+): Promise<string> {
+    if (sessionId) {
+        const existing = await prisma.chatSession.findUnique({
+            where: { id: sessionId },
+        });
+        if (existing) {
+            await prisma.chatSession.update({
+                where: { id: sessionId },
+                data: { updatedAt: new Date() },
+            });
+            return sessionId;
+        }
+    }
+
+    const title =
+        firstMessage.length > 50
+            ? firstMessage.slice(0, 50) + "..."
+            : firstMessage;
+
+    const session = await prisma.chatSession.create({
+        data: { userId, title },
+    });
+    return session.id;
+}
+
 async function chat(
     userId: string,
     message: string,
@@ -71,7 +95,11 @@ async function chat(
 ): Promise<{ sessionId: string; answer: string; usage: object }> {
     await checkAndUpdateUsage(userId);
 
-    const currentSessionId = sessionId || uuidv4();
+    const currentSessionId = await getOrCreateSession(
+        userId,
+        sessionId,
+        message,
+    );
 
     const history = await prisma.chatHistory.findMany({
         where: { userId, sessionId: currentSessionId },
@@ -121,6 +149,79 @@ async function chat(
     };
 }
 
+async function chatStream(
+    userId: string,
+    message: string,
+    sessionId: string | undefined,
+    onToken: (chunk: string) => void,
+): Promise<{ sessionId: string; answer: string; usage: object }> {
+    await checkAndUpdateUsage(userId);
+
+    const currentSessionId = await getOrCreateSession(
+        userId,
+        sessionId,
+        message,
+    );
+
+    const history = await prisma.chatHistory.findMany({
+        where: { userId, sessionId: currentSessionId },
+        orderBy: { createdAt: "asc" },
+        take: 10,
+    });
+
+    const chatHistory = history.map((h) => ({
+        role: h.role === "user" ? ("user" as const) : ("assistant" as const),
+        content: h.content,
+    }));
+
+    const provider = getProvider();
+    const answer = await provider.generateReplyStream(
+        message,
+        chatHistory,
+        onToken,
+    );
+
+    await prisma.chatHistory.createMany({
+        data: [
+            {
+                userId,
+                sessionId: currentSessionId,
+                role: "user",
+                content: message,
+            },
+            {
+                userId,
+                sessionId: currentSessionId,
+                role: "assistant",
+                content: answer,
+            },
+        ],
+    });
+
+    const updatedMembership = await prisma.userMembership.findFirst({
+        where: { userId, status: "ACTIVE" },
+        include: { plan: true },
+    });
+
+    return {
+        sessionId: currentSessionId,
+        answer,
+        usage: {
+            aiDailyCount: updatedMembership?.aiDailyCount ?? 0,
+            aiUsageCount: updatedMembership?.aiUsageCount ?? 0,
+            aiDailyLimit: updatedMembership?.plan.aiDailyLimit ?? 0,
+            aiLimit: updatedMembership?.plan.aiLimit ?? 0,
+        },
+    };
+}
+
+async function listSessions(userId: string) {
+    return prisma.chatSession.findMany({
+        where: { userId },
+        orderBy: { updatedAt: "desc" },
+    });
+}
+
 async function getChatHistory(userId: string, sessionId?: string) {
     const where = sessionId ? { userId, sessionId } : { userId };
     return prisma.chatHistory.findMany({
@@ -136,4 +237,10 @@ async function getUsage(userId: string) {
     });
 }
 
-export const aiService = { chat, getChatHistory, getUsage };
+export const aiService = {
+    chat,
+    chatStream,
+    getChatHistory,
+    getUsage,
+    listSessions,
+};

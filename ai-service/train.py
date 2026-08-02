@@ -1,13 +1,15 @@
 import json
 import torch
+from datasets import Dataset
 from transformers import (
     AutoTokenizer,
     AutoModelForCausalLM,
     BitsAndBytesConfig,
 )
 from peft import LoraConfig, get_peft_model
+from trl import SFTTrainer, SFTConfig
 
-# ── CONFIG ────────────────────────────────
+# ── CONFIG ────────────────────────────────────────────────────────────────────
 MODEL_NAME    = "Qwen/Qwen2.5-1.5B-Instruct"
 DATASET_PATH  = "faq_merged_final.json"
 OUTPUT_DIR    = "gymbot-output"
@@ -36,19 +38,19 @@ def format_sample(item):
     }
 
 def main():
-   # 1. Load dataset (chi dung list/dict Python thuan, chua tao Dataset object)
+    # 1. Load dataset
     print(f"[1/5] Loading dataset from {DATASET_PATH} ...")
     with open(DATASET_PATH, "r", encoding="utf-8-sig") as f:
         raw = json.load(f)
-    formatted_samples = [format_sample(x) for x in raw]
-    print(f"      → {len(formatted_samples)} FAQ entries loaded.")
+    dataset = Dataset.from_list([format_sample(x) for x in raw])
+    print(f"      → {len(dataset)} FAQ entries loaded.")
 
     # 2. 4-bit quantization
     print("[2/5] Configuring 4-bit quantization ...")
     bnb_config = BitsAndBytesConfig(
         load_in_4bit=True,
         bnb_4bit_quant_type="nf4",
-        bnb_4bit_compute_dtype=torch.bfloat16,
+        bnb_4bit_compute_dtype=torch.float16,
         bnb_4bit_use_double_quant=True,
     )
 
@@ -85,7 +87,6 @@ def main():
     model.print_trainable_parameters()
 
     # 5. Train — dùng SFTConfig thay TrainingArguments (TRL mới)
-    from trl import SFTTrainer, SFTConfig
     print("[5/5] Starting training ...")
     sft_config = SFTConfig(
         output_dir=OUTPUT_DIR,
@@ -93,7 +94,7 @@ def main():
         per_device_train_batch_size=BATCH_SIZE,
         gradient_accumulation_steps=GRAD_ACCUM,
         learning_rate=LEARNING_RATE,
-        bf16=True,
+        fp16=True,
         logging_steps=10,
         save_steps=100,
         save_total_limit=2,
@@ -101,12 +102,9 @@ def main():
         lr_scheduler_type="cosine",
         report_to="none",
         optim="paged_adamw_8bit",
-        max_length=MAX_SEQ_LEN,
+        max_seq_length=MAX_SEQ_LEN,
         dataset_text_field="text",
     )
-
-    from datasets import Dataset
-    dataset = Dataset.from_list(formatted_samples)
 
     trainer = SFTTrainer(
         model=model,
