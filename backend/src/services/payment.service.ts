@@ -315,10 +315,25 @@ const verifyMoMoWebhook = async (
 };
 
 const getPaymentHistory = async (userId: string) => {
-    return prisma.payment.findMany({
+    const payments = await prisma.payment.findMany({
         where: { userId },
+        include: { membershipPlan: { select: { id: true, name: true } } },
         orderBy: { createdAt: "desc" },
     });
+
+    const totalAmount = payments
+        .filter((p) => p.status === "SUCCESS")
+        .reduce((sum, p) => sum + p.amount, 0);
+
+    return {
+        payments,
+        stats: {
+            totalAmount,
+            totalCount: payments.length,
+            successCount: payments.filter((p) => p.status === "SUCCESS").length,
+            pendingCount: payments.filter((p) => p.status === "PENDING").length,
+        },
+    };
 };
 
 export const paymentService = {

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { paymentService } from '@/services/payment.service';
 import { MembershipPlan, membershipService, UserMembership } from '@/services/membership.service';
 import { MembershipCard } from '@/components/membership/MembershipCard';
 import { Card } from '@/components/ui/Card';
@@ -12,6 +13,7 @@ export default function MembershipPage() {
   const [currentMembership, setCurrentMembership] = useState<UserMembership | null>(null);
   const [loading, setLoading] = useState(true);
   const [buying, setBuying] = useState<string | null>(null);
+  const [cancelling, setCancelling] = useState(false);
 
   const fetchData = async () => {
     setLoading(true);
@@ -36,17 +38,43 @@ export default function MembershipPage() {
   const handleBuy = async (planId: string) => {
     setBuying(planId);
     try {
-      await membershipService.buyMembership(planId);
-      alert('✅ Đăng ký thành công!');
-      await fetchData();
-      // Redirect đến trang payment nếu có
-      router.push('/member/dashboard');
+      const plan = plans.find((p) => p.id === planId);
+      if (plan && plan.price === 0) {
+        await membershipService.buyMembership(planId);
+        alert('✅ Đăng ký thành công!');
+        await fetchData();
+        router.push('/member');
+      } else {
+        const { paymentUrl } = await paymentService.createPayment(planId, 'VNPAY');
+        window.location.href = paymentUrl;
+      }
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
       const message = error.response?.data?.message || 'Đăng ký thất bại. Vui lòng thử lại.';
-      alert(`❌ ${message}`);
+      alert(message);
     } finally {
       setBuying(null);
+    }
+  };
+
+  const handleCancel = async () => {
+    if (
+      !confirm(
+        'Hủy gói tập hiện tại? Bạn sẽ mất quyền lợi của gói này và có thể đăng ký gói mới ngay sau khi hủy.',
+      )
+    )
+      return;
+    setCancelling(true);
+    try {
+      await membershipService.cancelMembership();
+      alert('✅ Đã hủy gói tập.');
+      await fetchData();
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      const message = error.response?.data?.message || 'Hủy gói thất bại. Vui lòng thử lại.';
+      alert(`❌ ${message}`);
+    } finally {
+      setCancelling(false);
     }
   };
 
@@ -88,10 +116,19 @@ export default function MembershipPage() {
                 Hết hạn: {new Date(currentMembership.expiryDate).toLocaleDateString('vi-VN')}
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="px-3 py-1 bg-success/10 text-success text-sm rounded-full">
                 {currentMembership.status === 'ACTIVE' ? '🟢 Đang hoạt động' : '🔴 Đã hết hạn'}
               </span>
+              {currentMembership.status === 'ACTIVE' && (
+                <button
+                  onClick={handleCancel}
+                  disabled={cancelling}
+                  className="px-3 py-1.5 text-sm text-error border border-error/40 rounded-full hover:bg-error/10 transition-colors disabled:opacity-50"
+                >
+                  {cancelling ? 'Đang hủy...' : 'Hủy gói'}
+                </button>
+              )}
             </div>
           </div>
         </Card>

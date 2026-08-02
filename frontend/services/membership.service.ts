@@ -41,4 +41,10 @@ export const membershipService = {
     const response = await api.post('/memberships/buy', { planId });
     return response.data.data.membership;
   },
+
+  // Hủy gói
+  async cancelMembership(): Promise<UserMembership> {
+  const response = await api.patch('/memberships/cancel');
+  return response.data.data.membership;
+  },
 };

@@ -55,7 +55,7 @@ export default function MemberPaymentsPage() {
   useEffect(() => {
     const fetchPayments = async () => {
       try {
-        const res = await api.get("/member/payments");
+        const res = await api.get("/payments/history");
         setPayments(res.data.data.payments);
         setStats(res.data.data.stats);
       } catch (err) {

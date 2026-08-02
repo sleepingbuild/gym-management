@@ -105,13 +105,13 @@ const getPaymentHistory = async (
 ): Promise<void> => {
     try {
         const userId = req.user!.userId;
-        const payments = await paymentService.getPaymentHistory(userId);
+        const result = await paymentService.getPaymentHistory(userId);
 
         res.status(200).json({
             success: true,
             statusCode: 200,
             message: "Payment history retrieved",
-            data: { payments },
+            data: result,
         });
     } catch (error) {
         next(error);
