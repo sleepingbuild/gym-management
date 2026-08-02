@@ -60,7 +60,11 @@ export const membershipService = {
         };
     },
 
-    // ✅ Optimized: batch create
+    // ✅ Dùng upsert thay vì create: userId là unique nên nếu user đã từng
+    // có UserMembership (kể cả đã SUSPENDED/EXPIRED do hủy gói trước đó),
+    // create() sẽ luôn báo lỗi trùng khóa P2002. upsert cập nhật lại đúng
+    // bản ghi cũ thành gói mới, khớp với cách payment.service.ts đã làm
+    // sau khi thanh toán VNPay/MoMo thành công.
     async buyMembership(userId: string, planId: string) {
         const plan = await prisma.membershipPlan.findFirst({
             where: { id: planId, isActive: true },
@@ -88,8 +92,19 @@ export const membershipService = {
         const expiryDate = new Date(startDate);
         expiryDate.setDate(expiryDate.getDate() + plan.duration);
 
-        const membership = await prisma.userMembership.create({
-            data: {
+        const membership = await prisma.userMembership.upsert({
+            where: { userId },
+            update: {
+                planId,
+                startDate,
+                expiryDate,
+                status: "ACTIVE",
+                aiUsageCount: 0,
+                aiDailyCount: 0,
+                aiUsageReset: startDate,
+                aiDailyReset: startDate,
+            },
+            create: {
                 userId,
                 planId,
                 startDate,
