@@ -88,6 +88,26 @@ router.patch("/users/:id/role", adminController.updateUserRole);
  *       200:
  *         description: Danh sách doanh thu theo tháng
  */
+
+/**
+ * @swagger
+ * /admin/users/{id}/membership:
+ *   patch:
+ *     summary: Gán/đổi gói tập cho user, hoặc hủy gói hiện tại (planId null)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Cập nhật thành công
+ */
+router.patch("/users/:id/membership", adminController.updateUserMembership);
 router.get("/revenue", adminController.getRevenue);
 
 /**

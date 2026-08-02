@@ -18,13 +18,31 @@ interface User {
   } | null;
 }
 
+interface MembershipPlan {
+  id: string;
+  name: string;
+  price: number;
+  duration: number;
+  isActive: boolean;
+}
+
+const MEMBERSHIP_STATUS_LABEL: Record<string, string> = {
+  ACTIVE: "Đang hoạt động",
+  EXPIRED: "Hết hạn",
+  SUSPENDED: "Đã hủy",
+};
+
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
+  const [plans, setPlans] = useState<MembershipPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filterPlan, setFilterPlan] = useState("ALL");
   const [editRoleId, setEditRoleId] = useState<string | null>(null);
   const [editRoleValue, setEditRoleValue] = useState("");
+  const [editMembershipId, setEditMembershipId] = useState<string | null>(null);
+  const [editMembershipValue, setEditMembershipValue] = useState(""); // "" = hủy gói
+  const [savingMembership, setSavingMembership] = useState(false);
 
   const fetchUsers = async () => {
     try {
@@ -37,8 +55,18 @@ export default function AdminUsersPage() {
     }
   };
 
+  const fetchPlans = async () => {
+    try {
+      const res = await api.get("/admin/memberships");
+      setPlans(res.data.data.plans);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
     fetchUsers();
+    fetchPlans();
   }, []);
 
   const handleToggleActive = async (id: string) => {
@@ -64,6 +92,77 @@ export default function AdminUsersPage() {
     }
   };
 
+  const openMembershipEditor = (user: User) => {
+    setEditMembershipId(user.id);
+    // Chưa có gói -> để trống (chọn 1 gói); đang có gói -> chọn sẵn gói hiện tại
+    setEditMembershipValue("");
+  };
+
+  const handleUpdateMembership = async (id: string) => {
+    setSavingMembership(true);
+    try {
+      const res = await api.patch(`/admin/users/${id}/membership`, {
+        planId: editMembershipValue || null,
+      });
+      const membership = res.data.data.membership;
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.id === id
+            ? {
+                ...u,
+                userMembership: membership
+                  ? {
+                      status: membership.status,
+                      expiryDate: membership.expiryDate,
+                      plan: { name: membership.plan.name },
+                    }
+                  : null,
+              }
+            : u,
+        ),
+      );
+      setEditMembershipId(null);
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      alert(`❌ ${error.response?.data?.message || "Không thể cập nhật gói."}`);
+    } finally {
+      setSavingMembership(false);
+    }
+  };
+
+  const handleCancelMembership = async (id: string) => {
+    if (!confirm("Hủy gói tập hiện tại của user này? Sau khi hủy, user có thể tự đăng ký gói mới."))
+      return;
+    setEditMembershipValue("");
+    setSavingMembership(true);
+    try {
+      const res = await api.patch(`/admin/users/${id}/membership`, { planId: null });
+      const membership = res.data.data.membership;
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.id === id
+            ? {
+                ...u,
+                userMembership: membership
+                  ? {
+                      status: membership.status,
+                      expiryDate: membership.expiryDate,
+                      plan: { name: membership.plan.name },
+                    }
+                  : null,
+              }
+            : u,
+        ),
+      );
+      setEditMembershipId(null);
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      alert(`❌ ${error.response?.data?.message || "Không thể hủy gói."}`);
+    } finally {
+      setSavingMembership(false);
+    }
+  };
+
   const filtered = users.filter((u) => {
     const matchSearch =
       u.fullName.toLowerCase().includes(search.toLowerCase()) ||
@@ -81,6 +180,8 @@ export default function AdminUsersPage() {
       : role === "PT"
         ? "bg-accent-teal/15 text-accent-teal"
         : "bg-surface-dark-elevated text-muted";
+
+  const activePlans = plans.filter((p) => p.isActive);
 
   return (
     <div>
@@ -120,7 +221,7 @@ export default function AdminUsersPage() {
       {/* Table */}
       <div className="bg-surface-card border border-hairline rounded-lg overflow-hidden">
         {/* Header row */}
-        <div className="grid grid-cols-[2fr_2fr_1fr_1fr_1fr_1fr_auto] px-5 py-3 bg-surface-dark-elevated border-b border-hairline">
+        <div className="grid grid-cols-[2fr_2fr_1fr_1fr_1.6fr_1fr_auto] px-5 py-3 bg-surface-dark-elevated border-b border-hairline">
           {[
             "Họ tên",
             "Email",
@@ -150,7 +251,7 @@ export default function AdminUsersPage() {
           filtered.map((user, index) => (
             <div
               key={user.id}
-              className={`grid grid-cols-[2fr_2fr_1fr_1fr_1fr_1fr_auto] px-5 py-3.5 items-center ${
+              className={`grid grid-cols-[2fr_2fr_1fr_1fr_1.6fr_1fr_auto] px-5 py-3.5 items-center ${
                 index < filtered.length - 1 ? "border-b border-hairline" : ""
               } ${user.isActive ? "" : "opacity-50"}`}
             >
@@ -206,15 +307,65 @@ export default function AdminUsersPage() {
               )}
 
               {/* Plan */}
-              <span
-                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium w-fit ${
-                  user.userMembership
-                    ? "bg-primary text-white"
-                    : "bg-surface-dark-elevated text-muted"
-                }`}
-              >
-                {user.userMembership?.plan.name ?? "Chưa có"}
-              </span>
+              {editMembershipId === user.id ? (
+                <div className="flex flex-col gap-1">
+                  <div className="flex gap-1 items-center flex-wrap">
+                    <select
+                      value={editMembershipValue}
+                      onChange={(e) => setEditMembershipValue(e.target.value)}
+                      className="text-xs px-1.5 py-0.5 rounded-md border border-hairline bg-surface-dark-soft text-ink max-w-[140px]"
+                    >
+                      <option value="">-- Chọn gói --</option>
+                      {activePlans.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.name} ({p.duration} ngày)
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      disabled={!editMembershipValue || savingMembership}
+                      onClick={() => handleUpdateMembership(user.id)}
+                      className="text-[11px] px-2 py-0.5 bg-primary text-white rounded disabled:opacity-50"
+                    >
+                      ✓
+                    </button>
+                    <button
+                      onClick={() => setEditMembershipId(null)}
+                      className="text-[11px] px-2 py-0.5 bg-surface-dark-elevated text-muted rounded"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  {user.userMembership && (
+                    <button
+                      disabled={savingMembership}
+                      onClick={() => handleCancelMembership(user.id)}
+                      className="text-[11px] text-error hover:underline text-left disabled:opacity-50"
+                    >
+                      Hủy gói hiện tại
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <div className="flex flex-col gap-0.5">
+                  <span
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium w-fit ${
+                      user.userMembership && user.userMembership.status === "ACTIVE"
+                        ? "bg-primary text-white"
+                        : "bg-surface-dark-elevated text-muted"
+                    }`}
+                  >
+                    {user.userMembership?.plan.name ?? "Chưa có"}
+                  </span>
+                  {user.userMembership && (
+                    <span className="text-[11px] text-muted-soft">
+                      {MEMBERSHIP_STATUS_LABEL[user.userMembership.status] ??
+                        user.userMembership.status}{" "}
+                      · HSD {new Date(user.userMembership.expiryDate).toLocaleDateString("vi-VN")}
+                    </span>
+                  )}
+                </div>
+              )}
 
               {/* Status */}
               <span
@@ -226,7 +377,7 @@ export default function AdminUsersPage() {
               </span>
 
               {/* Actions */}
-              <div className="flex gap-1.5">
+              <div className="flex gap-1.5 flex-wrap">
                 <button
                   onClick={() => {
                     setEditRoleId(user.id);
@@ -234,7 +385,13 @@ export default function AdminUsersPage() {
                   }}
                   className="px-2.5 py-1 text-xs bg-surface-dark-elevated text-ink rounded-md hover:bg-hairline transition-colors"
                 >
-                  Sửa
+                  Sửa vai trò
+                </button>
+                <button
+                  onClick={() => openMembershipEditor(user)}
+                  className="px-2.5 py-1 text-xs bg-surface-dark-elevated text-ink rounded-md hover:bg-hairline transition-colors"
+                >
+                  Sửa gói
                 </button>
                 <button
                   onClick={() => handleToggleActive(user.id)}

@@ -2,6 +2,7 @@
 import { membershipService } from "../services/membership.service";
 import { buyMembershipSchema } from "../validators/membership.validator";
 import { prisma } from "../config/prisma";
+import { AppError } from "../utils/errors";
 
 const getPlans = async (
     req: Request,
@@ -68,6 +69,45 @@ const getCurrentMembership = async (
     }
 };
 
+const cancelMembership = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+): Promise<void> => {
+    try {
+        const userId = req.user!.userId;
+
+        const existing = await prisma.userMembership.findUnique({
+            where: { userId },
+        });
+        if (!existing)
+            throw new AppError(
+                404,
+                "MEMBERSHIP_001: Bạn chưa có gói tập nào để hủy",
+            );
+        if (existing.status !== "ACTIVE")
+            throw new AppError(
+                400,
+                "MEMBERSHIP_002: Gói hiện tại không ở trạng thái đang hoạt động",
+            );
+
+        const membership = await prisma.userMembership.update({
+            where: { userId },
+            data: { status: "SUSPENDED" },
+            include: { plan: true },
+        });
+
+        res.status(200).json({
+            success: true,
+            statusCode: 200,
+            message: "Membership cancelled",
+            data: { membership },
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 // Debug function
 const debugPlans = async (
     req: Request,
@@ -97,5 +137,6 @@ export const membershipController = {
     getPlans,
     buyMembership,
     getCurrentMembership,
+    cancelMembership,
     debugPlans,
 };

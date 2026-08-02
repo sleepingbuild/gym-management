@@ -131,6 +131,100 @@ const updateUserRole = async (
 };
 
 /**
+ * PATCH /admin/users/:id/membership
+ * body: { planId: string | null }
+ *   - planId có giá trị -> gán/đổi gói cho user (upsert UserMembership,
+ *     tính lại expiryDate = hôm nay + plan.duration ngày, giống hệt luồng
+ *     mua gói qua VNPay/MoMo trong payment.service.ts)
+ *   - planId null/rỗng -> hủy gói hiện tại (status = SUSPENDED) để user
+ *     có thể tự mua gói mới (luồng mua hiện tại chặn nếu còn gói ACTIVE)
+ */
+const updateUserMembership = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+): Promise<void> => {
+    try {
+        const id = req.params.id as string;
+        const { planId } = req.body as { planId?: string | null };
+
+        const user = await prisma.user.findFirst({
+            where: { id, isDeleted: false },
+        });
+        if (!user) throw new AppError(404, "USER_001: User not found");
+
+        if (!planId) {
+            const existing = await prisma.userMembership.findUnique({
+                where: { userId: id },
+            });
+            if (!existing) {
+                res.status(200).json({
+                    success: true,
+                    statusCode: 200,
+                    message: "User has no membership to cancel",
+                    data: { membership: null },
+                });
+                return;
+            }
+            const membership = await prisma.userMembership.update({
+                where: { userId: id },
+                data: { status: "SUSPENDED" },
+                include: { plan: true },
+            });
+            res.status(200).json({
+                success: true,
+                statusCode: 200,
+                message: "Membership cancelled",
+                data: { membership },
+            });
+            return;
+        }
+
+        const plan = await prisma.membershipPlan.findFirst({
+            where: { id: planId, isActive: true },
+        });
+        if (!plan)
+            throw new AppError(
+                404,
+                "USER_MEMBERSHIP_001: Plan not found or inactive",
+            );
+
+        const startDate = new Date();
+        const expiryDate = new Date(startDate);
+        expiryDate.setDate(expiryDate.getDate() + plan.duration);
+
+        const membership = await prisma.userMembership.upsert({
+            where: { userId: id },
+            update: {
+                planId: plan.id,
+                startDate,
+                expiryDate,
+                status: "ACTIVE",
+                aiUsageCount: 0,
+                aiDailyCount: 0,
+            },
+            create: {
+                userId: id,
+                planId: plan.id,
+                startDate,
+                expiryDate,
+                status: "ACTIVE",
+            },
+            include: { plan: true },
+        });
+
+        res.status(200).json({
+            success: true,
+            statusCode: 200,
+            message: "Membership updated",
+            data: { membership },
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
  * GET /admin/revenue
  */
 const getRevenue = async (
@@ -1119,29 +1213,35 @@ const getTrainerCheckins = async (
     next: NextFunction,
 ): Promise<void> => {
     try {
-        const dateParam = (req.query.date as string) || new Date().toISOString().slice(0, 10);
+        const dateParam =
+            (req.query.date as string) || new Date().toISOString().slice(0, 10);
         const date = new Date(dateParam);
         date.setHours(0, 0, 0, 0);
- 
+
         if (isNaN(date.getTime())) {
-            throw new AppError(400, "ADMIN_TC_001: date không hợp lệ (định dạng YYYY-MM-DD)");
+            throw new AppError(
+                400,
+                "ADMIN_TC_001: date không hợp lệ (định dạng YYYY-MM-DD)",
+            );
         }
- 
+
         const trainers = await prisma.trainerProfile.findMany({
             where: { user: { isActive: true, isDeleted: false } },
             include: { user: { select: { id: true, fullName: true } } },
             orderBy: { user: { fullName: "asc" } },
         });
- 
+
         const checkins = await prisma.trainerCheckIn.findMany({
             where: {
                 date,
                 trainerId: { in: trainers.map((t) => t.userId) },
             },
         });
- 
-        const checkinByTrainerId = new Map(checkins.map((c) => [c.trainerId, c]));
- 
+
+        const checkinByTrainerId = new Map(
+            checkins.map((c) => [c.trainerId, c]),
+        );
+
         const rows = trainers.map((t) => {
             const checkin = checkinByTrainerId.get(t.userId);
             return {
@@ -1153,7 +1253,7 @@ const getTrainerCheckins = async (
                 method: checkin?.method ?? null, // ✨ MANUAL | FACE | null (chưa chấm công)
             };
         });
- 
+
         res.status(200).json({
             success: true,
             statusCode: 200,
@@ -1164,7 +1264,7 @@ const getTrainerCheckins = async (
         next(error);
     }
 };
- 
+
 /**
  * POST /admin/trainer-checkins
  * Body: { trainerId: string, date: string (YYYY-MM-DD) }
@@ -1177,26 +1277,34 @@ const createTrainerCheckin = async (
 ): Promise<void> => {
     try {
         const { trainerId, date: dateParam } = req.body;
- 
+
         if (!trainerId || !dateParam) {
             throw new AppError(400, "ADMIN_TC_002: Thiếu trainerId hoặc date");
         }
- 
-        const trainer = await prisma.trainerProfile.findUnique({ where: { userId: trainerId } });
+
+        const trainer = await prisma.trainerProfile.findUnique({
+            where: { userId: trainerId },
+        });
         if (!trainer) {
-            throw new AppError(404, "ADMIN_TC_003: Không tìm thấy huấn luyện viên");
+            throw new AppError(
+                404,
+                "ADMIN_TC_003: Không tìm thấy huấn luyện viên",
+            );
         }
- 
+
         const date = new Date(dateParam);
         date.setHours(0, 0, 0, 0);
- 
+
         const existing = await prisma.trainerCheckIn.findUnique({
             where: { trainerId_date: { trainerId, date } },
         });
         if (existing) {
-            throw new AppError(409, "ADMIN_TC_004: Trainer đã được chấm công ngày này rồi");
+            throw new AppError(
+                409,
+                "ADMIN_TC_004: Trainer đã được chấm công ngày này rồi",
+            );
         }
- 
+
         const record = await prisma.trainerCheckIn.create({
             data: {
                 trainerId,
@@ -1205,7 +1313,7 @@ const createTrainerCheckin = async (
                 method: "MANUAL",
             },
         });
- 
+
         res.status(201).json({
             success: true,
             statusCode: 201,
@@ -1216,7 +1324,7 @@ const createTrainerCheckin = async (
         next(error);
     }
 };
- 
+
 /**
  * DELETE /admin/trainer-checkins/:id
  * Hủy (xoá) 1 bản ghi chấm công.
@@ -1228,14 +1336,19 @@ const deleteTrainerCheckin = async (
 ): Promise<void> => {
     try {
         const id = req.params.id as string;
- 
-        const existing = await prisma.trainerCheckIn.findUnique({ where: { id } });
+
+        const existing = await prisma.trainerCheckIn.findUnique({
+            where: { id },
+        });
         if (!existing) {
-            throw new AppError(404, "ADMIN_TC_005: Không tìm thấy bản ghi chấm công");
+            throw new AppError(
+                404,
+                "ADMIN_TC_005: Không tìm thấy bản ghi chấm công",
+            );
         }
- 
+
         await prisma.trainerCheckIn.delete({ where: { id } });
- 
+
         res.status(200).json({
             success: true,
             statusCode: 200,
@@ -1245,12 +1358,13 @@ const deleteTrainerCheckin = async (
         next(error);
     }
 };
- 
+
 export const adminController = {
     getStats,
     getUsers,
     toggleUserActive,
     updateUserRole,
+    updateUserMembership,
     getRevenue,
     getMembershipDistribution,
     getAllMembershipPlans,

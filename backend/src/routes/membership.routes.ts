@@ -10,5 +10,6 @@ router.get("/plans", cacheMiddleware(300), membershipController.getPlans);
 
 router.post("/buy", authenticate, membershipController.buyMembership);
 router.get("/current", authenticate, membershipController.getCurrentMembership);
+router.patch("/cancel", authenticate, membershipController.cancelMembership);
 
 export default router;
