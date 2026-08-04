@@ -70,7 +70,7 @@ const createVNPayUrl = async (
     };
 
     const sorted = sortObject(params);
-    const signData = qs.stringify(sorted, { encode: false });
+    const signData = new URLSearchParams(sorted).toString();
     const hmac = crypto.createHmac("sha512", process.env.VNPAY_HASH_SECRET!);
     const signed = hmac.update(Buffer.from(signData, "utf-8")).digest("hex");
 

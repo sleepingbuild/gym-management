@@ -19,10 +19,13 @@ const createPayment = async (
         const userId = req.user!.userId;
 
         // Lay IP address
-        const ipAddr =
+        let ipAddr =
             (req.headers["x-forwarded-for"] as string)?.split(",")[0] ||
             req.socket.remoteAddress ||
             "127.0.0.1";
+        if (ipAddr === "::1" || ipAddr === "::ffff:127.0.0.1") {
+            ipAddr = "127.0.0.1";
+        }
 
         // Lay amount tu plan
         const plan = await prisma.membershipPlan.findFirst({
@@ -40,14 +43,14 @@ const createPayment = async (
             result = await paymentService.createVNPayUrl(
                 userId,
                 planId,
-                plan.price * 1000,
+                plan.price,
                 ipAddr,
             );
         } else {
             result = await paymentService.createMoMoUrl(
                 userId,
                 planId,
-                plan.price * 1000,
+                plan.price,
             );
         }
 
