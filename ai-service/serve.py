@@ -128,19 +128,10 @@ async def chat_stream(req: ChatRequest):
         streamer=streamer,
     )
 
-    import time
+    
     thread = Thread(target=model.generate, kwargs=generation_kwargs)
     thread.start()
-
-    def token_stream():
-        start = time.time()
-        token_count = 0
-        for new_text in streamer:
-            token_count += 1
-            yield new_text
-        elapsed = time.time() - start
-        print(f"⏱️  {token_count} tokens in {elapsed:.2f}s = {token_count/elapsed:.2f} tok/s")
-
+       
     return StreamingResponse(token_stream(), media_type="text/plain")
 
 @app.post("/embed", response_model=EmbedResponse)

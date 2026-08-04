@@ -1,8 +1,8 @@
 # 🗺️ Gym Management System - Development Roadmap
 
-**Project Status:** ✅ Completed — Phase 6 (Testing & Deployment)  
-**Last Updated:** 04/07/2026  
-**Team Size:** 2 Members  
+**Project Status:** ✅ Released — v1.0.0 (original 26-issue roadmap below, plus Phase 7–8 extension work — see [PROJECT_STATUS.md](./PROJECT_STATUS.md) for the extension feature list)  
+**Last Updated:** 02/08/2026  
+**Team Size:** 2 core members (original roadmap); extension phases coordinated across multiple contributing agents on separate feature areas  
 **Version:** v1.0.0
 
 ---
@@ -23,13 +23,14 @@
 Gym Management System là một platform quản lý phòng gym toàn diện bao gồm:
 
 - ✅ **Web Admin Dashboard** - Quản lý hệ thống
-- ✅ **AI Chatbot** - Hỗ trợ luyện tập và dinh dưỡng
-- ✅ **Membership System** - Quản lý gói thành viên
+- ✅ **AI Chatbot** - Hỗ trợ luyện tập và dinh dưỡng (ban đầu Gemini RAG, hiện tại đã chuyển hẳn sang self-trained Qwen 2.5 + RAG + streaming, xem [PROJECT_STATUS.md](./PROJECT_STATUS.md))
+- ✅ **Membership System** - Quản lý gói thành viên (kèm hủy gói tự/hộ ở phase mở rộng)
 - ✅ **Payment System** - Thanh toán online (VNPay / MoMo)
 - ✅ **Notification System** - Thông báo realtime
 - ✅ **Body Progress Tracking** - Theo dõi tiến trình cơ thể
+- ✅ **Face Check-in** - Điểm danh khuôn mặt, thay thế QR check-in ban đầu (phase mở rộng)
 - ✅ **Docker Support** - Containerization
-- ✅ **Production Deployment** - Vercel + Railway + Neon
+- ✅ **Production Deployment** - Vercel/Render + Neon (đã migrate khỏi Railway)
 
 ---
 
@@ -64,7 +65,7 @@ Gym Management System là một platform quản lý phòng gym toàn diện bao 
 - [x] #9 - API lấy danh sách packages
 - [x] #10 - API mua gói thành viên
 - [x] #11 - Thiết kế bảng AI Chat History
-- [x] #12 - Tích hợp Gemini API (RAG pipeline)
+- [x] #12 - Tích hợp AI RAG pipeline (ban đầu Gemini API, sau đó thay hẳn bằng self-trained Qwen — xem CHANGELOG v1.0.0)
 - [x] #13 - Giới hạn AI usage theo membership
 
 ---
@@ -98,9 +99,9 @@ Gym Management System là một platform quản lý phòng gym toàn diện bao 
 - [x] #21 - Theo dõi tiến trình cơ thể (BMI, cân nặng, Line Chart)
 - [x] #22 - API và Security Testing (Jest, JWT, SQL Injection)
 - [x] #23 - Optimize Database và API (Indexing, Redis, < 500ms)
-- [x] #24 - Deploy Backend và Database (Docker, Railway)
+- [x] #24 - Deploy Backend và Database (Docker, ban đầu Railway — đã migrate sang Render sau khi hết credit free tier)
 - [x] #25 - Deploy Frontend Web (Vercel)
-- [ ] #26 - Final Production Release + Monitoring (In Progress)
+- [x] #26 - Final Production Release + Monitoring — Closed, v1.0.0
 
 ---
 
@@ -116,7 +117,7 @@ Gym Management System là một platform quản lý phòng gym toàn diện bao 
 | 6. Testing & Deployment | 4-5 days | 🔴 Critical | Both | ✅ Completed |
 
 **Tổng số Issues:** 27 issues (26 + #89)  
-**Status:** 26/27 completed (96%)
+**Status:** 27/27 completed (100%) — cộng thêm Phase 7–8 mở rộng (không đánh số issue gốc), xem [PROJECT_STATUS.md](./PROJECT_STATUS.md)
 
 ---
 
@@ -124,9 +125,9 @@ Gym Management System là một platform quản lý phòng gym toàn diện bao 
 
 | Service | URL |
 |---------|-----|
-| Frontend | https://gym-management-five-gules.vercel.app |
-| Backend | https://gym-management-production-44b5.up.railway.app |
-| API Docs | https://gym-management-production-44b5.up.railway.app/api/docs |
+| Frontend | https://gym-management-five-gules.vercel.app *(verify current domain — may have changed)* |
+| Backend | https://gym-management-dwvx.onrender.com *(migrated from Railway after free-tier credit ran out)* |
+| API Docs | https://gym-management-dwvx.onrender.com/api/docs |
 
 ---
 
@@ -153,7 +154,7 @@ docker-compose down
 ## 👥 Team Allocation
 
 ### 🧑‍💻 Member 1 — Backend Lead + AI (Phases 1, 2, 3, 5, 6)
-- Chịu trách nhiệm thiết kế Database, APIs, bảo mật hệ thống, tích hợp AI OpenAI/Gemini, cấu hình cổng thanh toán VNPay/MoMo và hạ tầng server.
+- Chịu trách nhiệm thiết kế Database, APIs, bảo mật hệ thống, tích hợp AI (ban đầu Gemini, sau chuyển sang self-trained Qwen), cấu hình cổng thanh toán VNPay/MoMo và hạ tầng server.
 
 ### 🧑‍🎨 Member 2 — Frontend Lead (Phases 1, 2, 4, 6)
 - Chịu trách nhiệm xây dựng giao diện quản trị Admin Web (React/NextJS).

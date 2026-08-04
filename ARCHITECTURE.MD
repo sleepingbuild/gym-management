@@ -6,11 +6,11 @@ Gym Management System là một nền tảng quản lý phòng gym bao gồm:
 
 * Backend API Server
 * Web Admin Dashboard
-* Membership System
-* QR Check-in System
+* Membership System (kèm PT booking + trainer working-hours scheduling)
+* Face Check-in System (thay thế QR check-in ban đầu — xem CHANGELOG v1.0.0)
 * Payment Gateway
 * Notification System
-* AI Fitness Chatbot
+* AI Fitness Chatbot (self-trained Qwen + RAG, thay thế Gemini)
 * Body Progress Tracking
 
 ---
@@ -123,9 +123,11 @@ TypeScript
 PostgreSQL + pgvector
 Prisma ORM
 JWT Authentication
-Gemini SDK
+Self-trained Qwen FastAPI service (RAG, replaces the original Gemini SDK integration)
 VNPay / MoMo SDK
 Redis (ioredis)
+face-api.js (client-side face recognition)
+Mailjet (email verification)
 
 ## 📂 BACKEND STRUCTURE
 backend/
@@ -748,12 +750,13 @@ PT	Xem học viên, quản lý lịch, tạo workout plan, theo dõi tiến đ�
 MEMBER	Đăng ký gói tập, đặt lịch với PT, chat AI, track progress, check-in
 🤖 AI SYSTEM ARCHITECTURE
 AI Provider
-Gemini 2.0 Flash (Google)
-gemini-embedding-001 for embeddings
+Ban đầu hệ thống hỗ trợ 2 provider chuyển đổi qua biến `AI_PROVIDER` (Gemini 2.0 Flash + gemini-embedding-001, hoặc self-trained Qwen). Kể từ v1.0.0, Gemini đã bị loại bỏ hoàn toàn — provider duy nhất là:
+- **Qwen 2.5 1.5B** (LoRA fine-tuned), phục vụ qua FastAPI (`serve.py`), chạy local trên máy developer, expose ra ngoài qua ngrok tunnel tĩnh
+- Embeddings: `paraphrase-multilingual-MiniLM-L12-v2` (384 chiều), sinh trong `serve.py`; cột `KnowledgeBase.embedding` đã migrate tay từ `vector(3072)` (Gemini) sang `vector(384)`
 
-RAG Pipeline
-text
-1. User gửi tin nhắn chat
+RAG + Streaming + Multi-session Pipeline
+```
+1. User gửi tin nhắn chat (POST /ai/chat hoặc /ai/chat/stream)
    ↓
 2. Validate request
    ↓
@@ -761,23 +764,30 @@ text
    ↓
 4. Nếu hết lượt → trả về error
    ↓
-5. Embed user query → gemini-embedding-001
+5. Embed user query → Qwen embedding endpoint (/embed, 384 chiều)
    ↓
-6. Cosine similarity search trên pgvector
+6. Cosine similarity search trên pgvector (embedding <=> $1::vector)
    ↓
-7. Lấy top 5 relevant documents
+7. Lấy top 3 relevant documents
    ↓
-8. Build prompt với context + user query
+8. Scope-limiting: nếu similarity score thấp VÀ không khớp từ khoá gym
+   → trả lời từ chối lịch sự (không tốn thêm lượt gọi model)
    ↓
-9. Gọi Gemini 2.0 Flash API
+9. Build prompt với context + user query
    ↓
-10. AI trả về response
+10. Gọi Qwen FastAPI — /chat (non-stream) hoặc /chat/stream (SSE, proxy qua Express)
    ↓
-11. Lưu chat history (user message + AI response)
+11. Tạo/cập nhật ChatSession (chỉ tạo session thật khi tin nhắn đầu tiên được gửi)
    ↓
-12. Increment AI usage count
+12. Lưu chat history (user message + AI response)
    ↓
-13. Trả response về client
+13. Increment AI usage count
+   ↓
+14. Trả response (hoặc stream) về client
+```
+
+> Lưu ý vận hành: chatbot chỉ hoạt động khi máy developer đang bật `serve.py` + tunnel ngrok. Xem PROJECT_STATUS.md để biết kế hoạch chuyển sang GPU cloud.
+
 AI Limits by Plan
 Plan	Monthly Limit	Daily Limit
 BASIC	10	1
@@ -900,10 +910,10 @@ docker-compose down
 🚀 DEPLOYMENT
 Production URLs
 Service	Platform	URL
-Frontend	Vercel	https://gym-management-five-gules.vercel.app
-Backend	Railway	https://gym-management-production-44b5.up.railway.app
+Frontend	Vercel/Render	https://gym-management-five-gules.vercel.app (verify current domain)
+Backend	Render (migrated from Railway)	https://gym-management-dwvx.onrender.com
 Database	Neon	PostgreSQL + pgvector (Singapore)
-API Docs	Swagger	https://gym-management-production-44b5.up.railway.app/api/docs
+API Docs	Swagger	https://gym-management-dwvx.onrender.com/api/docs
 CI/CD (GitHub Actions)
 yaml
 name: CI/CD Pipeline
@@ -1035,8 +1045,12 @@ JWT_REFRESH_SECRET=your-refresh-secret-key
 JWT_ACCESS_EXPIRY=15m
 JWT_REFRESH_EXPIRY=7d
 
-# AI
-GEMINI_API_KEY=your-gemini-api-key
+# AI (self-trained Qwen — Gemini removed in v1.0.0)
+QWEN_API_URL=http://localhost:5000
+
+# Email verification
+MAILJET_API_KEY=your-mailjet-api-key
+MAILJET_API_SECRET=your-mailjet-api-secret
 
 # Redis
 REDIS_HOST=localhost
@@ -1049,13 +1063,16 @@ FRONTEND_URL=http://localhost:3000
 # Payment (VNPay)
 VNPAY_TMN_CODE=your-merchant-code
 VNPAY_HASH_SECRET=your-hash-secret
+VNPAY_URL=https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
 VNPAY_RETURN_URL=http://localhost:5000/api/payments/vnpay-return
 
 # Payment (MoMo)
 MOMO_PARTNER_CODE=your-momo-partner-code
 MOMO_ACCESS_KEY=your-momo-access-key
 MOMO_SECRET_KEY=your-momo-secret-key
+MOMO_ENDPOINT=https://test-payment.momo.vn/v2/gateway/api/create
 MOMO_RETURN_URL=http://localhost:5000/api/payments/momo-return
+MOMO_IPN_URL=http://localhost:5000/api/payments/momo-webhook
 Frontend (.env.local)
 bash
 NEXT_PUBLIC_API_URL=http://localhost:5000/api
@@ -1134,5 +1151,6 @@ No duplicate code
 
 Run linter & formatter
 
-Last Updated: 04/07/2026
-Version: 1.0.0-rc
+Last Updated: 02/08/2026
+Version: 1.0.0
+

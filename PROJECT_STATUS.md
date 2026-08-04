@@ -1,10 +1,10 @@
 # PROJECT STATUS
 
 **Project:** Gym Management System (IronFit Pro)
-**Team Size:** 4 (agents phối hợp trên các mảng: Backend/DB, AI, Frontend UI, PT features)
-**Current Phase:** Phase 7 — PT & Trainer Management Expansion
-**Last Updated:** 22/07/2026
-**Version:** v0.2.0 (in progress)
+**Team Size:** Multiple agents coordinated on different areas (Backend/DB, AI/embedding, Face check-in, Schedule/Membership/Payment)
+**Current Phase:** ✅ Released — v1.0.0
+**Last Updated:** 02/08/2026
+**Version:** v1.0.0
 
 ---
 
@@ -18,28 +18,32 @@
 | Phase 4 - Frontend Admin Dashboard | ✅ Completed | 100% |
 | Phase 5 - Payment & Notification | ✅ Completed | 100% |
 | Phase 6 - Testing & Deployment | ✅ Completed | 100% |
-| Phase 7 - PT & Trainer Management | ⏳ In Progress | ~70% |
+| Phase 7 - PT & Trainer Management | ✅ Completed | 100% |
+| Phase 8 - Face Check-in, Trainer Scheduling, Membership Cancel, AI Chatbot v2 | ✅ Completed | 100% |
 
-> Phase 7 covers features added after the original 26-issue roadmap: PT booking system, trainer profile management, trainer work schedules, trainer check-in (timekeeping), and dual AI provider support. These are not yet tracked as numbered GitHub issues.
+> Phases 7–8 cover features added after the original 26-issue roadmap and are not tracked as numbered GitHub issues: PT booking system, trainer profile management, trainer work schedules (with a real weekly-grid UI), trainer check-in via face recognition, membership self/admin-cancel, and the Qwen-only RAG chatbot with streaming + multi-session chat.
 
 ---
 
-## 🎯 Phase 7 — In Progress
+## 🎯 Phase 7–8 — Feature Summary
 
 | Feature | Backend (schema/API) | Frontend UI | Status |
 |---|---|---|---|
 | PT Booking (member books trainer) | ✅ Done | ✅ Done | ✅ Complete |
 | PT Dashboard (own students/stats) | ✅ Done | ✅ Done | ✅ Complete |
+| PT: student roster, schedule, student progress view | ✅ Done | ✅ Done | ✅ Complete |
 | Admin: Trainer management (CRUD) | ✅ Done | ✅ Done | ✅ Complete |
+| Admin: Trainer working-hours schedule | ✅ Done | ✅ Done (weekly grid) | ✅ Complete |
+| Admin: Bulk-create trainer schedules (`POST /admin/trainer-schedules/bulk`) | ✅ Done | ✅ Done | ✅ Complete — apply one shift template to multiple trainers/weekdays at once, skips conflicting combos individually |
 | Admin: Booking oversight | ✅ Done | ✅ Done | ✅ Complete |
-| Admin: Revenue & membership distribution charts | ✅ Done | ✅ Done | ✅ Complete |
-| Trainer work schedule (`TrainerSchedule`) | ✅ Schema done | ⏳ Admin UI in progress | ⏳ In progress |
-| Trainer check-in / timekeeping (`TrainerCheckIn`) | ✅ Schema done | ⏳ Admin UI in progress | ⏳ In progress |
-| PT page: "Học viên của tôi" (student roster detail) | ✅ Data available (Booking) | ❌ Not built | 🔜 Planned |
-| PT page: "Thời khoá biểu" (own schedule view) | ✅ Data available | ❌ Not built | 🔜 Planned |
-| PT page: "Tiến trình học viên" (view student progress) | ✅ Data available (BodyProgress) | ❌ Not built | 🔜 Planned |
-| PT page: "Chấm công" (self check-in) | ✅ Schema done (`TrainerCheckIn`) | ❌ Not built | 🔜 Planned |
-| Dual AI provider (Gemini / self-trained Qwen) | ✅ Done | ✅ Done | ✅ Complete |
+| Admin: Revenue, membership distribution & payment history/stats | ✅ Done | ✅ Done | ✅ Complete |
+| Face check-in (Member/PT self, Admin Kiosk, Admin enroll) | ✅ Done | ✅ Done | ✅ Complete — replaces the old QR check-in and manual PT check-in, both deleted |
+| Admin: trainer check-in report | ✅ Done | ✅ Done | ✅ Complete |
+| Membership self-cancel (Member) | ✅ Done | ✅ Done | ✅ Complete |
+| Membership assign/cancel on behalf of user (Admin) | ✅ Done | ✅ Done | ✅ Complete |
+| VNPay payment actually enforced for paid plans | ✅ Done | ✅ Done | ✅ Complete — merchant approved, live end-to-end |
+| Email verification + Terms acceptance | ✅ Done | ✅ Done | ✅ Complete |
+| AI Chatbot — Qwen-only RAG, streaming, multi-session | ✅ Done | ✅ Done | ✅ Complete (still tunnel-dependent — see Known Issues) |
 
 ---
 
@@ -47,59 +51,66 @@
 
 | # | Issue | Notes |
 |---|---|---|
-| 1 | Login redirect logic fixed but not fully re-verified | Previously always redirected to `/member` regardless of role; fixed but a build error (`user is not defined`) needs re-confirmation before considering this closed |
-| 2 | 4 PT-facing pages not yet built | Backend data is ready (`Booking`, `BodyProgress`, `TrainerCheckIn`); UI pending |
-| 3 | Debug-session secrets not yet rotated | `JWT_SECRET`, `JWT_REFRESH_SECRET`, Neon DB password, `GEMINI_API_KEY`, `VNPAY_HASH_SECRET` were exposed during troubleshooting sessions and must be rotated before real-world use |
-| 4 | `AI_PROVIDER=qwen` depends on a personal ngrok tunnel | Only works while a specific developer's machine + `serve.py` + ngrok are running; not viable as a permanent production path |
-| 5 | Multiple agents editing schema/migrations concurrently caused a production migration failure | Resolved via `prisma migrate resolve --rolled-back`; going forward, only one agent should run `db push` / `migrate deploy` against Neon at a time |
-| 6 | Stale test account `pt.test@ironfit.com` | Exists in DB with role `MEMBER`, no `TrainerProfile` — leftover from an earlier test, safe to ignore or delete |
+| 1 | Qwen AI provider depends on a personal ngrok tunnel | Only works while a specific developer's machine + `serve.py` + ngrok are running; not viable as a permanent production path |
+| 2 | Debug-session secrets not yet rotated | `JWT_SECRET`, `JWT_REFRESH_SECRET`, Neon DB password, and various tried email-provider API keys were exposed during troubleshooting sessions and should be rotated before real-world use |
+| 3 | No "resend verification email" flow | If a verification token expires or the send fails, the user currently has no self-service recovery path |
+| 4 | No automated tests for newer endpoints | `trainer-schedules`, `available-slots`, admin membership edit, member cancel are untested |
+| 5 | `membershipService.getPlans()` (frontend) returns a doubly-nested `response.data.data.plans.plans` | Works, but unconfirmed whether intentional |
+| 6 | "Cancelled" membership reuses the `SUSPENDED` status | May need a dedicated enum value later to distinguish user-cancel vs admin-lock vs natural expiry |
+
+### ✅ Resolved for v1.0.0
+- VNPay — old sandbox merchant had gone invalid (new one registered); amount was being double-multiplied (`*1000` in controller + `*100` in service, fixed to multiply once); signature encoding used the `qs` library instead of `URLSearchParams`, which didn't match VNPay's required format — all three fixed, full flow (create → redirect → sandbox payment → return → activation) verified on local and production
+- Neon migration history — reconciled via a fresh baseline reflecting Neon's true schema (including the two duplicate `add_vector_embedding` folders and the previously-unrecorded `TrainerSchedule`/`TrainerCheckIn` tables); `migrate deploy` now works normally going forward
+- `VNPAY_RETURN_URL` / `VNPAY_URL` / MoMo return/IPN/endpoint vars — added to `backend/.env.example`
 
 ---
 
-## 🗄️ Database — Neon Production (14 tables)
+## 🗄️ Database — Neon Production
 
 | Group | Tables | Notes |
 |---|---|---|
 | Original (May 2026) | `User`, `MembershipPlan`, `UserMembership`, `ChatHistory`, `KnowledgeBase` | 5 original migrations |
-| Batch 1 (deployed 21/07/2026) | `Payment`, `Notification`, `BodyProgress`, `Attendance`, `BodyGoal` | Code existed earlier but had **never been deployed to Neon** — this was the root cause of payment/notification/progress/check-in features failing in production while working locally |
+| Batch 1 | `Payment`, `Notification`, `BodyProgress`, `Attendance`, `BodyGoal` | `Attendance` (QR) kept in schema for historical data but no longer written to |
 | Batch 2 | `TrainerProfile`, `Booking` | Trainer profile + member booking |
-| Batch 3 | `TrainerSchedule`, `TrainerCheckIn` | Trainer work schedule + timekeeping |
+| Batch 3 | `TrainerSchedule`, `TrainerCheckIn` | Trainer work schedule + face/manual timekeeping |
+| Batch 4 | `FaceProfile`, `ChatSession` | Face check-in descriptors; multi-session AI chat |
 
-Schema fixes applied: declared `extensions = [vector]` correctly in `datasource` (was missing, broke pgvector-related CI/migrations); added missing `Payment.membershipPlan` relation; removed 4 redundant indexes duplicating existing unique constraints (`User.email`, `UserMembership.userId`, `BodyGoal.userId`, `Payment.transactionId`); rebaselined messy local migration history (did not affect Neon's real history).
+`KnowledgeBase.embedding` was migrated from `vector(3072)` (Gemini) to `vector(384)` (Qwen's multilingual embedding model) via a hand-written migration, since Prisma does not auto-generate `ALTER` SQL for `Unsupported("vector(N)")` size changes.
 
 ---
 
 ## 🌐 Route / UI Coverage by Role
 
-| Role | Live routes | Missing |
-|---|---|---|
-| **Admin** | `/admin`, `/admin/users`, `/admin/membership`, `/admin/payment`, `/admin/trainers`, `/admin/booking`, `/admin/trainer-schedules` (in progress), `/admin/trainer-checkins` (in progress) | Nearly complete |
-| **Member** | `/member`, `/member/ai-chat`, `/member/membership`, `/member/check-in`, `/member/progress`, `/member/booking` | Complete |
-| **PT** | `/pt/dashboard` only | 4 pages planned — student roster, schedule, student progress view, self check-in |
+| Role | Live routes |
+|---|---|
+| **Admin** | `/admin`, `/admin/users`, `/admin/membership`, `/admin/payment`, `/admin/trainers`, `/admin/trainer-schedules`, `/admin/booking`, `/admin/face-enroll`, `/admin/face-kiosk`, `/admin/trainer-checkins` |
+| **Member** | `/member`, `/member/ai-chat`, `/member/membership`, `/member/face-checkin`, `/member/progress`, `/member/bookings`, `/member/trainers`, `/member/payments` |
+| **PT** | `/pt`, `/pt/clients`, `/pt/clients/progress`, `/pt/schedule`, `/pt/face-checkin` |
 
 ---
 
 ## 🚀 Infrastructure
 
-| Item | Before | Current |
-|---|---|---|
-| Backend hosting | Railway (free trial credit exhausted, service stopped) | **Render** — `https://gym-management-dwvx.onrender.com` |
-| Render runtime | Docker (auto-detected) | Manually switched to **Node** |
-| Render build command | — | `npm install --include=dev && npx prisma generate && npm run build` |
-| Render start command | — | `npm run start` (`node dist/src/server.js`) |
-| `VNPAY_RETURN_URL` | Pointed at old Railway domain | Updated to Render domain |
-| Redis | Used on Railway | Not available on Render free tier — app gracefully falls back without cache |
+| Item | Value |
+|---|---|
+| Backend hosting | **Render** — `https://gym-management-dwvx.onrender.com` |
+| Frontend hosting | Vercel and/or Render |
+| Render runtime | Node (`npm install --include=dev && npx prisma generate && npm run build`, start via `npm run start`) |
+| Database | Neon (PostgreSQL 16 + pgvector) |
+| Email | Mailjet (REST API over HTTPS) |
+| Redis | Not available on Render free tier — app gracefully falls back without cache |
 
-⚠️ **Operational note:** Render free tier sleeps after ~15 min of no traffic. First request after sleep takes ~30-50s to wake up — open the link a few minutes before any live demo.
+⚠️ **Operational note:** Render free tier sleeps after ~15 min of no traffic. First request after sleep takes ~30-50s to wake up — open the link a few minutes before any live demo. The AI chatbot additionally requires a developer's local Qwen `serve.py` + ngrok tunnel to be running.
 
 ---
 
-## 🧪 Test Accounts
+## 🧪 Test Accounts (Neon)
 
 | Role | Email | Password |
 |---|---|---|
 | Admin | `admin@ironfit.com` | `Admin123456` |
-| PT | `pt.demo@ironfit.com` | `Trainer123456` |
+| Member | `member1@ironfit.com` → `member10@ironfit.com` | `Member123456` |
+| PT | `pt.demo@ironfit.com`, `pt2@ironfit.com` → `pt6@ironfit.com` | `Trainer123456` |
 
 ---
 
@@ -111,8 +122,10 @@ Schema fixes applied: declared `extensions = [vector]` correctly in `datasource`
 | Frontend | Next.js + TailwindCSS + Zustand + Recharts | 16.2.7 |
 | Database | PostgreSQL + pgvector | 16 |
 | ORM | Prisma | 6.19.3 |
-| AI | Gemini 2.0 Flash + gemini-embedding-001 (RAG) **or** self-trained Qwen 2.5 1.5B (LoRA, local FastAPI) | - |
+| AI | Self-trained Qwen 2.5 1.5B (LoRA), RAG via pgvector + multilingual embeddings, FastAPI | - |
+| Face recognition | face-api.js (client-side) | - |
 | Payment | VNPay + MoMo | - |
+| Email | Mailjet | - |
 | CI/CD | GitHub Actions | - |
 | Hosting | Render + Vercel + Neon | - |
 | Cache | Redis (optional, graceful fallback) | - |
@@ -134,7 +147,7 @@ Schema fixes applied: declared `extensions = [vector]` correctly in `datasource`
 | #9 | GET membership plans API | ✅ Closed |
 | #10 | Buy membership API | ✅ Closed |
 | #11 | AI Chat History schema | ✅ Closed |
-| #12 | Gemini RAG integration | ✅ Closed |
+| #12 | AI RAG integration (originally Gemini, now Qwen-only) | ✅ Closed |
 | #13 | AI usage limiting | ✅ Closed |
 | #14 | NextJS Frontend setup | ✅ Closed |
 | #15 | Login page | ✅ Closed |
@@ -148,17 +161,15 @@ Schema fixes applied: declared `extensions = [vector]` correctly in `datasource`
 | #23 | Database Optimization | ✅ Closed |
 | #24 | Deploy Backend (Docker → later migrated to Render) | ✅ Closed |
 | #25 | Deploy Frontend Web | ✅ Closed |
-| #26 | Final Production Release | ⏳ Pending — see Phase 7 known issues before closing |
+| #26 | Final Production Release | ✅ Closed — v1.0.0 |
 | #89 | AI Chat UI (web pivot) | ✅ Closed |
 
 ---
 
-## 🔜 Next Steps
+## 🔜 Next Steps (post-v1.0.0)
 
-1. Complete 4 remaining PT-facing pages (roster, schedule, student progress, self check-in)
-2. Finish Admin UI for `trainer-schedules` and `trainer-checkins`
-3. Re-verify the login redirect fix (confirm the `user is not defined` build error is fully resolved)
-4. Rotate all secrets exposed during the debugging sessions
-5. Decide on a permanent path for the Qwen AI provider (currently tunnel-dependent) or default to Gemini for any unattended demo
-6. Update `ARCHITECTURE.MD` to reflect all 14 tables
-7. Re-evaluate closing Issue #26 once the above items are resolved
+1. Rotate all secrets exposed during debugging sessions
+2. Decide on a permanent, tunnel-free hosting path for the Qwen AI provider (e.g. a cloud GPU)
+3. Add automated tests for trainer-schedules, available-slots, admin membership edit, and member cancel
+4. Build the "resend verification email" flow
+5. Consider a dedicated `MembershipStatus` value to distinguish cancel reasons
