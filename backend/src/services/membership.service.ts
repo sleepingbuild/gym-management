@@ -1,4 +1,4 @@
-﻿import { prisma } from "../config/prisma";
+import { prisma } from "../config/prisma";
 import { AppError } from "../utils/errors";
 
 export const membershipService = {

@@ -153,6 +153,7 @@ const updateUserMembership = async (
         });
         if (!user) throw new AppError(404, "USER_001: User not found");
 
+        // Hủy gói hiện tại
         if (!planId) {
             const existing = await prisma.userMembership.findUnique({
                 where: { userId: id },
@@ -180,6 +181,7 @@ const updateUserMembership = async (
             return;
         }
 
+        // Gán / đổi gói mới
         const plan = await prisma.membershipPlan.findFirst({
             where: { id: planId, isActive: true },
         });
@@ -882,6 +884,152 @@ const createTrainerSchedule = async (
 /**
  * PUT /admin/trainer-schedules/:id
  */
+/**
+ * POST /admin/trainer-schedules/bulk
+ * body: { trainerIds: string[], type, daysOfWeek?: number[], specificDate?, startTime, endTime, notes? }
+ *   - RECURRING: daysOfWeek là mảng (vd Thứ 2->Thứ 6 = [1,2,3,4,5])
+ *   - SPECIFIC_DATE: 1 ngày duy nhất cho tất cả HLV được chọn
+ * Áp 1 mẫu ca cho nhiều HLV cùng lúc. Tổ hợp nào bị trùng giờ với ca đã có
+ * thì BỎ QUA (không throw lỗi chặn cả batch) và trả về trong `skipped`.
+ */
+const DAY_LABELS_VI_BULK = [
+    "Chủ nhật",
+    "Thứ 2",
+    "Thứ 3",
+    "Thứ 4",
+    "Thứ 5",
+    "Thứ 6",
+    "Thứ 7",
+];
+
+const bulkCreateTrainerSchedules = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+): Promise<void> => {
+    try {
+        const {
+            trainerIds,
+            type,
+            daysOfWeek,
+            specificDate,
+            startTime,
+            endTime,
+            notes,
+        } = req.body as {
+            trainerIds?: string[];
+            type?: ScheduleType;
+            daysOfWeek?: number[];
+            specificDate?: string;
+            startTime?: string;
+            endTime?: string;
+            notes?: string | null;
+        };
+
+        if (!trainerIds || trainerIds.length === 0)
+            throw new AppError(
+                400,
+                "SCHEDULE_011: Vui lòng chọn ít nhất 1 huấn luyện viên",
+            );
+        if (type !== "RECURRING" && type !== "SPECIFIC_DATE")
+            throw new AppError(400, "SCHEDULE_004: Loại lịch không hợp lệ");
+        validateScheduleTimeRange(startTime, endTime);
+
+        let occurrences: { dayOfWeek: number | null; specificDate: Date | null }[] =
+            [];
+
+        if (type === "RECURRING") {
+            if (!daysOfWeek || daysOfWeek.length === 0)
+                throw new AppError(
+                    400,
+                    "SCHEDULE_012: Vui lòng chọn ít nhất 1 thứ trong tuần",
+                );
+            for (const d of daysOfWeek) {
+                if (d < 0 || d > 6)
+                    throw new AppError(
+                        400,
+                        "SCHEDULE_006: Thứ trong tuần không hợp lệ (0-6)",
+                    );
+            }
+            occurrences = daysOfWeek.map((d) => ({
+                dayOfWeek: d,
+                specificDate: null,
+            }));
+        } else {
+            if (!specificDate)
+                throw new AppError(400, "SCHEDULE_007: Thiếu ngày cụ thể");
+            const sd = new Date(specificDate);
+            if (isNaN(sd.getTime()))
+                throw new AppError(400, "SCHEDULE_008: Ngày không hợp lệ");
+            occurrences = [{ dayOfWeek: null, specificDate: sd }];
+        }
+
+        const trainers = await prisma.trainerProfile.findMany({
+            where: { userId: { in: trainerIds } },
+            select: { userId: true },
+        });
+        const validTrainerIds = new Set(trainers.map((t) => t.userId));
+
+        let createdCount = 0;
+        const skipped: { trainerId: string; reason: string }[] = [];
+
+        for (const trainerId of trainerIds) {
+            if (!validTrainerIds.has(trainerId)) {
+                skipped.push({
+                    trainerId,
+                    reason: "Không tìm thấy huấn luyện viên",
+                });
+                continue;
+            }
+            for (const occ of occurrences) {
+                const candidates = await prisma.trainerSchedule.findMany({
+                    where: {
+                        trainerId,
+                        type,
+                        ...(type === "RECURRING"
+                            ? { dayOfWeek: occ.dayOfWeek }
+                            : { specificDate: occ.specificDate }),
+                    },
+                });
+                const overlap = candidates.find(
+                    (s) => startTime! < s.endTime && endTime! > s.startTime,
+                );
+                if (overlap) {
+                    skipped.push({
+                        trainerId,
+                        reason:
+                            type === "RECURRING"
+                                ? `Trùng giờ ca đã có (${DAY_LABELS_VI_BULK[occ.dayOfWeek ?? 0]})`
+                                : "Trùng giờ ca đã có",
+                    });
+                    continue;
+                }
+                await prisma.trainerSchedule.create({
+                    data: {
+                        trainerId,
+                        type,
+                        dayOfWeek: occ.dayOfWeek,
+                        specificDate: occ.specificDate,
+                        startTime: startTime!,
+                        endTime: endTime!,
+                        notes: notes ?? null,
+                    },
+                });
+                createdCount += 1;
+            }
+        }
+
+        res.status(201).json({
+            success: true,
+            statusCode: 201,
+            message: `Đã tạo ${createdCount} ca làm việc, bỏ qua ${skipped.length} ca bị trùng/lỗi`,
+            data: { createdCount, skipped },
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 const updateTrainerSchedule = async (
     req: Request,
     res: Response,
@@ -1213,35 +1361,29 @@ const getTrainerCheckins = async (
     next: NextFunction,
 ): Promise<void> => {
     try {
-        const dateParam =
-            (req.query.date as string) || new Date().toISOString().slice(0, 10);
+        const dateParam = (req.query.date as string) || new Date().toISOString().slice(0, 10);
         const date = new Date(dateParam);
         date.setHours(0, 0, 0, 0);
-
+ 
         if (isNaN(date.getTime())) {
-            throw new AppError(
-                400,
-                "ADMIN_TC_001: date không hợp lệ (định dạng YYYY-MM-DD)",
-            );
+            throw new AppError(400, "ADMIN_TC_001: date không hợp lệ (định dạng YYYY-MM-DD)");
         }
-
+ 
         const trainers = await prisma.trainerProfile.findMany({
             where: { user: { isActive: true, isDeleted: false } },
             include: { user: { select: { id: true, fullName: true } } },
             orderBy: { user: { fullName: "asc" } },
         });
-
+ 
         const checkins = await prisma.trainerCheckIn.findMany({
             where: {
                 date,
                 trainerId: { in: trainers.map((t) => t.userId) },
             },
         });
-
-        const checkinByTrainerId = new Map(
-            checkins.map((c) => [c.trainerId, c]),
-        );
-
+ 
+        const checkinByTrainerId = new Map(checkins.map((c) => [c.trainerId, c]));
+ 
         const rows = trainers.map((t) => {
             const checkin = checkinByTrainerId.get(t.userId);
             return {
@@ -1253,7 +1395,7 @@ const getTrainerCheckins = async (
                 method: checkin?.method ?? null, // ✨ MANUAL | FACE | null (chưa chấm công)
             };
         });
-
+ 
         res.status(200).json({
             success: true,
             statusCode: 200,
@@ -1264,7 +1406,7 @@ const getTrainerCheckins = async (
         next(error);
     }
 };
-
+ 
 /**
  * POST /admin/trainer-checkins
  * Body: { trainerId: string, date: string (YYYY-MM-DD) }
@@ -1277,34 +1419,26 @@ const createTrainerCheckin = async (
 ): Promise<void> => {
     try {
         const { trainerId, date: dateParam } = req.body;
-
+ 
         if (!trainerId || !dateParam) {
             throw new AppError(400, "ADMIN_TC_002: Thiếu trainerId hoặc date");
         }
-
-        const trainer = await prisma.trainerProfile.findUnique({
-            where: { userId: trainerId },
-        });
+ 
+        const trainer = await prisma.trainerProfile.findUnique({ where: { userId: trainerId } });
         if (!trainer) {
-            throw new AppError(
-                404,
-                "ADMIN_TC_003: Không tìm thấy huấn luyện viên",
-            );
+            throw new AppError(404, "ADMIN_TC_003: Không tìm thấy huấn luyện viên");
         }
-
+ 
         const date = new Date(dateParam);
         date.setHours(0, 0, 0, 0);
-
+ 
         const existing = await prisma.trainerCheckIn.findUnique({
             where: { trainerId_date: { trainerId, date } },
         });
         if (existing) {
-            throw new AppError(
-                409,
-                "ADMIN_TC_004: Trainer đã được chấm công ngày này rồi",
-            );
+            throw new AppError(409, "ADMIN_TC_004: Trainer đã được chấm công ngày này rồi");
         }
-
+ 
         const record = await prisma.trainerCheckIn.create({
             data: {
                 trainerId,
@@ -1313,7 +1447,7 @@ const createTrainerCheckin = async (
                 method: "MANUAL",
             },
         });
-
+ 
         res.status(201).json({
             success: true,
             statusCode: 201,
@@ -1324,7 +1458,7 @@ const createTrainerCheckin = async (
         next(error);
     }
 };
-
+ 
 /**
  * DELETE /admin/trainer-checkins/:id
  * Hủy (xoá) 1 bản ghi chấm công.
@@ -1336,19 +1470,14 @@ const deleteTrainerCheckin = async (
 ): Promise<void> => {
     try {
         const id = req.params.id as string;
-
-        const existing = await prisma.trainerCheckIn.findUnique({
-            where: { id },
-        });
+ 
+        const existing = await prisma.trainerCheckIn.findUnique({ where: { id } });
         if (!existing) {
-            throw new AppError(
-                404,
-                "ADMIN_TC_005: Không tìm thấy bản ghi chấm công",
-            );
+            throw new AppError(404, "ADMIN_TC_005: Không tìm thấy bản ghi chấm công");
         }
-
+ 
         await prisma.trainerCheckIn.delete({ where: { id } });
-
+ 
         res.status(200).json({
             success: true,
             statusCode: 200,
@@ -1358,7 +1487,7 @@ const deleteTrainerCheckin = async (
         next(error);
     }
 };
-
+ 
 export const adminController = {
     getStats,
     getUsers,
@@ -1378,6 +1507,7 @@ export const adminController = {
     deleteTrainer,
     getTrainerSchedules,
     createTrainerSchedule,
+    bulkCreateTrainerSchedules,
     updateTrainerSchedule,
     deleteTrainerSchedule,
     getBookings,

@@ -78,19 +78,6 @@ router.patch("/users/:id/role", adminController.updateUserRole);
 
 /**
  * @swagger
- * /admin/revenue:
- *   get:
- *     summary: Doanh thu 6 tháng gần nhất
- *     tags: [Admin]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Danh sách doanh thu theo tháng
- */
-
-/**
- * @swagger
  * /admin/users/{id}/membership:
  *   patch:
  *     summary: Gán/đổi gói tập cho user, hoặc hủy gói hiện tại (planId null)
@@ -108,6 +95,19 @@ router.patch("/users/:id/role", adminController.updateUserRole);
  *         description: Cập nhật thành công
  */
 router.patch("/users/:id/membership", adminController.updateUserMembership);
+
+/**
+ * @swagger
+ * /admin/revenue:
+ *   get:
+ *     summary: Doanh thu 6 tháng gần nhất
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Danh sách doanh thu theo tháng
+ */
 router.get("/revenue", adminController.getRevenue);
 
 /**
@@ -298,6 +298,23 @@ router.delete("/trainers/:id", adminController.deleteTrainer);
  */
 router.get("/trainer-schedules", adminController.getTrainerSchedules);
 router.post("/trainer-schedules", adminController.createTrainerSchedule);
+
+/**
+ * @swagger
+ * /admin/trainer-schedules/bulk:
+ *   post:
+ *     summary: Tạo hàng loạt ca làm việc cho nhiều huấn luyện viên cùng lúc
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       201:
+ *         description: Tạo thành công (kèm danh sách bị bỏ qua nếu trùng giờ)
+ */
+router.post(
+    "/trainer-schedules/bulk",
+    adminController.bulkCreateTrainerSchedules,
+);
 
 
 /**

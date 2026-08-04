@@ -1,4 +1,4 @@
-﻿import { Router } from "express";
+import { Router } from "express";
 import { membershipController } from "../controllers/membership.controller";
 import { authenticate } from "../middlewares/auth.middleware";
 import { cacheMiddleware } from "../middlewares/cache.middleware";

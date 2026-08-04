@@ -29,22 +29,33 @@ const getAvailableTrainers = async (
     }
 };
 
-// Danh sách khung giờ chuẩn của phòng gym — khớp với TIME_SLOTS phía frontend member.
-// Nếu cần khung giờ linh hoạt hơn theo từng HLV, có thể sinh động từ startTime/endTime
-// của TrainerSchedule thay vì cố định như hiện tại.
-const TIME_SLOTS = [
-    "06:00-07:00",
-    "07:00-08:00",
-    "08:00-09:00",
-    "17:00-18:00",
-    "18:00-19:00",
-    "19:00-20:00",
-];
+const timeToMinutes = (t: string): number => {
+    const [h, m] = t.split(":").map(Number);
+    return h * 60 + m;
+};
+
+const minutesToTime = (min: number): string =>
+    `${String(Math.floor(min / 60)).padStart(2, "0")}:${String(min % 60).padStart(2, "0")}`;
+
+/**
+ * Sinh các khung giờ 1 tiếng liên tục nằm trọn trong [startTime, endTime).
+ * VD: 08:00 -> 17:00 sinh ra 08:00-09:00, 09:00-10:00, ..., 16:00-17:00 (9 khung),
+ * thay vì chỉ khớp với danh sách khung giờ cố định như trước.
+ */
+const generateHourlySlots = (startTime: string, endTime: string): string[] => {
+    const startMin = timeToMinutes(startTime);
+    const endMin = timeToMinutes(endTime);
+    const slots: string[] = [];
+    for (let t = startMin; t + 60 <= endMin; t += 60) {
+        slots.push(`${minutesToTime(t)}-${minutesToTime(t + 60)}`);
+    }
+    return slots;
+};
 
 /**
  * GET /bookings/trainers/:trainerId/available-slots?date=YYYY-MM-DD
- * Trả về từng khung giờ chuẩn kèm cờ available:
- * - false nếu ngoài giờ làm việc (TrainerSchedule) của HLV hôm đó
+ * Sinh khung giờ 1 tiếng từ CHÍNH ca làm việc thật của HLV hôm đó (không còn
+ * dò khớp với danh sách khung giờ cố định), kèm cờ available:
  * - false nếu đã có booking PENDING/CONFIRMED trùng khung giờ
  */
 const getAvailableSlots = async (
@@ -99,18 +110,22 @@ const getAvailableSlots = async (
 
         const bookedSlots = new Set(existingBookings.map((b) => b.timeSlot));
 
-        const slots = TIME_SLOTS.map((slot) => {
-            const [start, end] = slot.split("-");
-            const withinWorkingHours = schedules.some(
-                (s) => start >= s.startTime && end <= s.endTime,
+        // Gộp khung giờ sinh ra từ tất cả ca áp dụng hôm đó, khử trùng nếu 2 ca
+        // (vd 1 recurring + 1 specific-date) chồng giờ nhau.
+        const slotSet = new Set<string>();
+        schedules.forEach((s) => {
+            generateHourlySlots(s.startTime, s.endTime).forEach((slot) =>
+                slotSet.add(slot),
             );
-            const isBooked = bookedSlots.has(slot);
-            return {
-                timeSlot: slot,
-                withinWorkingHours,
-                available: withinWorkingHours && !isBooked,
-            };
         });
+
+        const slots = Array.from(slotSet)
+            .sort()
+            .map((slot) => ({
+                timeSlot: slot,
+                withinWorkingHours: true,
+                available: !bookedSlots.has(slot),
+            }));
 
         res.status(200).json({
             success: true,

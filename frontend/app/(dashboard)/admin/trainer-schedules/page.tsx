@@ -64,6 +64,26 @@ const DAY_LABELS = [
   "Thứ 7",
 ];
 
+interface BulkFormData {
+  trainerIds: string[];
+  type: ScheduleType;
+  daysOfWeek: number[];
+  specificDate: string;
+  startTime: string;
+  endTime: string;
+  notes: string;
+}
+
+const emptyBulkForm: BulkFormData = {
+  trainerIds: [],
+  type: "RECURRING",
+  daysOfWeek: [1, 2, 3, 4, 5],
+  specificDate: "",
+  startTime: "08:00",
+  endTime: "17:00",
+  notes: "",
+};
+
 const emptyForm: FormData = {
   trainerId: "",
   type: "RECURRING",
@@ -83,6 +103,13 @@ export default function AdminTrainerSchedulesPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<FormData>(emptyForm);
   const [saving, setSaving] = useState(false);
+  const [showBulkForm, setShowBulkForm] = useState(false);
+  const [bulkForm, setBulkForm] = useState<BulkFormData>(emptyBulkForm);
+  const [bulkSaving, setBulkSaving] = useState(false);
+  const [bulkResult, setBulkResult] = useState<{
+    createdCount: number;
+    skipped: { trainerId: string; reason: string }[];
+  } | null>(null);
   const [weekStart, setWeekStart] = useState<Date>(() => getMondayUTC(todayUTC()));
 
   const weekDates = useMemo(() => buildWeekDates(weekStart), [weekStart]);
@@ -176,6 +203,102 @@ export default function AdminTrainerSchedulesPage() {
     setEditingId(null);
     setForm(emptyForm);
   };
+
+  const openBulkForm = () => {
+    if (trainers.length === 0) {
+      alert("Chưa có huấn luyện viên nào trong hệ thống. Hãy thêm HLV trước.");
+      return;
+    }
+    setBulkResult(null);
+    setBulkForm(emptyBulkForm);
+    setShowBulkForm(true);
+  };
+
+  const closeBulkForm = () => {
+    setShowBulkForm(false);
+    setBulkForm(emptyBulkForm);
+    setBulkResult(null);
+  };
+
+  const toggleBulkTrainer = (trainerId: string) => {
+    setBulkForm((prev) => ({
+      ...prev,
+      trainerIds: prev.trainerIds.includes(trainerId)
+        ? prev.trainerIds.filter((id) => id !== trainerId)
+        : [...prev.trainerIds, trainerId],
+    }));
+  };
+
+  const toggleAllBulkTrainers = () => {
+    setBulkForm((prev) => ({
+      ...prev,
+      trainerIds: prev.trainerIds.length === trainers.length ? [] : trainers.map((t) => t.id),
+    }));
+  };
+
+  const toggleBulkDay = (day: number) => {
+    setBulkForm((prev) => ({
+      ...prev,
+      daysOfWeek: prev.daysOfWeek.includes(day)
+        ? prev.daysOfWeek.filter((d) => d !== day)
+        : [...prev.daysOfWeek, day].sort((a, b) => a - b),
+    }));
+  };
+
+  const handleBulkSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (bulkForm.trainerIds.length === 0) {
+      alert("Vui lòng chọn ít nhất 1 huấn luyện viên.");
+      return;
+    }
+    if (bulkForm.type === "RECURRING" && bulkForm.daysOfWeek.length === 0) {
+      alert("Vui lòng chọn ít nhất 1 thứ trong tuần.");
+      return;
+    }
+    if (bulkForm.type === "SPECIFIC_DATE" && !bulkForm.specificDate) {
+      alert("Vui lòng chọn ngày cụ thể.");
+      return;
+    }
+    if (bulkForm.startTime >= bulkForm.endTime) {
+      alert("Giờ bắt đầu phải trước giờ kết thúc.");
+      return;
+    }
+
+    const payload =
+      bulkForm.type === "RECURRING"
+        ? {
+            trainerIds: bulkForm.trainerIds,
+            type: bulkForm.type,
+            daysOfWeek: bulkForm.daysOfWeek,
+            startTime: bulkForm.startTime,
+            endTime: bulkForm.endTime,
+            notes: bulkForm.notes || null,
+          }
+        : {
+            trainerIds: bulkForm.trainerIds,
+            type: bulkForm.type,
+            specificDate: bulkForm.specificDate,
+            startTime: bulkForm.startTime,
+            endTime: bulkForm.endTime,
+            notes: bulkForm.notes || null,
+          };
+
+    setBulkSaving(true);
+    setBulkResult(null);
+    try {
+      const res = await api.post("/admin/trainer-schedules/bulk", payload);
+      setBulkResult(res.data.data);
+      await fetchSchedules();
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      alert(`❌ ${error.response?.data?.message || "Có lỗi xảy ra."}`);
+    } finally {
+      setBulkSaving(false);
+    }
+  };
+
+  const trainerName = (trainerId: string) =>
+    trainers.find((t) => t.id === trainerId)?.fullName ?? trainerId;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -301,7 +424,12 @@ export default function AdminTrainerSchedulesPage() {
             Quản lý ca làm việc theo từng huấn luyện viên — bấm vào ô trống để thêm ca mới
           </p>
         </div>
-        <Button onClick={openCreateForm}>+ Thêm lịch làm việc</Button>
+        <div className="flex gap-2">
+          <Button variant="secondary" onClick={openBulkForm}>
+            + Tạo lịch hàng loạt
+          </Button>
+          <Button onClick={openCreateForm}>+ Thêm lịch làm việc</Button>
+        </div>
       </div>
 
       {/* Filter */}
@@ -445,6 +573,153 @@ export default function AdminTrainerSchedulesPage() {
                   Xóa ca này
                 </Button>
               )}
+            </div>
+          </form>
+        </Card>
+      )}
+
+      {/* Bulk create form */}
+      {showBulkForm && (
+        <Card className="mb-6">
+          <h3 className="text-title-md font-display text-ink mb-1">
+            Tạo lịch hàng loạt
+          </h3>
+          <p className="text-body-sm text-muted mb-4">
+            Áp 1 mẫu ca cho nhiều huấn luyện viên cùng lúc — tổ hợp nào trùng giờ với ca
+            đã có sẽ tự bị bỏ qua.
+          </p>
+          <form onSubmit={handleBulkSubmit} className="space-y-4">
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-body-sm font-medium text-body">
+                  Huấn luyện viên ({bulkForm.trainerIds.length}/{trainers.length})
+                </label>
+                <button
+                  type="button"
+                  onClick={toggleAllBulkTrainers}
+                  className="text-body-sm text-primary hover:underline"
+                >
+                  {bulkForm.trainerIds.length === trainers.length ? "Bỏ chọn tất cả" : "Chọn tất cả"}
+                </button>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-40 overflow-y-auto p-2 bg-surface-dark-soft border border-hairline rounded-md">
+                {trainers.map((t) => (
+                  <label key={t.id} className="flex items-center gap-2 text-body-sm text-ink cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={bulkForm.trainerIds.includes(t.id)}
+                      onChange={() => toggleBulkTrainer(t.id)}
+                    />
+                    {t.fullName}
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-body-sm font-medium text-body">Loại lịch</label>
+                <select
+                  value={bulkForm.type}
+                  onChange={(e) =>
+                    setBulkForm({ ...bulkForm, type: e.target.value as ScheduleType })
+                  }
+                  className="w-full px-3.5 py-2.5 bg-surface-dark-soft border border-hairline rounded-md text-ink text-body-md"
+                >
+                  <option value="RECURRING">Cố định hàng tuần</option>
+                  <option value="SPECIFIC_DATE">Một ngày cụ thể</option>
+                </select>
+              </div>
+
+              {bulkForm.type === "SPECIFIC_DATE" && (
+                <Input
+                  label="Ngày cụ thể"
+                  type="date"
+                  required
+                  value={bulkForm.specificDate}
+                  onChange={(e) => setBulkForm({ ...bulkForm, specificDate: e.target.value })}
+                />
+              )}
+
+              <Input
+                label="Giờ bắt đầu"
+                type="time"
+                required
+                value={bulkForm.startTime}
+                onChange={(e) => setBulkForm({ ...bulkForm, startTime: e.target.value })}
+              />
+              <Input
+                label="Giờ kết thúc"
+                type="time"
+                required
+                value={bulkForm.endTime}
+                onChange={(e) => setBulkForm({ ...bulkForm, endTime: e.target.value })}
+              />
+            </div>
+
+            {bulkForm.type === "RECURRING" && (
+              <div>
+                <label className="text-body-sm font-medium text-body block mb-1.5">
+                  Các thứ trong tuần
+                </label>
+                <div className="flex gap-2 flex-wrap">
+                  {DAY_LABELS.map((label, i) => (
+                    <label
+                      key={i}
+                      className={`px-3 py-1.5 rounded-full text-sm cursor-pointer border transition-colors ${
+                        bulkForm.daysOfWeek.includes(i)
+                          ? "bg-primary text-white border-primary"
+                          : "bg-surface-dark-soft text-muted border-hairline"
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        className="hidden"
+                        checked={bulkForm.daysOfWeek.includes(i)}
+                        onChange={() => toggleBulkDay(i)}
+                      />
+                      {label}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <Input
+              label="Ghi chú"
+              type="text"
+              placeholder="VD: Ca chuẩn toàn bộ HLV"
+              value={bulkForm.notes}
+              onChange={(e) => setBulkForm({ ...bulkForm, notes: e.target.value })}
+            />
+
+            {bulkResult && (
+              <div className="bg-success/10 border border-success/30 rounded-lg p-3 text-body-sm">
+                <p className="text-success font-medium mb-1">
+                  ✅ Đã tạo {bulkResult.createdCount} ca làm việc
+                </p>
+                {bulkResult.skipped.length > 0 && (
+                  <div className="text-muted">
+                    <p className="mb-1">Bỏ qua {bulkResult.skipped.length} tổ hợp bị trùng/lỗi:</p>
+                    <ul className="list-disc list-inside space-y-0.5">
+                      {bulkResult.skipped.map((s, i) => (
+                        <li key={i}>
+                          {trainerName(s.trainerId)} — {s.reason}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="flex gap-3">
+              <Button type="submit" disabled={bulkSaving}>
+                {bulkSaving ? "Đang tạo..." : "Tạo hàng loạt"}
+              </Button>
+              <Button type="button" variant="secondary" onClick={closeBulkForm}>
+                Đóng
+              </Button>
             </div>
           </form>
         </Card>
