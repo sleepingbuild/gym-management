@@ -580,6 +580,7 @@ const createTrainer = async (
                     password: hashedPassword,
                     phone: phone ?? null,
                     role: "PT",
+ 		    emailVerified: true,
                 },
             });
 
